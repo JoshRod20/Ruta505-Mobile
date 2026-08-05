@@ -5,7 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import Home from "../components/Home";
 import MapaNicaragua from "../components/MapaNicaragua";
 import ExperienciasCulturales from "../screens/comunidad/experienciasCulturales";
-import { drawerStyle } from "../styles/navigation/navigationStyle";
+import { navigationTabsStyle } from "../styles/navigation/navigationTabsStyle";
 
 const Tab = createBottomTabNavigator();
 
@@ -15,16 +15,10 @@ export default function NavigationTabs() {
       initialRouteName="Inicio"
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarStyle: {
-          backgroundColor: "#2E7D32",
-          borderTopColor: "rgba(255,255,255,0.12)",
-          height: 64,
-          paddingBottom: 8,
-          paddingTop: 8,
-        },
-        tabBarActiveTintColor: "#fff",
-        tabBarInactiveTintColor: "rgba(255,255,255,0.75)",
-        tabBarLabelStyle: drawerStyle.tabLabel,
+        tabBarStyle: navigationTabsStyle.tabBar,
+        tabBarActiveTintColor: navigationTabsStyle.activeTintColor,
+        tabBarInactiveTintColor: navigationTabsStyle.inactiveTintColor,
+        tabBarLabelStyle: navigationTabsStyle.tabLabel,
         tabBarIcon: ({ color, size }) => {
           if (route.name === "Inicio") {
             return <Ionicons name="home-outline" size={size} color={color} />;
