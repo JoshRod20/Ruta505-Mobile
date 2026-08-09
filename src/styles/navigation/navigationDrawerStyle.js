@@ -13,6 +13,27 @@ export const drawerStyle = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 10,
   },
+  // Botón hamburguesa del header (el que abre el drawer desde cualquier
+  // pantalla, no el que cierra el drawer desde adentro — ese es menuButton).
+  headerMenuButton: {
+    marginLeft: 12,
+    padding: 6,
+  },
+  headerMenuIcon: {
+    color: "#2E7D32",
+    fontSize: 24,
+  },
+  // Header con el mismo blanco que usan los containers de las pantallas
+  // (ej. experienciasCulturalesStyle.container: "#ffffff"). Usar
+  // "transparent" acá dejaba ver el fondo por defecto del navigator,
+  // que no es exactamente el mismo blanco, y se notaba una costura de
+  // color justo donde antes estaba el título.
+  headerBar: {
+    backgroundColor: "#942424",
+    elevation: 0,
+    shadowOpacity: 0,
+    borderBottomWidth: 0,
+  },
   logoContainer: {
     alignItems: "center",
     paddingVertical: 10,

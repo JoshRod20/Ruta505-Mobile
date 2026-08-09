@@ -12,7 +12,7 @@ import RegistroArtesanoScreen from "../screens/auth/RegistroArtesanoScreen";
 import RegistroGuiaScreen from "../screens/auth/RegistroGuiaScreen";
 import RegistroEmprendedorScreen from "../screens/auth/RegistroEmprendedorScreen";
 import PendienteAprobacionScreen from "../screens/auth/PendienteAprobacionScreen";
-import NavigationTabs from "./navigationTabs";
+import NavigationDrawer from "./navigationDrawer";
 
 const Stack = createNativeStackNavigator();
 
@@ -55,8 +55,8 @@ const RootNavigator = () => {
 
   // Institución no tiene pantallas propias en móvil (se maneja solo
   // desde la PWA) — si alguna vez alguien de INTUR entra desde el
-  // celular, simplemente ve las pestañas normales como cualquier otro.
-  return <NavigationTabs />;
+  // celular, simplemente ve el drawer con la navegación principal.
+  return <NavigationDrawer />;
 };
 
 export default RootNavigator;
