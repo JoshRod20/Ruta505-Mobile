@@ -1,15 +1,16 @@
-// src/navigation/RootNavigator.js
-
 import { useEffect, useState } from "react";
+
 import {
   ActivityIndicator,
   View,
 } from "react-native";
+
 import {
   createNativeStackNavigator,
 } from "@react-navigation/native-stack";
 
 import { useAuth } from "../context/AuthContext";
+
 import {
   ROLES,
   ESTADOS_VERIFICACION,
@@ -33,29 +34,22 @@ import PendienteAprobacionScreen from "../screens/auth/PendienteAprobacionScreen
 
 import NavigationDrawer from "./navigationDrawer";
 
-const Stack = createNativeStackNavigator();
+const Stack =
+  createNativeStackNavigator();
 
 // ==================================================
 // FORZAR ONBOARDING DURANTE DESARROLLO
 // ==================================================
 //
-// true  = siempre muestra el onboarding
+// true  = siempre muestra onboarding
 // false = utiliza AsyncStorage normalmente
 //
-// Cuando termines de probarlo, cambia a false.
-//
 
-const FORCE_ONBOARDING = true;
-
+const FORCE_ONBOARDING = false;
 
 // ==================================================
 // STACK DE AUTENTICACIÓN
 // ==================================================
-//
-// Login + todo el flujo de registro.
-// Nada de esto es accesible una vez que hay sesión
-// iniciada.
-//
 
 const AuthStack = () => (
   <Stack.Navigator
@@ -70,41 +64,54 @@ const AuthStack = () => (
 
     <Stack.Screen
       name="SeleccionarTipo"
-      component={SeleccionarTipoScreen}
+      component={
+        SeleccionarTipoScreen
+      }
     />
 
     <Stack.Screen
       name="SeleccionarActor"
-      component={SeleccionarActorScreen}
+      component={
+        SeleccionarActorScreen
+      }
     />
 
     <Stack.Screen
       name="RegistroTurista"
-      component={RegistroTuristaScreen}
+      component={
+        RegistroTuristaScreen
+      }
     />
 
     <Stack.Screen
       name="RegistroComunidad"
-      component={RegistroComunidadScreen}
+      component={
+        RegistroComunidadScreen
+      }
     />
 
     <Stack.Screen
       name="RegistroArtesano"
-      component={RegistroArtesanoScreen}
+      component={
+        RegistroArtesanoScreen
+      }
     />
 
     <Stack.Screen
       name="RegistroGuia"
-      component={RegistroGuiaScreen}
+      component={
+        RegistroGuiaScreen
+      }
     />
 
     <Stack.Screen
       name="RegistroEmprendedor"
-      component={RegistroEmprendedorScreen}
+      component={
+        RegistroEmprendedorScreen
+      }
     />
   </Stack.Navigator>
 );
-
 
 // ==================================================
 // ROOT NAVIGATOR
@@ -118,66 +125,103 @@ const RootNavigator = () => {
     estadoVerificacion,
   } = useAuth();
 
-  // Estado de carga del onboarding
-  const [loadingOnboarding, setLoadingOnboarding] =
-    useState(true);
+  // ==================================================
+  // ESTADO DE CARGA
+  // ==================================================
 
-  // Estado de si el onboarding ya fue completado
-  const [onboardingCompleted, setOnboardingCompleted] =
-    useState(false);
+  const [
+    loadingOnboarding,
+    setLoadingOnboarding,
+  ] = useState(true);
 
+  // ==================================================
+  // ESTADO ONBOARDING
+  // ==================================================
+
+  const [
+    onboardingCompleted,
+    setOnboardingCompleted,
+  ] = useState(false);
 
   // ==================================================
   // COMPROBAR ONBOARDING
   // ==================================================
 
   useEffect(() => {
-    const checkOnboarding = async () => {
-      try {
-        // ----------------------------------------------
-        // MODO DE PRUEBA
-        // ----------------------------------------------
-        //
-        // Mientras FORCE_ONBOARDING sea true,
-        // ignoramos AsyncStorage y mostramos
-        // siempre el onboarding.
-        //
+    const checkOnboarding =
+      async () => {
+        try {
+          console.log(
+            "Comprobando onboarding..."
+          );
 
-        if (FORCE_ONBOARDING) {
-          setOnboardingCompleted(false);
-          return;
+          // ==========================================
+          // MODO FORZADO
+          // ==========================================
+
+          if (FORCE_ONBOARDING) {
+            console.log(
+              "FORCE_ONBOARDING activo"
+            );
+
+            setOnboardingCompleted(
+              false
+            );
+
+            return;
+          }
+
+          // ==========================================
+          // ASYNC STORAGE
+          // ==========================================
+
+          const completed =
+            await hasCompletedOnboarding();
+
+          console.log(
+            "Onboarding completado:",
+            completed
+          );
+
+          setOnboardingCompleted(
+            completed
+          );
+        } catch (error) {
+          console.error(
+            "Error comprobando onboarding:",
+            error
+          );
+
+          setOnboardingCompleted(
+            false
+          );
+        } finally {
+          setLoadingOnboarding(
+            false
+          );
         }
-
-        // ----------------------------------------------
-        // COMPORTAMIENTO NORMAL
-        // ----------------------------------------------
-
-        const completed =
-          await hasCompletedOnboarding();
-
-        setOnboardingCompleted(completed);
-
-      } catch (error) {
-        console.error(
-          "Error comprobando onboarding:",
-          error
-        );
-
-        // Si ocurre un error, mostramos el onboarding
-        // por seguridad.
-        setOnboardingCompleted(false);
-
-      } finally {
-        setLoadingOnboarding(false);
-      }
-    };
+      };
 
     checkOnboarding();
   }, []);
 
+  // ==================================================
+  // CALLBACK DEL ONBOARDING
+  // ==================================================
+
+  const handleOnboardingComplete =
+    () => {
+      console.log(
+        "RootNavigator: onboarding completado"
+      );
+
+      setOnboardingCompleted(
+        true
+      );
+    };
 
   // ==================================================
-  // CARGANDO AUTENTICACIÓN / ONBOARDING
+  // CARGANDO
   // ==================================================
 
   if (
@@ -199,21 +243,19 @@ const RootNavigator = () => {
     );
   }
 
-
   // ==================================================
   // ONBOARDING
   // ==================================================
-  //
-  // Esto se evalúa ANTES de isLoggedIn.
-  //
-  // Por lo tanto, si es la primera vez que se abre
-  // la aplicación, se mostrará el onboarding.
-  //
 
   if (!onboardingCompleted) {
-    return <Onboarding />;
+    return (
+      <Onboarding
+        onComplete={
+          handleOnboardingComplete
+        }
+      />
+    );
   }
-
 
   // ==================================================
   // USUARIO NO AUTENTICADO
@@ -223,29 +265,25 @@ const RootNavigator = () => {
     return <AuthStack />;
   }
 
-
   // ==================================================
-  // ACTOR CULTURAL PENDIENTE DE APROBACIÓN
+  // ACTOR CULTURAL PENDIENTE
   // ==================================================
 
   const estaPendiente =
-    role === ROLES.ACTOR_CULTURAL &&
+    role ===
+      ROLES.ACTOR_CULTURAL &&
     estadoVerificacion ===
       ESTADOS_VERIFICACION.PENDIENTE;
 
   if (estaPendiente) {
-    return <PendienteAprobacionScreen />;
+    return (
+      <PendienteAprobacionScreen />
+    );
   }
-
 
   // ==================================================
   // USUARIO AUTENTICADO
   // ==================================================
-  //
-  // Institución no tiene pantallas propias en móvil.
-  // Si alguna vez entra desde el celular, verá
-  // igualmente el drawer principal.
-  //
 
   return <NavigationDrawer />;
 };

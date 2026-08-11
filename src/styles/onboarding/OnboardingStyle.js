@@ -1,13 +1,19 @@
-// src/styles/onboarding/OnboardingStyle.js
-
 import {
   Dimensions,
   StyleSheet,
 } from "react-native";
 
-const { width, height } = Dimensions.get("window");
+const {
+  width,
+  height,
+} = Dimensions.get("window");
 
 const styles = StyleSheet.create({
+  // ==================================================
+  // DIMENSIONES
+  // ==================================================
+
+  screenWidth: width,
 
   // ==================================================
   // CONTENEDOR PRINCIPAL
@@ -24,6 +30,34 @@ const styles = StyleSheet.create({
   },
 
   // ==================================================
+  // CARRUSEL
+  // ==================================================
+
+  slidesContainer: {
+    flexDirection: "row",
+
+    width: width * 4,
+
+    height: "100%",
+  },
+
+  // ==================================================
+  // SLIDE
+  // ==================================================
+
+  slide: {
+    width: width,
+
+    height: "100%",
+
+    position: "relative",
+
+    overflow: "hidden",
+
+    flexShrink: 0,
+  },
+
+  // ==================================================
   // CIELO
   // ==================================================
 
@@ -37,14 +71,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#38BDF8",
   },
 
-  skyGrass: {
-    backgroundColor: "#7DD3FC",
-  },
-
-  skySoil: {
-    backgroundColor: "#7DD3FC",
-  },
-
   // ==================================================
   // BOTÓN SALTAR
   // ==================================================
@@ -55,7 +81,7 @@ const styles = StyleSheet.create({
     top: 45,
     right: 18,
 
-    zIndex: 50,
+    zIndex: 100,
 
     paddingHorizontal: 10,
     paddingVertical: 6,
@@ -66,7 +92,8 @@ const styles = StyleSheet.create({
 
     fontSize: 14,
 
-    color: "rgba(255,255,255,0.9)",
+    color:
+      "rgba(255,255,255,0.9)",
   },
 
   // ==================================================
@@ -83,6 +110,8 @@ const styles = StyleSheet.create({
     height: 100,
 
     zIndex: 5,
+
+    pointerEvents: "none",
   },
 
   cloudRight: {
@@ -97,6 +126,8 @@ const styles = StyleSheet.create({
     opacity: 0.8,
 
     zIndex: 5,
+
+    pointerEvents: "none",
   },
 
   // ==================================================
@@ -114,6 +145,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
 
     zIndex: 40,
+
+    pointerEvents: "none",
   },
 
   title: {
@@ -122,11 +155,13 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
 
     fontSize: 23,
+
     lineHeight: 30,
 
     textAlign: "center",
 
-    textShadowColor: "rgba(0,0,0,0.18)",
+    textShadowColor:
+      "rgba(0,0,0,0.18)",
 
     textShadowOffset: {
       width: 0,
@@ -143,14 +178,17 @@ const styles = StyleSheet.create({
 
     fontFamily: "Inter-Regular",
 
-    color: "rgba(255,255,255,0.94)",
+    color:
+      "rgba(255,255,255,0.94)",
 
     fontSize: 14,
+
     lineHeight: 21,
 
     textAlign: "center",
 
-    textShadowColor: "rgba(0,0,0,0.22)",
+    textShadowColor:
+      "rgba(0,0,0,0.22)",
 
     textShadowOffset: {
       width: 0,
@@ -161,16 +199,11 @@ const styles = StyleSheet.create({
   },
 
   // ==================================================
-  // ILUSTRACIÓN GENERAL
+  // CAPA DE ILUSTRACIONES
+  // ESTA CAPA ESTÁ SOBRE EL FOOTER
   // ==================================================
-  //
-  // Esta capa queda DETRÁS del footer.
-  //
-  // Las imágenes que deben pasar por encima del footer
-  // se renderizan fuera de esta capa.
-  //
 
-  illustration: {
+  illustrationLayer: {
     position: "absolute",
 
     left: 0,
@@ -179,16 +212,9 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
 
-    zIndex: 10,
+    zIndex: 30,
 
     pointerEvents: "none",
-  },
-
-  scene: {
-    width: "100%",
-    height: "100%",
-
-    position: "relative",
   },
 
   // ==================================================
@@ -204,6 +230,8 @@ const styles = StyleSheet.create({
 
     width: "100%",
     height: "130%",
+
+    zIndex: 1,
   },
 
   branch: {
@@ -234,9 +262,6 @@ const styles = StyleSheet.create({
   // SLIDE 2
   // CATEDRAL
   // ==================================================
-  //
-  // La Catedral queda detrás del footer.
-  //
 
   catedral: {
     position: "absolute",
@@ -253,17 +278,17 @@ const styles = StyleSheet.create({
 
   // ==================================================
   // SLIDE 2
-  // BAILARINA SOBRE EL FOOTER
+  // BAILARINA
   // ==================================================
 
   bailarinaAboveFooter: {
     position: "absolute",
 
-    bottom: "-1%",
+    bottom: "-3%",
 
-    right: "10%",
+    right: "6%",
 
-    width: "47%",
+    width: "50%",
     height: "58%",
 
     zIndex: 30,
@@ -273,7 +298,7 @@ const styles = StyleSheet.create({
 
   // ==================================================
   // SLIDE 3
-  // GIGANTONA SOBRE EL FOOTER
+  // GIGANTONA
   // ==================================================
 
   gigantonaAboveFooter: {
@@ -293,13 +318,13 @@ const styles = StyleSheet.create({
 
   // ==================================================
   // SLIDE 4
-  // FLORES SOBRE EL FOOTER
+  // FLOR IZQUIERDA
   // ==================================================
 
   flowerLeftAboveFooter: {
     position: "absolute",
 
-    bottom: "10%",
+    bottom: "8%",
 
     left: 0,
 
@@ -311,17 +336,23 @@ const styles = StyleSheet.create({
     pointerEvents: "none",
   },
 
+  // ==================================================
+  // SLIDE 4
+  // FLOR DERECHA
+  // AHORA TAMBIÉN EN LA ESQUINA INFERIOR IZQUIERDA
+  // ==================================================
+
   flowerRightAboveFooter: {
     position: "absolute",
 
-    bottom: "-10%",
+    bottom: "-9%",
 
-    right: 0,
+    left: "78%",
 
     width: "22%",
     height: "32%",
 
-    zIndex: 30,
+    zIndex: 31,
 
     pointerEvents: "none",
   },
@@ -339,6 +370,50 @@ const styles = StyleSheet.create({
 
     minHeight: height * 0.20,
 
+    zIndex: 20,
+
+    backgroundColor:
+      "transparent",
+  },
+
+  // ==================================================
+  // FOOTER SLIDE 2
+  // ==================================================
+
+  footerEsencia: {
+    backgroundColor: "#7F6742",
+  },
+
+  // ==================================================
+  // FOOTER SLIDE 3
+  // ==================================================
+
+  footerComunidades: {
+    backgroundColor: "#82AA18",
+  },
+
+  // ==================================================
+  // FOOTER SLIDE 4
+  // ==================================================
+
+  footerExperiencia: {
+    backgroundColor: "#7F6742",
+  },
+
+  // ==================================================
+  // CONTROLES DEL FOOTER
+  // SIEMPRE SOBRE EL FOOTER
+  // ==================================================
+
+  footerControls: {
+    position: "absolute",
+
+    left: 0,
+    right: 0,
+    bottom: 0,
+
+    minHeight: height * 0.20,
+
     alignItems: "center",
 
     paddingHorizontal: 28,
@@ -347,37 +422,11 @@ const styles = StyleSheet.create({
 
     paddingBottom: 25,
 
-    zIndex: 20,
-
-    backgroundColor: "transparent",
+    zIndex: 50,
   },
 
   // ==================================================
-  // FOOTER — SLIDE 2
-  // ==================================================
-
-  footerEsencia: {
-    backgroundColor: "#7F6742",
-  },
-
-  // ==================================================
-  // FOOTER — SLIDE 3
-  // ==================================================
-
-  footerComunidades: {
-    backgroundColor: "#82AA18",
-  },
-
-  // ==================================================
-  // FOOTER — SLIDE 4
-  // ==================================================
-
-  footerExperiencia: {
-    backgroundColor: "#7F6742",
-  },
-
-  // ==================================================
-  // INDICADORES
+  // DOTS
   // ==================================================
 
   dots: {
@@ -389,16 +438,18 @@ const styles = StyleSheet.create({
 
     gap: 8,
 
-    marginBottom: 18,
+    marginBottom: 10,
   },
 
   dot: {
     width: 8,
+
     height: 8,
 
     borderRadius: 999,
 
-    backgroundColor: "rgba(255,255,255,0.5)",
+    backgroundColor:
+      "rgba(255,255,255,0.5)",
   },
 
   dotActive: {
@@ -408,7 +459,72 @@ const styles = StyleSheet.create({
   },
 
   // ==================================================
-  // BOTÓN
+  // INDICADOR DESLIZAR
+  // DEBAJO DE LOS DOTS
+  // ==================================================
+
+  swipeHint: {
+    width: "100%",
+
+    height: 34,
+
+    flexDirection: "row",
+
+    alignItems: "center",
+
+    justifyContent: "center",
+
+    marginBottom: 2,
+
+    zIndex: 50,
+
+    pointerEvents: "none",
+  },
+
+  swipeHintArrow: {
+    fontFamily: "Inter-SemiBold",
+
+    fontSize: 24,
+
+    lineHeight: 28,
+
+    color: "#FFFFFF",
+
+    marginRight: 7,
+
+    textShadowColor:
+      "rgba(0,0,0,0.20)",
+
+    textShadowOffset: {
+      width: 0,
+      height: 1,
+    },
+
+    textShadowRadius: 2,
+  },
+
+  swipeHintText: {
+    fontFamily: "Inter-SemiBold",
+
+    fontSize: 13,
+
+    color: "#FFFFFF",
+
+    textAlign: "center",
+
+    textShadowColor:
+      "rgba(0,0,0,0.20)",
+
+    textShadowOffset: {
+      width: 0,
+      height: 1,
+    },
+
+    textShadowRadius: 2,
+  },
+
+  // ==================================================
+  // BOTÓN FINAL
   // ==================================================
 
   buttonWrapper: {
@@ -463,7 +579,6 @@ const styles = StyleSheet.create({
 
     textAlign: "center",
   },
-
 });
 
 export default styles;

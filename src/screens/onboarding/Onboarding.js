@@ -1,9 +1,8 @@
-// src/pages/turista/Onboarding.js
-
 import React, {
   useEffect,
   useRef,
   useState,
+  useCallback,
 } from "react";
 
 import {
@@ -13,9 +12,8 @@ import {
   Pressable,
   Animated,
   Easing,
+  PanResponder,
 } from "react-native";
-
-import { useNavigation } from "@react-navigation/native";
 
 import styles from "../../styles/onboarding/OnboardingStyle";
 
@@ -42,179 +40,423 @@ import nube2 from "../../assets/images/nube-4.png";
 import flor1 from "../../assets/images/flor-1.png";
 import flor2 from "../../assets/images/flor-2.png";
 
-
+// ==================================================
 // SLIDES
+// ==================================================
+
 const SLIDES = [
   {
     id: "bienvenida",
-
     title: "Bienvenid@ a Ruta 505",
-
     subtitle:
       "Explora la cultura viva de Nicaragua junto a Pinolito, tu guía virtual.",
-
-    cta: "Siguiente",
-
-    ground: "sky",
   },
 
   {
     id: "esencia",
-
     title: "Descubre la esencia de Nicaragua",
-
-    cta: "Siguiente",
-
-    ground: "grass",
   },
 
   {
     id: "comunidades",
-
     title: "Conecta con comunidades auténticas",
-
-    cta: "Siguiente",
-
-    ground: "grass",
   },
 
   {
     id: "experiencia",
-
     title: "Tu próxima experiencia comienza aquí",
-
-    cta: "Comenzar",
-
-    ground: "soil",
   },
 ];
 
+const TOTAL_SLIDES = SLIDES.length;
 
-const Onboarding = () => {
+const SWIPE_THRESHOLD = 60;
 
-  const navigation = useNavigation();
+// ==================================================
+// COMPONENTE
+// ==================================================
 
+const Onboarding = ({ onComplete }) => {
   const [step, setStep] = useState(0);
 
-  const slide = SLIDES[step];
+  // ==================================================
+  // CARRUSEL
+  // ==================================================
 
-  const isLast =
-    step === SLIDES.length - 1;
+  const translateX = useRef(
+    new Animated.Value(0)
+  ).current;
 
+  // ==================================================
+  // ANIMACIÓN DEL CONTENIDO
+  // ==================================================
 
-  // ANIMACIONES
-  const fadeAnim =
-    useRef(
-      new Animated.Value(0)
-    ).current;
+  const contentOpacity = useRef(
+    new Animated.Value(1)
+  ).current;
 
-  const translateYAnim =
-    useRef(
-      new Animated.Value(20)
-    ).current;
+  const contentTranslateY = useRef(
+    new Animated.Value(0)
+  ).current;
 
-  const illustrationAnim =
-    useRef(
-      new Animated.Value(0.85)
-    ).current;
+  // ==================================================
+  // ANIMACIÓN "DESLIZA"
+  // ==================================================
 
-  const buttonScale =
-    useRef(
-      new Animated.Value(1)
-    ).current;
+  const swipeHintTranslateX = useRef(
+    new Animated.Value(0)
+  ).current;
 
+  // ==================================================
+  // ANIMACIÓN BOTÓN FINAL
+  // ==================================================
 
+  const buttonScale = useRef(
+    new Animated.Value(1)
+  ).current;
 
-  // ANIMACIÓN DE ENTRADA
-  const animateSlide = () => {
+  // ==================================================
+  // REFERENCIAS
+  // ==================================================
 
-    fadeAnim.setValue(0);
+  const currentStepRef = useRef(0);
 
-    translateYAnim.setValue(20);
+  const isAnimatingRef = useRef(false);
 
-    illustrationAnim.setValue(0.85);
+  // ==================================================
+  // POSICIÓN DEL CARRUSEL
+  // ==================================================
+
+  const setCarouselPosition = useCallback(
+    (index, animated = true) => {
+      const targetX =
+        -index * styles.screenWidth;
+
+      if (!animated) {
+        translateX.setValue(targetX);
+        return;
+      }
+
+      isAnimatingRef.current = true;
+
+      Animated.timing(translateX, {
+        toValue: targetX,
+        duration: 380,
+        easing: Easing.out(
+          Easing.cubic
+        ),
+        useNativeDriver: true,
+      }).start(() => {
+        isAnimatingRef.current = false;
+      });
+    },
+    [translateX]
+  );
+
+  // ==================================================
+  // IR A SLIDE
+  // ==================================================
+
+  const goToSlide = useCallback(
+    (nextIndex) => {
+      if (
+        nextIndex < 0 ||
+        nextIndex >= TOTAL_SLIDES
+      ) {
+        return;
+      }
+
+      if (isAnimatingRef.current) {
+        return;
+      }
+
+      currentStepRef.current =
+        nextIndex;
+
+      setStep(nextIndex);
+
+      setCarouselPosition(
+        nextIndex,
+        true
+      );
+    },
+    [setCarouselPosition]
+  );
+
+  // ==================================================
+  // SIGUIENTE
+  // ==================================================
+
+  const goNext = useCallback(() => {
+    const current =
+      currentStepRef.current;
+
+    if (
+      current >=
+      TOTAL_SLIDES - 1
+    ) {
+      return;
+    }
+
+    goToSlide(current + 1);
+  }, [goToSlide]);
+
+  // ==================================================
+  // ANTERIOR
+  // ==================================================
+
+  const goPrevious = useCallback(() => {
+    const current =
+      currentStepRef.current;
+
+    if (current <= 0) {
+      return;
+    }
+
+    goToSlide(current - 1);
+  }, [goToSlide]);
+
+  // ==================================================
+  // GESTOS
+  // ==================================================
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => {
+        return false;
+      },
+
+      onMoveShouldSetPanResponder: (
+        _,
+        gesture
+      ) => {
+        return (
+          Math.abs(gesture.dx) > 10 &&
+          Math.abs(gesture.dx) >
+            Math.abs(gesture.dy)
+        );
+      },
+
+      onPanResponderGrant: () => {
+        translateX.stopAnimation();
+
+        isAnimatingRef.current = false;
+      },
+
+      onPanResponderMove: (
+        _,
+        gesture
+      ) => {
+        const current =
+          -currentStepRef.current *
+          styles.screenWidth;
+
+        let position =
+          current + gesture.dx;
+
+        // ------------------------------------------
+        // RESISTENCIA AL PRINCIPIO
+        // ------------------------------------------
+
+        if (
+          currentStepRef.current === 0 &&
+          gesture.dx > 0
+        ) {
+          position =
+            current +
+            gesture.dx * 0.25;
+        }
+
+        // ------------------------------------------
+        // RESISTENCIA AL FINAL
+        // ------------------------------------------
+
+        if (
+          currentStepRef.current ===
+            TOTAL_SLIDES - 1 &&
+          gesture.dx < 0
+        ) {
+          position =
+            current +
+            gesture.dx * 0.25;
+        }
+
+        translateX.setValue(position);
+      },
+
+      onPanResponderRelease: (
+        _,
+        gesture
+      ) => {
+        const dx = gesture.dx;
+
+        const current =
+          currentStepRef.current;
+
+        // ------------------------------------------
+        // DESLIZAR HACIA IZQUIERDA
+        // ------------------------------------------
+
+        if (
+          dx < -SWIPE_THRESHOLD &&
+          current <
+            TOTAL_SLIDES - 1
+        ) {
+          goNext();
+          return;
+        }
+
+        // ------------------------------------------
+        // DESLIZAR HACIA DERECHA
+        // ------------------------------------------
+
+        if (
+          dx > SWIPE_THRESHOLD &&
+          current > 0
+        ) {
+          goPrevious();
+          return;
+        }
+
+        // ------------------------------------------
+        // NO COMPLETÓ EL SWIPE
+        // ------------------------------------------
+
+        setCarouselPosition(
+          current,
+          true
+        );
+      },
+
+      onPanResponderTerminate: () => {
+        setCarouselPosition(
+          currentStepRef.current,
+          true
+        );
+      },
+    })
+  ).current;
+
+  // ==================================================
+  // ANIMACIÓN DEL CONTENIDO
+  // ==================================================
+
+  useEffect(() => {
+    contentOpacity.setValue(0);
+
+    contentTranslateY.setValue(10);
 
     Animated.parallel([
-
       Animated.timing(
-        fadeAnim,
+        contentOpacity,
         {
           toValue: 1,
-
-          duration: 500,
-
-          easing:
-            Easing.out(
-              Easing.ease
-            ),
-
+          duration: 220,
+          easing: Easing.out(
+            Easing.ease
+          ),
           useNativeDriver: true,
         }
       ),
 
       Animated.timing(
-        translateYAnim,
+        contentTranslateY,
         {
           toValue: 0,
-
-          duration: 500,
-
-          easing:
-            Easing.out(
-              Easing.ease
-            ),
-
+          duration: 260,
+          easing: Easing.out(
+            Easing.ease
+          ),
           useNativeDriver: true,
         }
       ),
-
-      Animated.spring(
-        illustrationAnim,
-        {
-          toValue: 1,
-
-          friction: 7,
-
-          tension: 50,
-
-          useNativeDriver: true,
-        }
-      ),
-
     ]).start();
-  };
-
-
-  useEffect(() => {
-
-    animateSlide();
-
-  }, [step]);
-
+  }, [
+    step,
+    contentOpacity,
+    contentTranslateY,
+  ]);
 
   // ==================================================
-  // ANIMACIÓN DEL BOTÓN
+  // ANIMACIÓN "DESLIZA"
   // ==================================================
 
   useEffect(() => {
+    if (step !== 0) {
+      swipeHintTranslateX.setValue(0);
+      return;
+    }
 
-    const pulse =
+    swipeHintTranslateX.setValue(0);
+
+    const animation =
       Animated.loop(
-
         Animated.sequence([
-
           Animated.timing(
-            buttonScale,
+            swipeHintTranslateX,
             {
-              toValue: 1.04,
-
-              duration: 1000,
-
+              toValue: 18,
+              duration: 650,
               easing:
                 Easing.inOut(
                   Easing.ease
                 ),
+              useNativeDriver: true,
+            }
+          ),
 
+          Animated.timing(
+            swipeHintTranslateX,
+            {
+              toValue: 0,
+              duration: 650,
+              easing:
+                Easing.inOut(
+                  Easing.ease
+                ),
+              useNativeDriver: true,
+            }
+          ),
+        ])
+      );
+
+    animation.start();
+
+    return () => {
+      animation.stop();
+
+      swipeHintTranslateX.setValue(0);
+    };
+  }, [
+    step,
+    swipeHintTranslateX,
+  ]);
+
+  // ==================================================
+  // ANIMACIÓN BOTÓN FINAL
+  // ==================================================
+
+  useEffect(() => {
+    if (
+      step !==
+      TOTAL_SLIDES - 1
+    ) {
+      buttonScale.setValue(1);
+      return;
+    }
+
+    const pulse =
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(
+            buttonScale,
+            {
+              toValue: 1.03,
+              duration: 900,
+              easing:
+                Easing.inOut(
+                  Easing.ease
+                ),
               useNativeDriver: true,
             }
           ),
@@ -223,18 +465,14 @@ const Onboarding = () => {
             buttonScale,
             {
               toValue: 1,
-
-              duration: 1000,
-
+              duration: 900,
               easing:
                 Easing.inOut(
                   Easing.ease
                 ),
-
               useNativeDriver: true,
             }
           ),
-
         ])
       );
 
@@ -242,98 +480,150 @@ const Onboarding = () => {
 
     return () => {
       pulse.stop();
+      buttonScale.setValue(1);
     };
-
-  }, []);
-
+  }, [
+    step,
+    buttonScale,
+  ]);
 
   // ==================================================
   // FINALIZAR ONBOARDING
   // ==================================================
 
   const finish = async () => {
+    if (isAnimatingRef.current) {
+      return;
+    }
+
+    isAnimatingRef.current = true;
 
     try {
+      console.log(
+        "Guardando onboarding..."
+      );
 
       await completeOnboarding();
 
-      navigation.replace("Login");
+      console.log(
+        "Onboarding completado correctamente"
+      );
 
+      console.log(
+        "onComplete existe:",
+        typeof onComplete
+      );
+
+      if (
+        typeof onComplete ===
+        "function"
+      ) {
+        console.log(
+          "Ejecutando onComplete..."
+        );
+
+        onComplete();
+      } else {
+        console.error(
+          "ERROR: onComplete NO fue recibido por Onboarding"
+        );
+      }
     } catch (error) {
-
       console.error(
         "Error completando onboarding:",
         error
       );
 
-      navigation.replace("Login");
+      // Incluso si falla AsyncStorage,
+      // permitimos continuar.
+      if (
+        typeof onComplete ===
+        "function"
+      ) {
+        onComplete();
+      }
+    } finally {
+      isAnimatingRef.current = false;
     }
   };
 
-
   // ==================================================
-  // SALTAR
+  // SALTAR ONBOARDING
   // ==================================================
 
   const skip = async () => {
+    if (isAnimatingRef.current) {
+      return;
+    }
+
+    isAnimatingRef.current = true;
 
     try {
+      console.log(
+        "Guardando onboarding al saltar..."
+      );
 
       await completeOnboarding();
 
-      navigation.replace("Login");
+      console.log(
+        "Onboarding saltado correctamente"
+      );
 
+      console.log(
+        "onComplete existe:",
+        typeof onComplete
+      );
+
+      if (
+        typeof onComplete ===
+        "function"
+      ) {
+        console.log(
+          "Ejecutando onComplete..."
+        );
+
+        onComplete();
+      } else {
+        console.error(
+          "ERROR: onComplete NO fue recibido por Onboarding"
+        );
+      }
     } catch (error) {
-
       console.error(
         "Error guardando onboarding:",
         error
       );
 
-      navigation.replace("Login");
+      if (
+        typeof onComplete ===
+        "function"
+      ) {
+        onComplete();
+      }
+    } finally {
+      isAnimatingRef.current = false;
     }
   };
 
-
   // ==================================================
-  // SIGUIENTE
-  // ==================================================
-
-  const handleNext = () => {
-
-    if (isLast) {
-
-      finish();
-
-      return;
-    }
-
-    setStep(
-      (current) =>
-        current + 1
-    );
-  };
-
-
-  // ==================================================
-  // ILUSTRACIONES QUE VAN DETRÁS
+  // ILUSTRACIONES
   // ==================================================
 
-  const renderIllustration = () => {
-
+  const renderIllustration = (
+    slide
+  ) => {
     switch (slide.id) {
-
       // ==============================================
       // SLIDE 1
       // ==============================================
 
       case "bienvenida":
-
         return (
-          <View style={styles.scene}>
-
+          <>
             <Image
-              source={escenaBienvenida}
+              source={
+                escenaBienvenida
+              }
               style={
                 styles.welcomeBackground
               }
@@ -342,7 +632,9 @@ const Onboarding = () => {
 
             <Image
               source={rama}
-              style={styles.branch}
+              style={
+                styles.branch
+              }
               resizeMode="contain"
             />
 
@@ -353,186 +645,78 @@ const Onboarding = () => {
               }
               resizeMode="contain"
             />
-
-          </View>
+          </>
         );
-
 
       // ==============================================
       // SLIDE 2
       // ==============================================
 
       case "esencia":
-
         return (
-          <View style={styles.scene}>
-
+          <>
             <Image
               source={catedral}
-              style={styles.catedral}
+              style={
+                styles.catedral
+              }
               resizeMode="contain"
             />
 
-          </View>
+            <Image
+              source={bailarina}
+              style={
+                styles.bailarinaAboveFooter
+              }
+              resizeMode="contain"
+            />
+          </>
         );
-
 
       // ==============================================
       // SLIDE 3
       // ==============================================
 
       case "comunidades":
-
         return (
-          <View style={styles.scene} />
+          <Image
+            source={gigantona}
+            style={
+              styles.gigantonaAboveFooter
+            }
+            resizeMode="contain"
+          />
         );
-
 
       // ==============================================
       // SLIDE 4
       // ==============================================
 
       case "experiencia":
-
-        return (
-          <View style={styles.scene} />
-        );
-
-
-      default:
-
-        return null;
-    }
-  };
-
-
-  // ==================================================
-  // IMÁGENES SOBRE EL FOOTER
-  // ==================================================
-
-  const renderAboveFooterIllustration = () => {
-
-    switch (slide.id) {
-
-      // ==============================================
-      // SLIDE 2 — BAILARINA
-      // ==============================================
-
-      case "esencia":
-
-        return (
-          <Animated.Image
-            source={bailarina}
-
-            style={[
-              styles.bailarinaAboveFooter,
-
-              {
-                opacity: fadeAnim,
-
-                transform: [
-                  {
-                    scale:
-                      illustrationAnim,
-                  },
-                ],
-              },
-            ]}
-
-            resizeMode="contain"
-          />
-        );
-
-
-      // ==============================================
-      // SLIDE 3 — GIGANTONA
-      // ==============================================
-
-      case "comunidades":
-
-        return (
-          <Animated.Image
-            source={gigantona}
-
-            style={[
-              styles.gigantonaAboveFooter,
-
-              {
-                opacity: fadeAnim,
-
-                transform: [
-                  {
-                    scale:
-                      illustrationAnim,
-                  },
-                ],
-              },
-            ]}
-
-            resizeMode="contain"
-          />
-        );
-
-
-      // ==============================================
-      // SLIDE 4 — FLORES
-      // ==============================================
-
-      case "experiencia":
-
         return (
           <>
-            <Animated.Image
+            <Image
               source={flor1}
-
-              style={[
-                styles.flowerLeftAboveFooter,
-
-                {
-                  opacity: fadeAnim,
-
-                  transform: [
-                    {
-                      scale:
-                        illustrationAnim,
-                    },
-                  ],
-                },
-              ]}
-
+              style={
+                styles.flowerLeftAboveFooter
+              }
               resizeMode="contain"
             />
 
-            <Animated.Image
+            <Image
               source={flor2}
-
-              style={[
-                styles.flowerRightAboveFooter,
-
-                {
-                  opacity: fadeAnim,
-
-                  transform: [
-                    {
-                      scale:
-                        illustrationAnim,
-                    },
-                  ],
-                },
-              ]}
-
+              style={
+                styles.flowerRightAboveFooter
+              }
               resizeMode="contain"
             />
           </>
         );
 
-
       default:
-
         return null;
     }
   };
-
 
   // ==================================================
   // RENDER
@@ -541,258 +725,299 @@ const Onboarding = () => {
   return (
     <View
       style={styles.container}
+      {...panResponder.panHandlers}
     >
-
       {/* ==================================================
-          ESCENA PRINCIPAL
+          CARRUSEL
           ================================================== */}
 
-      <View
+      <Animated.View
         style={[
-          styles.sky,
-
-          slide.ground === "grass" &&
-            styles.skyGrass,
-
-          slide.ground === "soil" &&
-            styles.skySoil,
+          styles.slidesContainer,
+          {
+            transform: [
+              {
+                translateX,
+              },
+            ],
+          },
         ]}
       >
+        {SLIDES.map(
+          (slide, index) => {
+            const isFirst =
+              index === 0;
 
-        {/* ==============================================
-            NUBE IZQUIERDA
-            ============================================== */}
+            const isLast =
+              index ===
+              TOTAL_SLIDES - 1;
 
-        <Animated.Image
-          source={nube1}
-
-          style={[
-            styles.cloudLeft,
-
-            {
-              opacity: fadeAnim,
-            },
-          ]}
-
-          resizeMode="contain"
-        />
-
-
-        {/* ==============================================
-            NUBE DERECHA
-            ============================================== */}
-
-        <Animated.Image
-          source={nube2}
-
-          style={[
-            styles.cloudRight,
-
-            {
-              opacity: fadeAnim,
-            },
-          ]}
-
-          resizeMode="contain"
-        />
-
-
-        {/* ==============================================
-            BOTÓN SALTAR
-            ============================================== */}
-
-        <Pressable
-          onPress={skip}
-
-          style={
-            styles.skipButton
-          }
-
-          android_ripple={{
-            color:
-              "rgba(255,255,255,0.15)",
-          }}
-        >
-
-          <Text
-            style={
-              styles.skipText
-            }
-          >
-            Saltar
-          </Text>
-
-        </Pressable>
-
-
-        {/* ==============================================
-            TÍTULO
-            ============================================== */}
-
-        <Animated.View
-          style={[
-            styles.titleContainer,
-
-            {
-              opacity: fadeAnim,
-
-              transform: [
-                {
-                  translateY:
-                    translateYAnim,
-                },
-              ],
-            },
-          ]}
-        >
-
-          <Text
-            style={styles.title}
-          >
-            {slide.title}
-          </Text>
-
-          <Text
-            style={styles.subtitle}
-          >
-            {slide.subtitle}
-          </Text>
-
-        </Animated.View>
-
-
-        {/* ==============================================
-            ILUSTRACIONES DETRÁS DEL FOOTER
-            ============================================== */}
-
-        <Animated.View
-          style={[
-            styles.illustration,
-
-            {
-              opacity: fadeAnim,
-
-              transform: [
-                {
-                  scale:
-                    illustrationAnim,
-                },
-              ],
-            },
-          ]}
-        >
-
-          {renderIllustration()}
-
-        </Animated.View>
-
-      </View>
-
-
-      {/* ==================================================
-          FOOTER
-          ================================================== */}
-
-      <View
-        style={[
-          styles.footer,
-
-          // Slide 2
-          slide.id === "esencia" &&
-            styles.footerEsencia,
-
-          // Slide 3
-          slide.id === "comunidades" &&
-            styles.footerComunidades,
-
-          // Slide 4
-          slide.id === "experiencia" &&
-            styles.footerExperiencia,
-        ]}
-      >
-
-        {/* ==============================================
-            INDICADORES
-            ============================================== */}
-
-        <View
-          style={styles.dots}
-        >
-
-          {SLIDES.map(
-            (item, index) => (
-
+            return (
               <View
-                key={item.id}
+                key={slide.id}
+                style={
+                  styles.slide
+                }
+              >
+                {/* ==========================================
+                    CIELO
+                    ========================================== */}
 
-                style={[
-                  styles.dot,
+                <View
+                  style={
+                    styles.sky
+                  }
+                >
+                  {/* ========================================
+                      NUBES
+                      ======================================== */}
 
-                  index === step &&
-                    styles.dotActive,
-                ]}
-              />
+                  <Image
+                    source={nube1}
+                    style={
+                      styles.cloudLeft
+                    }
+                    resizeMode="contain"
+                  />
 
-            )
-          )}
+                  <Image
+                    source={nube2}
+                    style={
+                      styles.cloudRight
+                    }
+                    resizeMode="contain"
+                  />
 
-        </View>
+                  {/* ========================================
+                      TÍTULO
+                      ======================================== */}
 
+                  <Animated.View
+                    style={[
+                      styles.titleContainer,
 
-        {/* ==============================================
-            BOTÓN CTA
-            ============================================== */}
+                      index === step
+                        ? {
+                            opacity:
+                              contentOpacity,
 
-        <Animated.View
-          style={[
-            styles.buttonWrapper,
+                            transform: [
+                              {
+                                translateY:
+                                  contentTranslateY,
+                              },
+                            ],
+                          }
+                        : {
+                            opacity: 1,
+                          },
+                    ]}
+                  >
+                    <Text
+                      style={
+                        styles.title
+                      }
+                    >
+                      {
+                        slide.title
+                      }
+                    </Text>
 
-            {
-              transform: [
-                {
-                  scale:
-                    buttonScale,
-                },
-              ],
-            },
-          ]}
-        >
+                    {slide.subtitle && (
+                      <Text
+                        style={
+                          styles.subtitle
+                        }
+                      >
+                        {
+                          slide.subtitle
+                        }
+                      </Text>
+                    )}
+                  </Animated.View>
 
-          <Pressable
-            onPress={handleNext}
+                  {/* ========================================
+                      ILUSTRACIONES
+                      ======================================== */}
 
-            style={({
-              pressed,
-            }) => [
+                  <View
+                    style={
+                      styles.illustrationLayer
+                    }
+                  >
+                    {renderIllustration(
+                      slide
+                    )}
+                  </View>
 
-              styles.cta,
+                  {/* ========================================
+                      FOOTER
+                      ======================================== */}
 
-              pressed &&
-                styles.ctaPressed,
-            ]}
-          >
+                  <View
+                    style={[
+                      styles.footer,
 
-            <Text
-              style={
-                styles.ctaText
-              }
-            >
-              {slide.cta}
-            </Text>
+                      index === 1 &&
+                        styles.footerEsencia,
 
-          </Pressable>
+                      index === 2 &&
+                        styles.footerComunidades,
 
-        </Animated.View>
+                      index === 3 &&
+                        styles.footerExperiencia,
+                    ]}
+                  />
 
-      </View>
+                  {/* ========================================
+                      CONTROLES
+                      ======================================== */}
 
+                  <View
+                    style={
+                      styles.footerControls
+                    }
+                  >
+                    {/* ======================================
+                        DOTS
+                        ====================================== */}
+
+                    <View
+                      style={
+                        styles.dots
+                      }
+                    >
+                      {SLIDES.map(
+                        (
+                          item,
+                          dotIndex
+                        ) => (
+                          <View
+                            key={
+                              item.id
+                            }
+                            style={[
+                              styles.dot,
+
+                              dotIndex ===
+                                index &&
+                                styles.dotActive,
+                            ]}
+                          />
+                        )
+                      )}
+                    </View>
+
+                    {/* ======================================
+                        INDICACIÓN DESLIZAR
+                        ====================================== */}
+
+                    {isFirst && (
+                      <Animated.View
+                        style={[
+                          styles.swipeHint,
+
+                          {
+                            transform: [
+                              {
+                                translateX:
+                                  swipeHintTranslateX,
+                              },
+                            ],
+                          },
+                        ]}
+                      >
+                        <Text
+                          style={
+                            styles.swipeHintArrow
+                          }
+                        >
+                          →
+                        </Text>
+
+                        <Text
+                          style={
+                            styles.swipeHintText
+                          }
+                        >
+                          Desliza para
+                          continuar
+                        </Text>
+                      </Animated.View>
+                    )}
+
+                    {/* ======================================
+                        BOTÓN FINAL
+                        ====================================== */}
+
+                    {isLast && (
+                      <Animated.View
+                        style={[
+                          styles.buttonWrapper,
+
+                          {
+                            transform: [
+                              {
+                                scale:
+                                  buttonScale,
+                              },
+                            ],
+                          },
+                        ]}
+                      >
+                        <Pressable
+                          onPress={
+                            finish
+                          }
+                          style={({
+                            pressed,
+                          }) => [
+                            styles.cta,
+
+                            pressed &&
+                              styles.ctaPressed,
+                          ]}
+                        >
+                          <Text
+                            style={
+                              styles.ctaText
+                            }
+                          >
+                            Comenzar
+                          </Text>
+                        </Pressable>
+                      </Animated.View>
+                    )}
+                  </View>
+                </View>
+              </View>
+            );
+          }
+        )}
+      </Animated.View>
 
       {/* ==================================================
-          IMÁGENES QUE DEBEN PASAR SOBRE EL FOOTER
+          BOTÓN SALTAR
           ================================================== */}
 
-      {renderAboveFooterIllustration()}
-
+      <Pressable
+        onPress={skip}
+        style={
+          styles.skipButton
+        }
+        android_ripple={{
+          color:
+            "rgba(255,255,255,0.15)",
+        }}
+      >
+        <Text
+          style={
+            styles.skipText
+          }
+        >
+          Saltar
+        </Text>
+      </Pressable>
     </View>
   );
 };
