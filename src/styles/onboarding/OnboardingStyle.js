@@ -24,7 +24,7 @@ const styles = StyleSheet.create({
 
     position: "relative",
 
-    backgroundColor: "#38BDF8",
+    backgroundColor: "#1E97E8",
 
     overflow: "hidden",
   },
@@ -68,7 +68,25 @@ const styles = StyleSheet.create({
 
     overflow: "hidden",
 
-    backgroundColor: "#38BDF8",
+    backgroundColor: "#1E97E8",
+  },
+
+  // ==================================================
+  // FONDO DE CIELO (imagen degradada)
+  // ==================================================
+
+  skyBackground: {
+    position: "absolute",
+
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+
+    width: "100%",
+    height: "100%",
+
+    zIndex: 1,
   },
 
   // ==================================================
@@ -83,8 +101,11 @@ const styles = StyleSheet.create({
 
     zIndex: 100,
 
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   skipText: {
@@ -94,36 +115,78 @@ const styles = StyleSheet.create({
 
     color:
       "rgba(255,255,255,0.9)",
+
+    flexShrink: 0,
+
+    includeFontPadding: false,
   },
 
   // ==================================================
   // NUBES
   // ==================================================
 
-  cloudLeft: {
+  cloudTopLeft: {
     position: "absolute",
 
-    top: 15,
-    left: -5,
+    top: "0%",
+    left: "-8%",
 
-    width: width * 0.55,
-    height: 100,
+    width: "68%",
+    height: "18%",
 
     zIndex: 5,
 
     pointerEvents: "none",
   },
 
-  cloudRight: {
+  cloudTopRight: {
     position: "absolute",
 
-    top: 110,
-    right: -5,
+    top: "3%",
+    right: "-8%",
 
-    width: width * 0.42,
-    height: 90,
+    width: "68%",
+    height: "18%",
 
-    opacity: 0.8,
+    zIndex: 5,
+
+    transform: [
+      { scaleX: -1 },
+    ],
+
+    pointerEvents: "none",
+  },
+
+  cloudMidRight: {
+    position: "absolute",
+
+    top: "31%",
+    right: "-10%",
+
+    width: "50%",
+    height: "9%",
+
+    opacity: 0.92,
+
+    zIndex: 5,
+
+    transform: [
+      { scaleX: -1 },
+    ],
+
+    pointerEvents: "none",
+  },
+
+  cloudLowerLeft: {
+    position: "absolute",
+
+    top: "35%",
+    left: "-12%",
+
+    width: "50%",
+    height: "9%",
+
+    opacity: 0.85,
 
     zIndex: 5,
 
@@ -137,7 +200,7 @@ const styles = StyleSheet.create({
   titleContainer: {
     position: "absolute",
 
-    top: 180,
+    top: 135,
 
     left: 24,
     right: 24,
@@ -154,9 +217,9 @@ const styles = StyleSheet.create({
 
     color: "#FFFFFF",
 
-    fontSize: 23,
+    fontSize: 35,
 
-    lineHeight: 30,
+    lineHeight: 48,
 
     textAlign: "center",
 
@@ -218,147 +281,85 @@ const styles = StyleSheet.create({
   },
 
   // ==================================================
-  // SLIDE 1
+  // PINOLITO — SLIDE 1: BIENVENIDA
   // ==================================================
 
-  welcomeBackground: {
+  pinolitoBienvenida: {
     position: "absolute",
 
-    left: 0,
-    right: 0,
-    bottom: 0,
-
-    width: "100%",
-    height: "130%",
-
-    zIndex: 1,
-  },
-
-  branch: {
-    position: "absolute",
-
-    bottom: "-1%",
-    left: "-1%",
-
-    width: "72%",
-    height: "50%",
-
-    zIndex: 10,
-  },
-
-  pinolito: {
-    position: "absolute",
-
-    bottom: "10%",
-    left: "7%",
-
-    width: "47%",
-    height: "52%",
-
-    zIndex: 20,
-  },
-
-  // ==================================================
-  // SLIDE 2
-  // CATEDRAL
-  // ==================================================
-
-  catedral: {
-    position: "absolute",
-
-    bottom: "-6%",
+    bottom: "0.4%",
 
     alignSelf: "center",
 
-    width: "102%",
-    height: "100%",
+    width: "84%",
+    height: "68%",
 
-    zIndex: 10,
-  },
-
-  // ==================================================
-  // SLIDE 2
-  // BAILARINA
-  // ==================================================
-
-  bailarinaAboveFooter: {
-    position: "absolute",
-
-    bottom: "-3%",
-
-    right: "6%",
-
-    width: "50%",
-    height: "58%",
+    marginLeft: "10%",
 
     zIndex: 30,
-
-    pointerEvents: "none",
   },
 
   // ==================================================
-  // SLIDE 3
-  // GIGANTONA
+  // PINOLITO — SLIDE 2: ESENCIA
   // ==================================================
 
-  gigantonaAboveFooter: {
+  pinolitoEsencia: {
     position: "absolute",
 
-    bottom: "-9%",
+    bottom: "3%",
 
-    left: "-1%",
+    alignSelf: "center",
 
-    width: "62%",
-    height: "100%",
+    width: "84%",
+    height: "68%",
+
+    marginRight: "10%",
 
     zIndex: 30,
-
-    pointerEvents: "none",
   },
 
   // ==================================================
-  // SLIDE 4
-  // FLOR IZQUIERDA
+  // PINOLITO — SLIDE 3: COMUNIDADES
+  // (lleva íconos flotando arriba, necesita otra posición)
   // ==================================================
 
-  flowerLeftAboveFooter: {
+  pinolitoComunidades: {
     position: "absolute",
 
-    bottom: "8%",
+    bottom: "7.5%",
 
-    left: 0,
+    alignSelf: "center",
 
-    width: "32%",
-    height: "32%",
+    width: "84%",
+    height: "68%",
+
+    marginLeft: "10%",
 
     zIndex: 30,
-
-    pointerEvents: "none",
   },
 
   // ==================================================
-  // SLIDE 4
-  // FLOR DERECHA
-  // AHORA TAMBIÉN EN LA ESQUINA INFERIOR IZQUIERDA
+  // PINOLITO — SLIDE 4: EXPERIENCIA
   // ==================================================
 
-  flowerRightAboveFooter: {
+  pinolitoExperiencia: {
     position: "absolute",
 
-    bottom: "-9%",
+    bottom: "1%",
 
-    left: "78%",
+    alignSelf: "center",
 
-    width: "22%",
-    height: "32%",
+    width: "84%",
+    height: "68%",
 
-    zIndex: 31,
+    marginRight: "3%",
 
-    pointerEvents: "none",
+    zIndex: 30,
   },
 
   // ==================================================
-  // FOOTER
+  // FOOTER / SUELO
+  // MISMO VERDE EN LAS 4 PANTALLAS
   // ==================================================
 
   footer: {
@@ -372,32 +373,7 @@ const styles = StyleSheet.create({
 
     zIndex: 20,
 
-    backgroundColor:
-      "transparent",
-  },
-
-  // ==================================================
-  // FOOTER SLIDE 2
-  // ==================================================
-
-  footerEsencia: {
-    backgroundColor: "#7F6742",
-  },
-
-  // ==================================================
-  // FOOTER SLIDE 3
-  // ==================================================
-
-  footerComunidades: {
     backgroundColor: "#82AA18",
-  },
-
-  // ==================================================
-  // FOOTER SLIDE 4
-  // ==================================================
-
-  footerExperiencia: {
-    backgroundColor: "#7F6742",
   },
 
   // ==================================================
@@ -438,7 +414,9 @@ const styles = StyleSheet.create({
 
     gap: 8,
 
-    marginBottom: 10,
+    marginTop: "7%",
+
+    marginBottom: "5%",
   },
 
   dot: {
@@ -536,7 +514,7 @@ const styles = StyleSheet.create({
   cta: {
     width: "100%",
 
-    maxWidth: 320,
+    maxWidth: "50%",
 
     height: 52,
 
@@ -546,7 +524,7 @@ const styles = StyleSheet.create({
 
     justifyContent: "center",
 
-    backgroundColor: "#F5A623",
+    backgroundColor: "#065F33",
 
     shadowColor: "#000",
 

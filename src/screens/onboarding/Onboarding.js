@@ -25,20 +25,13 @@ import {
 // IMÁGENES
 // ==================================================
 
-import pinolito from "../../assets/images/pinolito.png";
-import rama from "../../assets/images/rama-pinolito.png";
-import escenaBienvenida from "../../assets/images/escena-bienvenida.png";
+import cieloFondo from "../../assets/images/Fondo cielo.png";
+import nubeDecorativa from "../../assets/images/Nube.png";
 
-import catedral from "../../assets/images/catedral.png";
-import bailarina from "../../assets/images/bailarina.png";
-
-import gigantona from "../../assets/images/gigantona.png";
-
-import nube1 from "../../assets/images/nube-3.png";
-import nube2 from "../../assets/images/nube-4.png";
-
-import flor1 from "../../assets/images/flor-1.png";
-import flor2 from "../../assets/images/flor-2.png";
+import pinolitoBienvenida from "../../assets/images/Pinolito 1.png";
+import pinolitoEsencia from "../../assets/images/Pinolito 2.png";
+import pinolitoComunidades from "../../assets/images/Pinolito 3.png";
+import pinolitoExperiencia from "../../assets/images/Pinolito 4.png";
 
 // ==================================================
 // SLIDES
@@ -607,6 +600,7 @@ const Onboarding = ({ onComplete }) => {
 
   // ==================================================
   // ILUSTRACIONES
+  // Una sola pose de Pinolito por pantalla
   // ==================================================
 
   const renderIllustration = (
@@ -614,100 +608,162 @@ const Onboarding = ({ onComplete }) => {
   ) => {
     switch (slide.id) {
       // ==============================================
-      // SLIDE 1
+      // SLIDE 1 — Bienvenida
       // ==============================================
 
       case "bienvenida":
         return (
-          <>
-            <Image
-              source={
-                escenaBienvenida
-              }
-              style={
-                styles.welcomeBackground
-              }
-              resizeMode="cover"
-            />
-
-            <Image
-              source={rama}
-              style={
-                styles.branch
-              }
-              resizeMode="contain"
-            />
-
-            <Image
-              source={pinolito}
-              style={
-                styles.pinolito
-              }
-              resizeMode="contain"
-            />
-          </>
-        );
-
-      // ==============================================
-      // SLIDE 2
-      // ==============================================
-
-      case "esencia":
-        return (
-          <>
-            <Image
-              source={catedral}
-              style={
-                styles.catedral
-              }
-              resizeMode="contain"
-            />
-
-            <Image
-              source={bailarina}
-              style={
-                styles.bailarinaAboveFooter
-              }
-              resizeMode="contain"
-            />
-          </>
-        );
-
-      // ==============================================
-      // SLIDE 3
-      // ==============================================
-
-      case "comunidades":
-        return (
           <Image
-            source={gigantona}
+            source={
+              pinolitoBienvenida
+            }
             style={
-              styles.gigantonaAboveFooter
+              styles.pinolitoBienvenida
             }
             resizeMode="contain"
           />
         );
 
       // ==============================================
-      // SLIDE 4
+      // SLIDE 2 — Esencia (mochila + mapa)
+      // ==============================================
+
+      case "esencia":
+        return (
+          <Image
+            source={
+              pinolitoEsencia
+            }
+            style={
+              styles.pinolitoEsencia
+            }
+            resizeMode="contain"
+          />
+        );
+
+      // ==============================================
+      // SLIDE 3 — Comunidades (íconos culturales)
+      // ==============================================
+
+      case "comunidades":
+        return (
+          <Image
+            source={
+              pinolitoComunidades
+            }
+            style={
+              styles.pinolitoComunidades
+            }
+            resizeMode="contain"
+          />
+        );
+
+      // ==============================================
+      // SLIDE 4 — Experiencia (destellos)
+      // ==============================================
+
+      case "experiencia":
+        return (
+          <Image
+            source={
+              pinolitoExperiencia
+            }
+            style={
+              styles.pinolitoExperiencia
+            }
+            resizeMode="contain"
+          />
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  // ==================================================
+  // NUBES
+  // Combinación distinta de nubes por pantalla
+  // ==================================================
+
+  const renderClouds = (slide) => {
+    switch (slide.id) {
+      // ==============================================
+      // SLIDE 1 — Bienvenida (3 nubes)
+      // ==============================================
+
+      case "bienvenida":
+        return (
+          <>
+            <Image
+              source={nubeDecorativa}
+              style={styles.cloudTopLeft}
+              resizeMode="contain"
+            />
+
+            <Image
+              source={nubeDecorativa}
+              style={styles.cloudMidRight}
+              resizeMode="contain"
+            />
+
+            <Image
+              source={nubeDecorativa}
+              style={styles.cloudLowerLeft}
+              resizeMode="contain"
+            />
+          </>
+        );
+
+      // ==============================================
+      // SLIDE 2 — Esencia (top-izquierda + derecha)
+      // ==============================================
+
+      case "esencia":
+        return (
+          <>
+            <Image
+              source={nubeDecorativa}
+              style={styles.cloudTopLeft}
+              resizeMode="contain"
+            />
+
+            <Image
+              source={nubeDecorativa}
+              style={styles.cloudMidRight}
+              resizeMode="contain"
+            />
+          </>
+        );
+
+      // ==============================================
+      // SLIDE 3 — Comunidades (solo top-derecha)
+      // ==============================================
+
+      case "comunidades":
+        return (
+          <Image
+            source={nubeDecorativa}
+            style={styles.cloudTopRight}
+            resizeMode="contain"
+          />
+        );
+
+      // ==============================================
+      // SLIDE 4 — Experiencia (top-derecha + baja-izquierda)
       // ==============================================
 
       case "experiencia":
         return (
           <>
             <Image
-              source={flor1}
-              style={
-                styles.flowerLeftAboveFooter
-              }
+              source={nubeDecorativa}
+              style={styles.cloudTopRight}
               resizeMode="contain"
             />
 
             <Image
-              source={flor2}
-              style={
-                styles.flowerRightAboveFooter
-              }
+              source={nubeDecorativa}
+              style={styles.cloudLowerLeft}
               resizeMode="contain"
             />
           </>
@@ -769,24 +825,24 @@ const Onboarding = ({ onComplete }) => {
                   }
                 >
                   {/* ========================================
-                      NUBES
+                      FONDO DE CIELO
                       ======================================== */}
 
                   <Image
-                    source={nube1}
-                    style={
-                      styles.cloudLeft
+                    source={
+                      cieloFondo
                     }
-                    resizeMode="contain"
+                    style={
+                      styles.skyBackground
+                    }
+                    resizeMode="cover"
                   />
 
-                  <Image
-                    source={nube2}
-                    style={
-                      styles.cloudRight
-                    }
-                    resizeMode="contain"
-                  />
+                  {/* ========================================
+                      NUBES
+                      ======================================== */}
+
+                  {renderClouds(slide)}
 
                   {/* ========================================
                       TÍTULO
@@ -851,22 +907,13 @@ const Onboarding = ({ onComplete }) => {
                   </View>
 
                   {/* ========================================
-                      FOOTER
+                      FOOTER (suelo)
                       ======================================== */}
 
                   <View
-                    style={[
-                      styles.footer,
-
-                      index === 1 &&
-                        styles.footerEsencia,
-
-                      index === 2 &&
-                        styles.footerComunidades,
-
-                      index === 3 &&
-                        styles.footerExperiencia,
-                    ]}
+                    style={
+                      styles.footer
+                    }
                   />
 
                   {/* ========================================
