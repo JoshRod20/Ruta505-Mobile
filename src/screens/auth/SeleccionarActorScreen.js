@@ -1,63 +1,150 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { useRef } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  Dimensions,
+  Animated,
+  Easing,
+} from "react-native";
 import SeleccionarActorScreenStyle from "../../styles/auth/SeleccionarActorScreenStyle";
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const actoresCulturales = [
   {
     id: "comunidad",
     titulo: "Comunidad",
-    descripcion: "Comunidad local que ofrece experiencias culturales",
+    imagen: require("../../assets/images/Comunidad.png"), 
     ruta: "RegistroComunidad",
   },
   {
     id: "artesano",
     titulo: "Artesano",
-    descripcion: "Oficio artesanal y catálogo de productos",
+    imagen: require("../../assets/images/Artesano.png"), 
     ruta: "RegistroArtesano",
+  },
+  {
+    id: "emprendedor",
+    titulo: "Emprendedor\nCultural",
+    imagen: require("../../assets/images/Emprendedor Cultural.png"), 
+    ruta: "RegistroEmprendedor",
   },
   {
     id: "guia",
     titulo: "Guía",
-    descripcion: "Guía comunitario o independiente",
+    imagen: require("../../assets/images/Guía.png"), 
     ruta: "RegistroGuia",
-  },
-  {
-    id: "emprendedor",
-    titulo: "Emprendedor Cultural",
-    descripcion: "Eventos y experiencias culturales",
-    ruta: "RegistroEmprendedor",
   },
 ];
 
 const SeleccionarActorScreen = ({ navigation }) => {
+  // ==================================================
+  // ANIMACIÓN DEL SWITCHER
+  // ==================================================
+  const switcherAnimation = useRef(new Animated.Value(0)).current; // 0 = Registrarse
+
+  const switcherWidth = 246;
+  const switcherButtonWidth = switcherWidth / 2;
+
+  const animarSwitcher = (valor) => {
+    Animated.timing(switcherAnimation, {
+      toValue: valor,
+      duration: 280,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handleIrALogin = () => {
+    animarSwitcher(1);
+    setTimeout(() => {
+      navigation.navigate("Login");
+    }, 280);
+  };
+
   return (
     <View style={SeleccionarActorScreenStyle.contenedor}>
-      <TouchableOpacity
-        style={SeleccionarActorScreenStyle.volver}
-        onPress={() => navigation.goBack()}
-      >
-        <Text style={SeleccionarActorScreenStyle.volverTexto}>← Volver</Text>
-      </TouchableOpacity>
+      {/* Fondo verde superior */}
+      <View style={SeleccionarActorScreenStyle.header} />
 
-      <Text style={SeleccionarActorScreenStyle.titulo}>
-        ¿Qué tipo de actor cultural eres?
-      </Text>
-      <Text style={SeleccionarActorScreenStyle.subtitulo}>
-        Esto define el formulario de registro que verás
-      </Text>
+      {/* Tarjeta blanca */}
+      <View style={SeleccionarActorScreenStyle.card}>
+        {/* ================================================
+            SWITCHER
+            ================================================ */}
+        <View
+          style={[
+            SeleccionarActorScreenStyle.switcherWrap,
+            { width: switcherWidth },
+          ]}
+        >
+          <Animated.View
+            style={[
+              SeleccionarActorScreenStyle.switcherIndicator,
+              {
+                width: switcherButtonWidth,
+                transform: [
+                  {
+                    translateX: switcherAnimation.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0, switcherButtonWidth],
+                    }),
+                  },
+                ],
+              },
+            ]}
+          />
 
-      <View style={SeleccionarActorScreenStyle.grid}>
-        {actoresCulturales.map((actor) => (
           <TouchableOpacity
-            key={actor.id}
-            style={SeleccionarActorScreenStyle.tarjeta}
-            onPress={() => navigation.navigate(actor.ruta)}
+            style={SeleccionarActorScreenStyle.switcherBtn}
+            activeOpacity={0.8}
+            onPress={() => animarSwitcher(0)}
           >
-            <Text style={SeleccionarActorScreenStyle.tarjetaTitulo}>{actor.titulo}</Text>
-            <Text style={SeleccionarActorScreenStyle.tarjetaDescripcion}>
-              {actor.descripcion}
+            <Text style={SeleccionarActorScreenStyle.switcherTexto}>
+              Registrarse
             </Text>
           </TouchableOpacity>
-        ))}
+
+          <TouchableOpacity
+            style={SeleccionarActorScreenStyle.switcherBtn}
+            activeOpacity={0.8}
+            onPress={handleIrALogin}
+          >
+            <Text style={SeleccionarActorScreenStyle.switcherTexto}>
+              Iniciar sesión
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Título */}
+        <Text style={SeleccionarActorScreenStyle.titulo}>
+          Elige que tipo de{"\n"}Actor eres
+        </Text>
+
+        {/* Grid 2x2 */}
+        <View style={SeleccionarActorScreenStyle.grid}>
+          {actoresCulturales.map((actor) => (
+            <TouchableOpacity
+              key={actor.id}
+              style={SeleccionarActorScreenStyle.opcion}
+              activeOpacity={0.8}
+              onPress={() => navigation.navigate(actor.ruta)}
+            >
+              <View style={SeleccionarActorScreenStyle.imagenContainer}>
+                <Image
+                  source={actor.imagen}
+                  style={SeleccionarActorScreenStyle.imagen}
+                  resizeMode="contain"
+                />
+              </View>
+              <Text style={SeleccionarActorScreenStyle.opcionTitulo}>
+                {actor.titulo}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
       </View>
     </View>
   );
