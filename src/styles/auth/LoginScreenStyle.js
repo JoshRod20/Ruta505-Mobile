@@ -1,15 +1,14 @@
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 import { StyleSheet } from "react-native";
 
 // ==================================================
 // PALETA
 // ==================================================
 
-const COLOR_FONDO = "#ffffff";
 const COLOR_HEADER = "#086338";
-const COLOR_AZUL = "#009fe3";
-const COLOR_VERDE = "#95c11f";
+const COLOR_BORDE = "#0c8046";
 const COLOR_NARANJA = "#f39200";
-const COLOR_TINTA = "#2b2b2b";
+const COLOR_TINTA = "#065F33";
 
 const LoginScreenStyle = StyleSheet.create({
 
@@ -24,36 +23,54 @@ const LoginScreenStyle = StyleSheet.create({
   },
 
   // ==================================================
-  // HEADER VERDE
+  // HEADER CON PATRÓN
   // ==================================================
 
   header: {
+    width: "100%",
+
+    height: 290,
+
+    position: "relative",
+  },
+
+  headerPatron: {
+    width: "100%",
+    height: "100%",
+  },
+
+  botonVolver: {
     position: "absolute",
 
-    top: 0,
+    left: 20,
+
+    width: 40,
+    height: 40,
+
+    borderRadius: 20,
+
+    backgroundColor: "rgb(255, 255, 255)",
+
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  curva: {
+    position: "absolute",
+
+    bottom: -1,
     left: 0,
-    right: 0,
-
-    height: 250,
-
-    backgroundColor: COLOR_HEADER,
   },
 
   // ==================================================
-  // CONTENEDOR DE LA TARJETA
+  // CONTENEDOR DEL FORMULARIO
   // ==================================================
 
   scroll: {
     flex: 1,
 
-    marginTop: 170,
-
     zIndex: 10,
   },
-
-  // ==================================================
-  // TARJETA BLANCA
-  // ==================================================
 
   card: {
     flexGrow: 1,
@@ -62,78 +79,44 @@ const LoginScreenStyle = StyleSheet.create({
 
     backgroundColor: "#ffffff",
 
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
+    paddingHorizontal: 28,
 
-    paddingHorizontal: 24,
-
-    paddingTop: 40,
-    paddingBottom: 30,
-
-    minHeight: 650,
+    paddingTop: 16,
+    paddingBottom: 34,
   },
 
   // ==================================================
-  // SWITCHER
+  // TÍTULO
   // ==================================================
 
-  switcherWrap: {
-    height: "9%",
+  titulo: {
+    color: COLOR_HEADER,
+
+    fontSize: 32,
 
     alignSelf: "center",
 
-    flexDirection: "row",
+    fontFamily: "Poppins-Bold",
 
-    position: "relative",
-
-    borderRadius: 999,
-
-    overflow: "hidden",
-
-    backgroundColor: COLOR_AZUL,
-
-    marginBottom: 32,
+    marginBottom: 6,
   },
 
-  // ==================================================
-  // INDICADOR VERDE ANIMADO
-  // ==================================================
-
-  switcherIndicator: {
-    position: "absolute",
-
-    top: 0,
-    bottom: 0,
-    left: 0,
-
-    backgroundColor: COLOR_VERDE,
-
-    borderRadius: 999,
-
-    zIndex: 1,
-  },
-
-  // ==================================================
-  // BOTONES DEL SWITCHER
-  // ==================================================
-
-  switcherBtn: {
-    flex: 1,
-
-    height: "100%",
-
-    alignItems: "center",
-    justifyContent: "center",
-
-    zIndex: 2,
-  },
-
-  switcherTexto: {
-    color: "#ffffff",
+  subtitulo: {
+    color: "#161515",
 
     fontSize: 13,
+    
+    alignSelf: "center",
 
     fontFamily: "Poppins-SemiBold",
+
+    marginBottom: 30,
+  },
+
+  subtituloNegrita: {
+    color: COLOR_TINTA,
+
+    fontFamily: "Poppins-Bold",
   },
 
   // ==================================================
@@ -143,27 +126,25 @@ const LoginScreenStyle = StyleSheet.create({
   input: {
     width: "100%",
 
-    height: 45,
+    height: 54,
 
-    paddingHorizontal: 20,
+    paddingHorizontal: 22,
 
     paddingVertical: 0,
 
-    borderRadius: 999,
+    borderRadius: hp("1.5%"),
 
     backgroundColor: "#ffffff",
 
     borderWidth: 1.8,
 
-    borderColor: COLOR_VERDE,
+    borderColor: COLOR_TINTA,
 
     color: COLOR_TINTA,
 
-    fontSize: 13,
+    fontSize: 14,
 
-      
-
-    marginBottom: 14,
+    marginBottom: 18,
   },
 
   // ==================================================
@@ -179,7 +160,7 @@ const LoginScreenStyle = StyleSheet.create({
   },
 
   inputPassword: {
-    paddingRight: 55,
+    paddingRight: 58,
   },
 
   // ==================================================
@@ -189,13 +170,13 @@ const LoginScreenStyle = StyleSheet.create({
   iconoOjo: {
     position: "absolute",
 
-    right: 15,
+    right: 16,
 
     top: 0,
 
-    bottom: 14,
+    bottom: 18,
 
-    width: 32,
+    width: 34,
 
     alignItems: "center",
     justifyContent: "center",
@@ -210,15 +191,15 @@ const LoginScreenStyle = StyleSheet.create({
 
     alignItems: "flex-end",
 
-    marginTop: 2,
+    marginTop: "-1.5%",
 
-    marginBottom: 7,
+    marginBottom: 9,
   },
 
   enlace: {
-    color: COLOR_NARANJA,
+    color: COLOR_HEADER,
 
-    fontSize: 12,
+    fontSize: 13,
 
     fontFamily: "Inter-Regular",
   },
@@ -244,7 +225,7 @@ const LoginScreenStyle = StyleSheet.create({
   exito: {
     width: "100%",
 
-    color: COLOR_VERDE,
+    color: COLOR_HEADER,
 
     fontSize: 13,
 
@@ -258,20 +239,18 @@ const LoginScreenStyle = StyleSheet.create({
   // ==================================================
 
   boton: {
-    width: "50%",
+    width: "100%",
 
-    height: "7%",
+    height: hp("6%"),
 
-    alignSelf: "center",
+    backgroundColor: COLOR_TINTA,
 
-    backgroundColor: COLOR_NARANJA,
-
-    borderRadius: 999,
+    borderRadius: hp("5%"),
 
     alignItems: "center",
     justifyContent: "center",
 
-    marginTop: 21,
+    marginTop: 26,
 
     elevation: 3,
   },
@@ -283,75 +262,9 @@ const LoginScreenStyle = StyleSheet.create({
   botonTexto: {
     color: "#ffffff",
 
-    fontFamily: "Poppins-SemiBold",
+    fontFamily: "Poppins-Bold",
 
-    fontSize: 15,
-  },
-
-  // ==================================================
-  // DIVISOR
-  // ==================================================
-
-  dividerWrap: {
-    width: "100%",
-
-    flexDirection: "row",
-
-    alignItems: "center",
-
-    marginTop: 29,
-
-    marginBottom: 1,
-  },
-
-  dividerLinea: {
-    flex: 1,
-
-    height: 1,
-
-    backgroundColor: "#acabab",
-  },
-
-  dividerTexto: {
-    marginHorizontal: 10,
-
-    color: "#065F33",
-
-    fontSize: 12,
-
-    fontFamily: "Inter-Regular",
-  },
-
-  // ==================================================
-  // REDES SOCIALES
-  // ==================================================
-
-  socialRow: {
-    flexDirection: "row",
-
-    justifyContent: "center",
-
-    alignItems: "center",
-
-    gap: 16,
-
-    marginBottom: 20,
-  },
-
-  socialCircle: {
-    width: "10%",
-
-    height: "31.5%",
-
-    borderRadius: 18,
-
-    alignItems: "center",
-
-    justifyContent: "center",
-
-    borderWidth: 1,
-
-    borderColor: "#ececec",
+    fontSize: 16,
   },
 
   // ==================================================
@@ -360,20 +273,22 @@ const LoginScreenStyle = StyleSheet.create({
 
   registrarseWrap: {
     alignItems: "center",
+
+    marginTop: 28,
   },
 
   registrarseTexto: {
-    color: COLOR_HEADER,
+    color: COLOR_TINTA,
 
-    fontFamily: "Inter-Regular",
+    fontFamily: "Poppins-SemiBold",
 
-    fontSize: 12,
+    fontSize: 15,
   },
 
   registrarseEnlace: {
-    color: COLOR_NARANJA,
+    color: COLOR_HEADER,
 
-    fontFamily: "Inter-Regular",
+    fontFamily: "Poppins-SemiBold",
   },
 
 });

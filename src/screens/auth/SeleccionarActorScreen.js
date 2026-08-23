@@ -1,122 +1,119 @@
-import { useRef } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   Image,
   Dimensions,
-  Animated,
-  Easing,
+  ScrollView,
+  ImageBackground,
 } from "react-native";
+import Svg, { Path } from "react-native-svg";
+import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import SeleccionarActorScreenStyle from "../../styles/auth/SeleccionarActorScreenStyle";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
+// Altura de la banda donde vive la curva SVG (misma que Login y SeleccionarTipo).
+const CURVE_HEIGHT = 130;
 
 const actoresCulturales = [
   {
     id: "comunidad",
     titulo: "Comunidad",
-    imagen: require("../../assets/images/Comunidad.png"), 
+    imagen: require("../../assets/images/Comunidad.png"),
     ruta: "RegistroComunidad",
   },
   {
     id: "artesano",
     titulo: "Artesano",
-    imagen: require("../../assets/images/Artesano.png"), 
+    imagen: require("../../assets/images/Artesano.png"),
     ruta: "RegistroArtesano",
   },
   {
     id: "emprendedor",
     titulo: "Emprendedor\nCultural",
-    imagen: require("../../assets/images/Emprendedor Cultural.png"), 
+    imagen: require("../../assets/images/Emprendedor Cultural.png"),
     ruta: "RegistroEmprendedor",
   },
   {
     id: "guia",
     titulo: "Guía",
-    imagen: require("../../assets/images/Guía.png"), 
+    imagen: require("../../assets/images/Guía.png"),
     ruta: "RegistroGuia",
   },
 ];
 
 const SeleccionarActorScreen = ({ navigation }) => {
-  // ==================================================
-  // ANIMACIÓN DEL SWITCHER
-  // ==================================================
-  const switcherAnimation = useRef(new Animated.Value(0)).current; // 0 = Registrarse
+  const insets = useSafeAreaInsets();
 
-  const switcherWidth = 246;
-  const switcherButtonWidth = switcherWidth / 2;
-
-  const animarSwitcher = (valor) => {
-    Animated.timing(switcherAnimation, {
-      toValue: valor,
-      duration: 280,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const handleIrALogin = () => {
-    animarSwitcher(1);
-    setTimeout(() => {
-      navigation.navigate("Login");
-    }, 280);
+  const handleVolver = () => {
+    navigation.goBack();
   };
 
   return (
     <View style={SeleccionarActorScreenStyle.contenedor}>
-      {/* Fondo verde superior */}
-      <View style={SeleccionarActorScreenStyle.header} />
 
-      {/* Tarjeta blanca */}
-      <View style={SeleccionarActorScreenStyle.card}>
-        {/* ================================================
-            SWITCHER
-            ================================================ */}
-        <View
-          style={[
-            SeleccionarActorScreenStyle.switcherWrap,
-            { width: switcherWidth },
-          ]}
+      {/* ==================================================
+          HEADER CON PATRÓN CULTURAL + CURVA
+          ================================================== */}
+
+      <View style={SeleccionarActorScreenStyle.header}>
+
+        <ImageBackground
+          source={require("../../assets/images/PatronRuta505.png")}
+          style={SeleccionarActorScreenStyle.headerPatron}
+          resizeMode="cover"
         >
-          <Animated.View
+
+          <TouchableOpacity
             style={[
-              SeleccionarActorScreenStyle.switcherIndicator,
-              {
-                width: switcherButtonWidth,
-                transform: [
-                  {
-                    translateX: switcherAnimation.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0, switcherButtonWidth],
-                    }),
-                  },
-                ],
-              },
+              SeleccionarActorScreenStyle.botonVolver,
+              { top: insets.top + 10 },
             ]}
+            onPress={handleVolver}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name="chevron-back"
+              size={24}
+              color="#2b2b2b"
+            />
+          </TouchableOpacity>
+
+        </ImageBackground>
+
+        <Svg
+          style={SeleccionarActorScreenStyle.curva}
+          width={SCREEN_WIDTH}
+          height={CURVE_HEIGHT}
+          viewBox={`0 0 ${SCREEN_WIDTH} ${CURVE_HEIGHT}`}
+        >
+          <Path
+            fill="#ffffff"
+            d={`
+              M0,${CURVE_HEIGHT * 0.99}
+              C${SCREEN_WIDTH * 0.20},${CURVE_HEIGHT * 0.98} ${SCREEN_WIDTH * 0.38},${CURVE_HEIGHT * 0.85} ${SCREEN_WIDTH * 0.50},${CURVE_HEIGHT * 0.62}
+              C${SCREEN_WIDTH * 0.62},${CURVE_HEIGHT * 0.40} ${SCREEN_WIDTH * 0.72},${CURVE_HEIGHT * 0.15} ${SCREEN_WIDTH * 0.85},${CURVE_HEIGHT * 0.06}
+              C${SCREEN_WIDTH * 0.90},${CURVE_HEIGHT * 0.02} ${SCREEN_WIDTH * 0.95},0 ${SCREEN_WIDTH},0
+              L${SCREEN_WIDTH},${CURVE_HEIGHT}
+              L0,${CURVE_HEIGHT}
+              Z
+            `}
           />
+        </Svg>
 
-          <TouchableOpacity
-            style={SeleccionarActorScreenStyle.switcherBtn}
-            activeOpacity={0.8}
-            onPress={() => animarSwitcher(0)}
-          >
-            <Text style={SeleccionarActorScreenStyle.switcherTexto}>
-              Registrarse
-            </Text>
-          </TouchableOpacity>
+      </View>
 
-          <TouchableOpacity
-            style={SeleccionarActorScreenStyle.switcherBtn}
-            activeOpacity={0.8}
-            onPress={handleIrALogin}
-          >
-            <Text style={SeleccionarActorScreenStyle.switcherTexto}>
-              Iniciar sesión
-            </Text>
-          </TouchableOpacity>
-        </View>
+      {/* ==================================================
+          CONTENIDO
+          ================================================== */}
+
+      <ScrollView
+        style={SeleccionarActorScreenStyle.scroll}
+        contentContainerStyle={SeleccionarActorScreenStyle.card}
+        showsVerticalScrollIndicator={false}
+      >
 
         {/* Título */}
         <Text style={SeleccionarActorScreenStyle.titulo}>
@@ -145,7 +142,9 @@ const SeleccionarActorScreen = ({ navigation }) => {
             </TouchableOpacity>
           ))}
         </View>
-      </View>
+
+      </ScrollView>
+
     </View>
   );
 };

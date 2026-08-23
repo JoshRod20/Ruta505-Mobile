@@ -22,6 +22,7 @@ import {
 
 import Onboarding from "../screens/onboarding/Onboarding";
 
+import WelcomeScreen from "../screens/auth/WelcomeScreen";
 import LoginScreen from "../screens/auth/LoginScreen";
 import SeleccionarTipoScreen from "../screens/auth/SeleccionarTipoScreen";
 import SeleccionarActorScreen from "../screens/auth/SeleccionarActorScreen";
@@ -53,10 +54,16 @@ const FORCE_ONBOARDING = false;
 
 const AuthStack = () => (
   <Stack.Navigator
+    initialRouteName="Welcome"
     screenOptions={{
       headerShown: false,
     }}
   >
+    <Stack.Screen
+      name="Welcome"
+      component={WelcomeScreen}
+    />
+
     <Stack.Screen
       name="Login"
       component={LoginScreen}
