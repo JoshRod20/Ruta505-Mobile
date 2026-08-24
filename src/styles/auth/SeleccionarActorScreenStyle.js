@@ -6,9 +6,7 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 // PALETA (igual que Login y SeleccionarTipo)
 // ==================================================
 const COLOR_HEADER = "#086338";
-const COLOR_AZUL = "#009fe3";
-const COLOR_VERDE = "#95c11f";
-const COLOR_TINTA = "#2b2b2b";
+const COLOR_TINTA = "#065F33";
 
 const SeleccionarActorScreenStyle = StyleSheet.create({
   // ==================================================
@@ -20,82 +18,64 @@ const SeleccionarActorScreenStyle = StyleSheet.create({
   },
 
   // ==================================================
-  // HEADER VERDE
+  // HEADER CON PATRÓN + CURVA
   // ==================================================
   header: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: "32%",
-    backgroundColor: COLOR_HEADER,
-  },
-
-  // ==================================================
-  // TARJETA BLANCA
-  // ==================================================
-  card: {
-    flex: 1,
-    marginTop: "22%",
-    backgroundColor: "#ffffff",
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    paddingHorizontal: "6%",
-    paddingTop: "5%",
-    alignItems: "center",
-  },
-
-  // ==================================================
-  // SWITCHER
-  // ==================================================
-  switcherWrap: {
-    height: "7%",
-    width: "68%",
-    maxWidth: "100%",
-    alignSelf: "center",
-    flexDirection: "row",
+    width: "100%",
+    height: 250,
     position: "relative",
-    borderRadius: 999,
-    overflow: "hidden",
-    backgroundColor: COLOR_AZUL,
-    marginTop: "7%",
-    marginBottom: "12%",
   },
 
-  switcherIndicator: {
-    position: "absolute",
-    top: 0,
-    bottom: 0,
-    left: 0,
-    backgroundColor: COLOR_VERDE,
-    borderRadius: 999,
-    zIndex: 1,
-  },
-
-  switcherBtn: {
-    flex: 1,
+  headerPatron: {
+    width: "100%",
     height: "100%",
+  },
+
+  botonVolver: {
+    position: "absolute",
+    left: 20,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgb(255, 255, 255)",
     alignItems: "center",
     justifyContent: "center",
-    zIndex: 2,
   },
 
-  switcherTexto: {
-    color: "#ffffff",
-    fontSize: 13,
-    fontFamily: "Poppins-SemiBold",
+  curva: {
+    position: "absolute",
+    bottom: -1,
+    left: 0,
+  },
+
+  // ==================================================
+  // CONTENEDOR DEL CONTENIDO
+  // ==================================================
+  scroll: {
+    flex: 1,
+    zIndex: 10,
+  },
+
+  card: {
+    flexGrow: 1,
+    width: "100%",
+    backgroundColor: "#ffffff",
+    paddingHorizontal: "6%",
+    paddingTop: "6%",
+    paddingBottom: "6%",
+    alignItems: "center",
   },
 
   // ==================================================
   // TÍTULO
   // ==================================================
   titulo: {
-    fontSize: 24,
+    fontSize: 28,
     fontFamily: "Poppins-Bold",
     color: COLOR_HEADER,
     textAlign: "center",
     lineHeight: 32,
-    marginBottom: "6%",
+    marginBottom: "8%",
   },
 
   // ==================================================

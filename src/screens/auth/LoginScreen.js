@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+// screens/auth/LoginScreen.js
+
+import { useState } from "react";
 
 import {
   View,
@@ -9,11 +11,13 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   Platform,
-  Animated,
-  Easing,
+  ImageBackground,
+  Dimensions,
 } from "react-native";
 
-import { FontAwesome, Ionicons } from "@expo/vector-icons";
+import Svg, { Path } from "react-native-svg";
+import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import {
   signInWithEmailAndPassword,
@@ -24,7 +28,14 @@ import { auth } from "../../services/firebase";
 import { mapFirebaseError } from "../../utils/firebaseErrors";
 import LoginScreenStyle from "../../styles/auth/LoginScreenStyle";
 
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
+// Altura de la banda donde vive la curva SVG.
+const CURVE_HEIGHT = 130;
+
 const LoginScreen = ({ navigation }) => {
+  const insets = useSafeAreaInsets();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mostrarPassword, setMostrarPassword] = useState(false);
@@ -32,47 +43,18 @@ const LoginScreen = ({ navigation }) => {
   const [feedback, setFeedback] = useState("");
   const [cargando, setCargando] = useState(false);
 
-  // ==================================================
-  // ANIMACIÓN DEL SWITCHER
-  // ==================================================
-
-  const switcherAnimation = useRef(
-    new Animated.Value(1)
-  ).current;
-
-  const switcherWidth = 246;
-
-  const switcherButtonWidth = switcherWidth / 2;
-
-  const animarSwitcher = (valor) => {
-    Animated.timing(switcherAnimation, {
-      toValue: valor,
-      duration: 280,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
-    }).start();
+  const handleVolver = () => {
+    navigation.goBack();
   };
 
   const handleIrARegistro = () => {
-    animarSwitcher(0);
-
-    setTimeout(() => {
-      navigation.navigate("SeleccionarTipo");
-    }, 280);
+    navigation.navigate("SeleccionarTipo");
   };
-
-  // ==================================================
-  // LIMPIAR MENSAJES
-  // ==================================================
 
   const resetFeedback = () => {
     setError("");
     setFeedback("");
   };
-
-  // ==================================================
-  // LOGIN
-  // ==================================================
 
   const handleLogin = async () => {
     resetFeedback();
@@ -90,20 +72,12 @@ const LoginScreen = ({ navigation }) => {
         email.trim(),
         password
       );
-
-      // Firebase actualiza AuthContext.
-      // RootNavigator se encarga de cambiar de pantalla.
-
     } catch (err) {
       setError(mapFirebaseError(err.code));
     } finally {
       setCargando(false);
     }
   };
-
-  // ==================================================
-  // RECUPERAR CONTRASEÑA
-  // ==================================================
 
   const handleForgotPassword = async () => {
     resetFeedback();
@@ -118,7 +92,6 @@ const LoginScreen = ({ navigation }) => {
         auth,
         email.trim()
       );
-
     } catch (err) {
 
       if (
@@ -146,13 +119,62 @@ const LoginScreen = ({ navigation }) => {
     <View style={LoginScreenStyle.contenedor}>
 
       {/* ==================================================
-          FONDO VERDE
+          HEADER CON PATRÓN CULTURAL + CURVA
           ================================================== */}
 
-      <View style={LoginScreenStyle.header} />
+      <View style={LoginScreenStyle.header}>
+
+        <ImageBackground
+          source={require("../../assets/images/PatronRuta505.png")}
+          style={LoginScreenStyle.headerPatron}
+          resizeMode="cover"
+        >
+
+          <TouchableOpacity
+            style={[
+              LoginScreenStyle.botonVolver,
+              { top: insets.top + 10 },
+            ]}
+            onPress={handleVolver}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name="chevron-back"
+              size={24}
+              color="#2b2b2b"
+            />
+          </TouchableOpacity>
+
+        </ImageBackground>
+
+        {/* Curva blanca — UNA sola transición suave:
+            el patrón domina hasta ~55% del ancho, y solo
+            en el último tramo sube de golpe hacia blanco. */}
+
+        <Svg
+  style={LoginScreenStyle.curva}
+  width={SCREEN_WIDTH}
+  height={CURVE_HEIGHT}
+  viewBox={`0 0 ${SCREEN_WIDTH} ${CURVE_HEIGHT}`}
+>
+  <Path
+    fill="#ffffff"
+    d={`
+      M0,${CURVE_HEIGHT * 0.99}
+      C${SCREEN_WIDTH * 0.20},${CURVE_HEIGHT * 0.98} ${SCREEN_WIDTH * 0.38},${CURVE_HEIGHT * 0.85} ${SCREEN_WIDTH * 0.50},${CURVE_HEIGHT * 0.62}
+      C${SCREEN_WIDTH * 0.62},${CURVE_HEIGHT * 0.40} ${SCREEN_WIDTH * 0.72},${CURVE_HEIGHT * 0.15} ${SCREEN_WIDTH * 0.85},${CURVE_HEIGHT * 0.06}
+      C${SCREEN_WIDTH * 0.90},${CURVE_HEIGHT * 0.02} ${SCREEN_WIDTH * 0.95},0 ${SCREEN_WIDTH},0
+      L${SCREEN_WIDTH},${CURVE_HEIGHT}
+      L0,${CURVE_HEIGHT}
+      Z
+    `}
+  />
+</Svg>
+
+      </View>
 
       {/* ==================================================
-          TARJETA BLANCA
+          FORMULARIO
           ================================================== */}
 
       <KeyboardAvoidingView
@@ -172,87 +194,26 @@ const LoginScreen = ({ navigation }) => {
           showsVerticalScrollIndicator={false}
         >
 
-          {/* ================================================
-              SWITCHER ANIMADO
-              ================================================ */}
+          <Text style={LoginScreenStyle.titulo}>
+            Iniciar Sesión
+          </Text>
 
-          <View
-            style={[
-              LoginScreenStyle.switcherWrap,
-              {
-                width: switcherWidth,
-              },
-            ]}
-          >
-
-            {/* Pastilla verde animada */}
-
-            <Animated.View
-              style={[
-                LoginScreenStyle.switcherIndicator,
-                {
-                  width: switcherButtonWidth,
-
-                  transform: [
-                    {
-                      translateX:
-                        switcherAnimation.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [0, switcherButtonWidth],
-                        }),
-                    },
-                  ],
-                },
-              ]}
-            />
-
-            {/* Registrarse */}
-
-            <TouchableOpacity
-              style={LoginScreenStyle.switcherBtn}
-              onPress={handleIrARegistro}
-              activeOpacity={0.8}
-            >
-              <Text
-                style={LoginScreenStyle.switcherTexto}
-              >
-                Registrarse
-              </Text>
-            </TouchableOpacity>
-
-            {/* Iniciar sesión */}
-
-            <TouchableOpacity
-              style={LoginScreenStyle.switcherBtn}
-              activeOpacity={0.8}
-              onPress={() => animarSwitcher(1)}
-            >
-              <Text
-                style={LoginScreenStyle.switcherTexto}
-              >
-                Iniciar sesión
-              </Text>
-            </TouchableOpacity>
-
-          </View>
-
-          {/* ================================================
-              EMAIL
-              ================================================ */}
+          <Text style={LoginScreenStyle.subtitulo}>
+            Inicia sesión con tu cuenta de{" "}
+            <Text style={LoginScreenStyle.subtituloNegrita}>
+              Ruta 505
+            </Text>
+          </Text>
 
           <TextInput
             style={LoginScreenStyle.input}
-            placeholder="Email"
-            placeholderTextColor="#c4c4c4"
+            placeholder="Nombre de usuario o correo"
+            placeholderTextColor="#a8a8a8"
             autoCapitalize="none"
             keyboardType="email-address"
             value={email}
             onChangeText={setEmail}
           />
-
-          {/* ================================================
-              CONTRASEÑA
-              ================================================ */}
 
           <View
             style={LoginScreenStyle.inputWrap}
@@ -264,7 +225,7 @@ const LoginScreen = ({ navigation }) => {
                 LoginScreenStyle.inputPassword,
               ]}
               placeholder="Contraseña"
-              placeholderTextColor="#c4c4c4"
+              placeholderTextColor="#a8a8a8"
               secureTextEntry={!mostrarPassword}
               value={password}
               onChangeText={setPassword}
@@ -284,17 +245,13 @@ const LoginScreen = ({ navigation }) => {
                     ? "eye-off-outline"
                     : "eye-outline"
                 }
-                size={20}
-                color="#777777"
+                size={22}
+                color="#086338"
               />
 
             </TouchableOpacity>
 
           </View>
-
-          {/* ================================================
-              OLVIDÉ MI CONTRASEÑA
-              ================================================ */}
 
           <TouchableOpacity
             style={LoginScreenStyle.enlaceWrap}
@@ -302,14 +259,10 @@ const LoginScreen = ({ navigation }) => {
           >
 
             <Text style={LoginScreenStyle.enlace}>
-              ¿Olvidé mi contraseña?
+              ¿Olvidaste tu contraseña?
             </Text>
 
           </TouchableOpacity>
-
-          {/* ================================================
-              ERROR
-              ================================================ */}
 
           {error ? (
             <Text style={LoginScreenStyle.error}>
@@ -317,19 +270,11 @@ const LoginScreen = ({ navigation }) => {
             </Text>
           ) : null}
 
-          {/* ================================================
-              FEEDBACK
-              ================================================ */}
-
           {feedback ? (
             <Text style={LoginScreenStyle.exito}>
               {feedback}
             </Text>
           ) : null}
-
-          {/* ================================================
-              BOTÓN LOGIN
-              ================================================ */}
 
           <TouchableOpacity
             style={[
@@ -349,97 +294,11 @@ const LoginScreen = ({ navigation }) => {
               <Text
                 style={LoginScreenStyle.botonTexto}
               >
-                Iniciar sesión
+                Iniciar Sesión
               </Text>
             )}
 
           </TouchableOpacity>
-
-          {/* ================================================
-              DIVISOR
-              ================================================ */}
-
-          <View
-            style={LoginScreenStyle.dividerWrap}
-          >
-
-            <View
-              style={LoginScreenStyle.dividerLinea}
-            />
-
-            <Text
-              style={LoginScreenStyle.dividerTexto}
-            >
-              O inicia sesión con
-            </Text>
-
-            <View
-              style={LoginScreenStyle.dividerLinea}
-            />
-
-          </View>
-
-          {/* ================================================
-              REDES SOCIALES
-              ================================================ */}
-
-          <View
-            style={LoginScreenStyle.socialRow}
-          >
-
-            <View
-              style={[
-                LoginScreenStyle.socialCircle,
-                {
-                  backgroundColor: "#1877f2",
-                  borderWidth: 0,
-                },
-              ]}
-            >
-
-              <FontAwesome
-                name="facebook"
-                size={20}
-                color="#ffffff"
-              />
-
-            </View>
-
-            <View
-              style={LoginScreenStyle.socialCircle}
-            >
-
-              <FontAwesome
-                name="google"
-                size={18}
-                color="#db4437"
-              />
-
-            </View>
-
-            <View
-              style={[
-                LoginScreenStyle.socialCircle,
-                {
-                  backgroundColor: "#000000",
-                  borderWidth: 0,
-                },
-              ]}
-            >
-
-              <FontAwesome
-                name="apple"
-                size={20}
-                color="#ffffff"
-              />
-
-            </View>
-
-          </View>
-
-          {/* ================================================
-              REGISTRO INFERIOR
-              ================================================ */}
 
           <TouchableOpacity
             style={

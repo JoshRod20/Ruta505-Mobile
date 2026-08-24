@@ -7,10 +7,18 @@ import {
   Dimensions,
   Animated,
   Easing,
+  ScrollView,
+  ImageBackground,
 } from "react-native";
+import Svg, { Path } from "react-native-svg";
+import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import SeleccionarTipoScreenStyle from "../../styles/auth/SeleccionarTipoScreenStyle";
 
-const { width } = Dimensions.get("window");
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
+// Altura de la banda donde vive la curva SVG (misma que LoginScreen).
+const CURVE_HEIGHT = 130;
 
 const tiposUsuario = [
   {
@@ -28,21 +36,10 @@ const tiposUsuario = [
 ];
 
 const SeleccionarTipoScreen = ({ navigation }) => {
-  // ==================================================
-  // ANIMACIÓN DEL SWITCHER (idéntica a LoginScreen)
-  // ==================================================
-  const switcherAnimation = useRef(new Animated.Value(0)).current; // 0 = Registrarse
+  const insets = useSafeAreaInsets();
 
-  const switcherWidth = 246;
-  const switcherButtonWidth = switcherWidth / 2;
-
-  const animarSwitcher = (valor) => {
-    Animated.timing(switcherAnimation, {
-      toValue: valor,
-      duration: 280,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
-    }).start();
+  const handleVolver = () => {
+    navigation.goBack();
   };
 
   const handleIrALogin = () => {
@@ -55,60 +52,67 @@ const SeleccionarTipoScreen = ({ navigation }) => {
 
   return (
     <View style={SeleccionarTipoScreenStyle.contenedor}>
-      {/* Fondo verde superior */}
-      <View style={SeleccionarTipoScreenStyle.header} />
 
-      {/* Tarjeta blanca */}
-      <View style={SeleccionarTipoScreenStyle.card}>
-        {/* ================================================
-            SWITCHER ANIMADO (idéntico a Login)
-            ================================================ */}
-        <View
-          style={[
-            SeleccionarTipoScreenStyle.switcherWrap,
-            { width: switcherWidth },
-          ]}
+      {/* ==================================================
+          HEADER CON PATRÓN CULTURAL + CURVA
+          ================================================== */}
+
+      <View style={SeleccionarTipoScreenStyle.header}>
+
+        <ImageBackground
+          source={require("../../assets/images/PatronRuta505.png")}
+          style={SeleccionarTipoScreenStyle.headerPatron}
+          resizeMode="cover"
         >
-          {/* Pastilla verde animada */}
-          <Animated.View
+
+          <TouchableOpacity
             style={[
-              SeleccionarTipoScreenStyle.switcherIndicator,
-              {
-                width: switcherButtonWidth,
-                transform: [
-                  {
-                    translateX: switcherAnimation.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0, switcherButtonWidth],
-                    }),
-                  },
-                ],
-              },
+              SeleccionarTipoScreenStyle.botonVolver,
+              { top: insets.top + 10 },
             ]}
+            onPress={handleVolver}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name="chevron-back"
+              size={24}
+              color="#2b2b2b"
+            />
+          </TouchableOpacity>
+
+        </ImageBackground>
+
+        <Svg
+          style={SeleccionarTipoScreenStyle.curva}
+          width={SCREEN_WIDTH}
+          height={CURVE_HEIGHT}
+          viewBox={`0 0 ${SCREEN_WIDTH} ${CURVE_HEIGHT}`}
+        >
+          <Path
+            fill="#ffffff"
+            d={`
+              M0,${CURVE_HEIGHT * 0.99}
+              C${SCREEN_WIDTH * 0.20},${CURVE_HEIGHT * 0.98} ${SCREEN_WIDTH * 0.38},${CURVE_HEIGHT * 0.85} ${SCREEN_WIDTH * 0.50},${CURVE_HEIGHT * 0.62}
+              C${SCREEN_WIDTH * 0.62},${CURVE_HEIGHT * 0.40} ${SCREEN_WIDTH * 0.72},${CURVE_HEIGHT * 0.15} ${SCREEN_WIDTH * 0.85},${CURVE_HEIGHT * 0.06}
+              C${SCREEN_WIDTH * 0.90},${CURVE_HEIGHT * 0.02} ${SCREEN_WIDTH * 0.95},0 ${SCREEN_WIDTH},0
+              L${SCREEN_WIDTH},${CURVE_HEIGHT}
+              L0,${CURVE_HEIGHT}
+              Z
+            `}
           />
+        </Svg>
 
-          {/* Registrarse */}
-          <TouchableOpacity
-            style={SeleccionarTipoScreenStyle.switcherBtn}
-            activeOpacity={0.8}
-            onPress={() => animarSwitcher(0)}
-          >
-            <Text style={SeleccionarTipoScreenStyle.switcherTexto}>
-              Registrarse
-            </Text>
-          </TouchableOpacity>
+      </View>
 
-          {/* Iniciar sesión */}
-          <TouchableOpacity
-            style={SeleccionarTipoScreenStyle.switcherBtn}
-            activeOpacity={0.8}
-            onPress={handleIrALogin}
-          >
-            <Text style={SeleccionarTipoScreenStyle.switcherTexto}>
-              Iniciar sesión
-            </Text>
-          </TouchableOpacity>
-        </View>
+      {/* ==================================================
+          CONTENIDO
+          ================================================== */}
+
+      <ScrollView
+        style={SeleccionarTipoScreenStyle.scroll}
+        contentContainerStyle={SeleccionarTipoScreenStyle.card}
+        showsVerticalScrollIndicator={false}
+      >
 
         {/* Título */}
         <Text style={SeleccionarTipoScreenStyle.titulo}>
@@ -137,7 +141,9 @@ const SeleccionarTipoScreen = ({ navigation }) => {
             </TouchableOpacity>
           ))}
         </View>
-      </View>
+
+      </ScrollView>
+
     </View>
   );
 };

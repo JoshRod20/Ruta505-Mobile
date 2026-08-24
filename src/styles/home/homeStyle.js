@@ -21,4 +21,25 @@ export const homeStyle = StyleSheet.create({
     textAlign: "center",
     lineHeight: 22,
   },
+
+  // ==================================================
+  // AVISO — perfil en revisión (modo explorar)
+  // ==================================================
+
+  avisoTarjeta: {
+    marginTop: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    borderRadius: 12,
+    backgroundColor: "#FFF4D6",
+    borderWidth: 1,
+    borderColor: "#E0B400",
+    maxWidth: 340,
+  },
+  avisoTexto: {
+    color: "#7A5B00",
+    fontSize: 13,
+    textAlign: "center",
+    lineHeight: 18,
+  },
 });
