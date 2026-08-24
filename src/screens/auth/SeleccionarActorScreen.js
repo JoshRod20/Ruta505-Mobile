@@ -17,30 +17,28 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 // Altura de la banda donde vive la curva SVG (misma que Login y SeleccionarTipo).
 const CURVE_HEIGHT = 130;
 
+import { ACTOR_TYPES } from "../../constants/roles";
+
 const actoresCulturales = [
   {
-    id: "comunidad",
+    id: ACTOR_TYPES.COMUNIDAD,
     titulo: "Comunidad",
     imagen: require("../../assets/images/Comunidad.png"),
-    ruta: "RegistroComunidad",
   },
   {
-    id: "artesano",
+    id: ACTOR_TYPES.ARTESANO,
     titulo: "Artesano",
     imagen: require("../../assets/images/Artesano.png"),
-    ruta: "RegistroArtesano",
   },
   {
-    id: "emprendedor",
+    id: ACTOR_TYPES.EMPRENDEDOR,
     titulo: "Emprendedor\nCultural",
     imagen: require("../../assets/images/Emprendedor Cultural.png"),
-    ruta: "RegistroEmprendedor",
   },
   {
-    id: "guia",
+    id: ACTOR_TYPES.GUIA,
     titulo: "Guía",
     imagen: require("../../assets/images/Guía.png"),
-    ruta: "RegistroGuia",
   },
 ];
 
@@ -127,7 +125,9 @@ const SeleccionarActorScreen = ({ navigation }) => {
               key={actor.id}
               style={SeleccionarActorScreenStyle.opcion}
               activeOpacity={0.8}
-              onPress={() => navigation.navigate(actor.ruta)}
+              onPress={() =>
+                navigation.navigate("RegistroActor", { tipoActor: actor.id })
+              }
             >
               <View style={SeleccionarActorScreenStyle.imagenContainer}>
                 <Image

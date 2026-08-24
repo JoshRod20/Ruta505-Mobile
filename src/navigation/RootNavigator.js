@@ -26,11 +26,8 @@ import WelcomeScreen from "../screens/auth/WelcomeScreen";
 import LoginScreen from "../screens/auth/LoginScreen";
 import SeleccionarTipoScreen from "../screens/auth/SeleccionarTipoScreen";
 import SeleccionarActorScreen from "../screens/auth/SeleccionarActorScreen";
+import RegistroActorScreen from "../screens/auth/RegistroActorScreen";
 import RegistroTuristaScreen from "../screens/auth/RegistroTuristaScreen";
-import RegistroComunidadScreen from "../screens/auth/RegistroComunidadScreen";
-import RegistroArtesanoScreen from "../screens/auth/RegistroArtesanoScreen";
-import RegistroGuiaScreen from "../screens/auth/RegistroGuiaScreen";
-import RegistroEmprendedorScreen from "../screens/auth/RegistroEmprendedorScreen";
 import PendienteAprobacionScreen from "../screens/auth/PendienteAprobacionScreen";
 
 import NavigationDrawer from "./navigationDrawer";
@@ -90,33 +87,13 @@ const AuthStack = () => (
       }
     />
 
-    <Stack.Screen
-      name="RegistroComunidad"
+    <Stack.Screen 
+      name="RegistroActor" 
       component={
-        RegistroComunidadScreen
-      }
+        RegistroActorScreen
+      } 
     />
 
-    <Stack.Screen
-      name="RegistroArtesano"
-      component={
-        RegistroArtesanoScreen
-      }
-    />
-
-    <Stack.Screen
-      name="RegistroGuia"
-      component={
-        RegistroGuiaScreen
-      }
-    />
-
-    <Stack.Screen
-      name="RegistroEmprendedor"
-      component={
-        RegistroEmprendedorScreen
-      }
-    />
   </Stack.Navigator>
 );
 
@@ -149,6 +126,35 @@ const RootNavigator = () => {
     onboardingCompleted,
     setOnboardingCompleted,
   ] = useState(false);
+
+  // ==================================================
+  // "EXPLORAR" MIENTRAS EL PERFIL ESTÁ PENDIENTE
+  // ==================================================
+  //
+  // Antes, un actor cultural pendiente solo veía
+  // PendienteAprobacionScreen sin poder acceder al resto
+  // de la app. Ahora puede elegir "Explorar" desde ahí y
+  // pasar a NavigationDrawer (Home) con funcionalidad
+  // reducida. No hace falta ningún useEffect para
+  // "desbloquear" al aprobarse: en cuanto
+  // estadoVerificacion cambia a "aprobado", estaPendiente
+  // se vuelve false solo y NavigationDrawer ya se muestra
+  // completo.
+  //
+  // Se reinicia a false al cerrar sesión, para que la
+  // próxima cuenta que inicie sesión (aprobada o no) no
+  // arrastre el "Explorar" de la sesión anterior.
+
+  const [
+    explorando,
+    setExplorando,
+  ] = useState(false);
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setExplorando(false);
+    }
+  }, [isLoggedIn]);
 
   // ==================================================
   // COMPROBAR ONBOARDING
@@ -282,9 +288,13 @@ const RootNavigator = () => {
     estadoVerificacion ===
       ESTADOS_VERIFICACION.PENDIENTE;
 
-  if (estaPendiente) {
+  if (estaPendiente && !explorando) {
     return (
-      <PendienteAprobacionScreen />
+      <PendienteAprobacionScreen
+        onExplorar={() =>
+          setExplorando(true)
+        }
+      />
     );
   }
 
