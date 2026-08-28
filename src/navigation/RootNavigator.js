@@ -29,6 +29,8 @@ import SeleccionarActorScreen from "../screens/auth/SeleccionarActorScreen";
 import RegistroActorScreen from "../screens/auth/RegistroActorScreen";
 import RegistroTuristaScreen from "../screens/auth/RegistroTuristaScreen";
 import PendienteAprobacionScreen from "../screens/auth/PendienteAprobacionScreen";
+import SeleccionarInteresesScreen from "../screens/auth/SeleccionarInteresesScreen";
+import SolicitarUbicacionScreen from "../screens/auth/SolicitarUbicacionScreen";
 
 import NavigationDrawer from "./navigationDrawer";
 
@@ -81,11 +83,19 @@ const AuthStack = () => (
     />
 
     <Stack.Screen
-      name="RegistroTurista"
-      component={
-        RegistroTuristaScreen
-      }
-    />
+  name="RegistroTurista"
+  component={RegistroTuristaScreen}
+/>
+
+  <Stack.Screen
+    name="SeleccionarIntereses"
+    component={SeleccionarInteresesScreen}
+  />
+
+  <Stack.Screen
+    name="SolicitarUbicacion"
+    component={SolicitarUbicacionScreen}
+  />
 
     <Stack.Screen 
       name="RegistroActor" 

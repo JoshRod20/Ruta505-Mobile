@@ -2,18 +2,6 @@ import { useState } from "react";
 import { registrarUsuario } from "../services/registro";
 import { mapFirebaseError } from "../utils/firebaseErrors";
 
-/**
- * Hook compartido para los formularios de registro móvil.
- *
- * A diferencia de la web, no recibe `rutaExito` ni navega al terminar:
- * en cuanto la cuenta se crea, Firebase autentica al usuario solo,
- * AuthContext lo detecta, y RootNavigator cambia de pantalla
- * automáticamente (a Home o a Pendiente de aprobación).
- *
- * @param {object} initialValues - valores iniciales del formulario,
- *   incluyendo email, password, confirmPassword y los campos propios
- *   de cada rol (ej. nombreArtesano, especialidad...).
- */
 export function useRegistroForm({ initialValues }) {
   const [form, setForm] = useState(initialValues);
   const [mostrarPassword, setMostrarPassword] = useState(false);
@@ -34,13 +22,10 @@ export function useRegistroForm({ initialValues }) {
       setError("La contraseña debe tener al menos 6 caracteres.");
       return false;
     }
+    setError("");
     return true;
   };
 
-  /**
-   * @param {object} datosPerfil - role, actorType, estadoVerificacion y
-   *   los campos específicos ya armados a partir de `form`.
-   */
   const registrar = async (datosPerfil) => {
     setError("");
     if (!validarCredenciales()) return;
@@ -64,7 +49,9 @@ export function useRegistroForm({ initialValues }) {
     mostrarConfirmPassword,
     setMostrarConfirmPassword,
     error,
+    setError,
     cargando,
+    validarCredenciales, // <- nuevo, expuesto para validar antes de navegar
     registrar,
   };
 }

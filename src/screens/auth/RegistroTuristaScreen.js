@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  ActivityIndicator,
   KeyboardAvoidingView,
   ScrollView,
   Platform,
@@ -104,8 +103,7 @@ const RegistroTuristaScreen = ({ navigation }) => {
     mostrarConfirmPassword,
     setMostrarConfirmPassword,
     error,
-    cargando,
-    registrar,
+    validarCredenciales,
   } = useRegistroForm({
     initialValues: {
       nombreCompleto: "",
@@ -165,16 +163,30 @@ const RegistroTuristaScreen = ({ navigation }) => {
     handleCerrarModalPais();
   };
 
+  // ==================================================
+  // ENVIAR FORMULARIO
+  // ==================================================
+  //
+  // No crea la cuenta todavía: valida credenciales y navega
+  // a SeleccionarIntereses, arrastrando los datos del perfil
+  // (incluyendo el role) para armar el registro completo al
+  // final del flujo (Intereses -> Ubicación -> Firebase).
+  //
   const handleSubmit = () => {
-    registrar({
-      role: ROLES.TURISTA,
-      nombreCompleto: form.nombreCompleto,
-      email: form.email,
-      telefono: form.telefono,
-      edad: form.edad,
-      tipoTurista: form.paisOrigen === "Nicaragua" ? "nacional" : "extranjero",
-      paisOrigen: form.paisOrigen,
-      idiomaPreferido: form.idiomaPreferido,
+    if (!validarCredenciales()) return;
+
+    navigation.navigate("SeleccionarIntereses", {
+      datosRegistro: {
+        role: ROLES.TURISTA,
+        nombreCompleto: form.nombreCompleto,
+        email: form.email.trim(),
+        password: form.password,
+        telefono: form.telefono,
+        edad: form.edad,
+        tipoTurista: form.paisOrigen === "Nicaragua" ? "nacional" : "extranjero",
+        paisOrigen: form.paisOrigen,
+        idiomaPreferido: form.idiomaPreferido,
+      },
     });
   };
 
@@ -358,20 +370,12 @@ const RegistroTuristaScreen = ({ navigation }) => {
           ) : null}
 
           <TouchableOpacity
-            style={[
-              RegistroTuristaScreenStyle.boton,
-              cargando && RegistroTuristaScreenStyle.botonDeshabilitado,
-            ]}
+            style={RegistroTuristaScreenStyle.boton}
             onPress={handleSubmit}
-            disabled={cargando}
           >
-            {cargando ? (
-              <ActivityIndicator color="#ffffff" />
-            ) : (
-              <Text style={RegistroTuristaScreenStyle.botonTexto}>
-                Registrarse
-              </Text>
-            )}
+            <Text style={RegistroTuristaScreenStyle.botonTexto}>
+              Registrarse
+            </Text>
           </TouchableOpacity>
 
         </ScrollView>
