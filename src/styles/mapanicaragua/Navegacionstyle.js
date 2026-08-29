@@ -6,6 +6,25 @@ export const navegacionStyle = StyleSheet.create({
     backgroundColor: "#000",
   },
 
+  llegadaContainer: {
+    flex: 1,
+    backgroundColor: "#1D7A46",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 24,
+  },
+  llegadaIcono: {
+    fontSize: 64,
+    marginBottom: 16,
+  },
+  llegadaTitulo: {
+    color: "#FFFFFF",
+    fontSize: 24,
+    fontWeight: "700",
+    marginBottom: 32,
+    textAlign: "center",
+  },
+
   marcadorDestino: {
     backgroundColor: "#FFFFFF",
     borderRadius: 20,
@@ -19,7 +38,7 @@ export const navegacionStyle = StyleSheet.create({
 
   panelInstruccion: {
     position: "absolute",
-    top: 70,
+    top: 80,
     left: 16,
     right: 16,
     backgroundColor: "#123B63",
