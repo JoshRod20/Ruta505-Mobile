@@ -48,12 +48,77 @@ const Stack =
 const FORCE_ONBOARDING = false;
 
 // ==================================================
+// FORZAR PANTALLA DE DESARROLLO (edición de estilos)
+// ==================================================
+//
+// Útil para entrar directo a "SeleccionarIntereses" o
+// "SolicitarUbicacion" sin pasar por todo el flujo de
+// registro. Estas pantallas dependen de route.params,
+// así que se les inyectan datos de prueba (mock) via
+// initialParams cuando la bandera está activa.
+//
+// IMPORTANTE: cambiar este valor no tiene efecto con
+// Fast Refresh (guardar el archivo). Para que tome
+// efecto hay que recargar la app por completo:
+// presiona "r" en la terminal de Expo, o cierra y
+// vuelve a abrir la app en el dispositivo/emulador.
+//
+// Además, esto solo aplica si el usuario NO está
+// autenticado (isLoggedIn === false) y ya completó el
+// onboarding, porque solo entonces se monta <AuthStack />.
+//
+// null                     = comportamiento normal (Welcome)
+// "SeleccionarIntereses"   = abre directo en Intereses
+// "SolicitarUbicacion"     = abre directo en Ubicación
+//
+
+const DEV_START_SCREEN = null; // <- cambia aquí: null | "SeleccionarIntereses" | "SolicitarUbicacion"
+
+// Con qué mock se prueba SolicitarUbicacion cuando
+// DEV_START_SCREEN === "SolicitarUbicacion".
+// "turista" = flujo con intereses (2 segmentos de progreso)
+// "actor"   = flujo directo desde registro de actor cultural
+//             (1 segmento de progreso, textos distintos)
+const DEV_MOCK_ROL = "turista"; // <- cambia aquí: "turista" | "actor"
+
+// Datos de prueba para que las pantallas no exploten
+// al recibir route.params vacío.
+const MOCK_DATOS_REGISTRO_TURISTA = {
+  role: ROLES.TURISTA,
+  nombreCompleto: "Usuario de Prueba",
+  email: "prueba@ruta505.com",
+  password: "123456",
+  telefono: "88888888",
+  edad: "25",
+  tipoTurista: "nacional",
+  paisOrigen: "Nicaragua",
+  idiomaPreferido: "Español",
+};
+
+const MOCK_DATOS_REGISTRO_ACTOR = {
+  role: ROLES.ACTOR_CULTURAL,
+  tipoActor: "artesano",
+  estadoVerificacion: ESTADOS_VERIFICACION.PENDIENTE,
+  nombreCompleto: "Actor de Prueba",
+  email: "actor@ruta505.com",
+  password: "123456",
+  cedula: "001-010101-0001A",
+  telefono: "88888888",
+  tipoTurismo: "Turismo cultural e histórico",
+};
+
+const MOCK_INTERESES = [
+  "Turismo de naturaleza / ecoturismo",
+  "Turismo cultural e histórico",
+];
+
+// ==================================================
 // STACK DE AUTENTICACIÓN
 // ==================================================
 
 const AuthStack = () => (
   <Stack.Navigator
-    initialRouteName="Welcome"
+    initialRouteName={DEV_START_SCREEN || "Welcome"}
     screenOptions={{
       headerShown: false,
     }}
@@ -83,19 +148,36 @@ const AuthStack = () => (
     />
 
     <Stack.Screen
-  name="RegistroTurista"
-  component={RegistroTuristaScreen}
-/>
+      name="RegistroTurista"
+      component={RegistroTuristaScreen}
+    />
 
-  <Stack.Screen
-    name="SeleccionarIntereses"
-    component={SeleccionarInteresesScreen}
-  />
+    <Stack.Screen
+      name="SeleccionarIntereses"
+      component={SeleccionarInteresesScreen}
+      initialParams={
+        DEV_START_SCREEN === "SeleccionarIntereses"
+          ? { datosRegistro: MOCK_DATOS_REGISTRO_TURISTA }
+          : undefined
+      }
+    />
 
-  <Stack.Screen
-    name="SolicitarUbicacion"
-    component={SolicitarUbicacionScreen}
-  />
+    <Stack.Screen
+      name="SolicitarUbicacion"
+      component={SolicitarUbicacionScreen}
+      initialParams={
+        DEV_START_SCREEN === "SolicitarUbicacion"
+          ? {
+              datosRegistro:
+                DEV_MOCK_ROL === "actor"
+                  ? MOCK_DATOS_REGISTRO_ACTOR
+                  : MOCK_DATOS_REGISTRO_TURISTA,
+              intereses:
+                DEV_MOCK_ROL === "actor" ? undefined : MOCK_INTERESES,
+            }
+          : undefined
+      }
+    />
 
     <Stack.Screen 
       name="RegistroActor" 

@@ -1,4 +1,5 @@
 import { StyleSheet, Dimensions } from "react-native";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -24,6 +25,7 @@ const SeleccionarActorScreenStyle = StyleSheet.create({
     width: "100%",
     height: 250,
     position: "relative",
+    marginTop: hp("3.4%"),
   },
 
   headerPatron: {

@@ -219,6 +219,7 @@ const RegistroTuristaScreen = ({ navigation }) => {
         </ImageBackground>
 
         <Svg
+          pointerEvents="none"
           style={RegistroTuristaScreenStyle.curva}
           width={SCREEN_WIDTH}
           height={CURVE_HEIGHT}

@@ -31,6 +31,8 @@ const LoginScreenStyle = StyleSheet.create({
 
     height: 290,
 
+    marginTop: hp("3.4%"),
+
     position: "relative",
   },
 
