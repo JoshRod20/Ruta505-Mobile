@@ -1,17 +1,17 @@
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import {
-  View,
+  Dimensions,
+  FlatList,
+  ImageBackground,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
-  KeyboardAvoidingView,
-  ScrollView,
-  Platform,
-  ImageBackground,
-  Dimensions,
-  Modal,
-  FlatList,
+  View,
 } from "react-native";
 
 import Svg, { Path } from "react-native-svg";
@@ -19,28 +19,41 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useRegistroForm } from "../../hooks/useRegistroForm";
-import { ROLES, ESTADOS_VERIFICACION } from "../../constants/roles";
-// ⚠️ Asumí esta ruta para ACTORES_CULTURALES_CONFIG (misma carpeta que roles.js).
-// Ajusta el import si el archivo vive en otro lugar.
-import { ACTORES_CULTURALES_CONFIG } from "../../constants/actoresCulturales";
 
-import RegistroActorFormStyle from "../../styles/auth/RegistroActorFormStyle";
+import {
+  ESTADOS_VERIFICACION,
+  ROLES,
+} from "../../constants/roles";
+
+import {
+  ACTORES_CULTURALES_CONFIG,
+} from "../../constants/actoresCulturales";
+
+import {
+  CEDULA_REGEX,
+  EMAIL_REGEX,
+  TELEFONO_REGEX,
+} from "../../utils/validators";
+
+import RegistroActorFormStyle
+  from "../../styles/auth/RegistroActorFormStyle";
 
 // ==================================================
-// DIMENSIONES DE LA CURVA
+// DIMENSIONES
 // ==================================================
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const { width: SCREEN_WIDTH } =
+  Dimensions.get("window");
 
 const CURVE_HEIGHT = 130;
 
 // ==================================================
 // CURVA
-// IDÉNTICA A RegistroTuristaScreen
 // ==================================================
 
 const curvaPath = (w) => `
   M0,${CURVE_HEIGHT * 0.99}
+
   C${w * 0.2},${CURVE_HEIGHT * 0.98}
    ${w * 0.38},${CURVE_HEIGHT * 0.85}
    ${w * 0.5},${CURVE_HEIGHT * 0.62}
@@ -60,23 +73,33 @@ const curvaPath = (w) => `
 `;
 
 // ==================================================
-// RegistroActorScreen
+// COMPONENTE
 // ==================================================
 
-const RegistroActorScreen = ({ navigation, route }) => {
+const RegistroActorScreen = ({
+  navigation,
+  route,
+}) => {
   const insets = useSafeAreaInsets();
 
   // ==================================================
-  // TIPO DE ACTOR (viene de SeleccionarActorScreen)
+  // ACTOR
   // ==================================================
 
-  const { tipoActor } = route.params || {};
+  const { tipoActor } =
+    route.params || {};
 
-  const config = ACTORES_CULTURALES_CONFIG[tipoActor];
+  const config =
+    ACTORES_CULTURALES_CONFIG[
+      tipoActor
+    ];
 
-  const tiposTurismoDisponibles = config?.tiposTurismo ?? [];
+  const tiposTurismoDisponibles =
+    config?.tiposTurismo ?? [];
 
-  const tituloEncabezado = config?.tituloEncabezado || "Datos Generales";
+  const tituloEncabezado =
+    config?.tituloEncabezado ||
+    "Datos Generales";
 
   // ==================================================
   // FORMULARIO
@@ -107,22 +130,135 @@ const RegistroActorScreen = ({ navigation, route }) => {
   });
 
   // ==================================================
-  // MODAL TIPO DE TURISMO
+  // CAMPOS TOCADOS
   // ==================================================
 
-  const [modalTurismoVisible, setModalTurismoVisible] = useState(false);
+  const [tocado, setTocado] =
+    useState({});
 
-  const [busquedaTurismo, setBusquedaTurismo] = useState("");
+  const marcarTocado = (campo) => {
+    setTocado((prev) => ({
+      ...prev,
+      [campo]: true,
+    }));
+  };
 
-  const tiposTurismoFiltrados = useMemo(() => {
-    if (!busquedaTurismo.trim()) {
-      return tiposTurismoDisponibles;
-    }
+  // ==================================================
+  // VALIDACIONES
+  // ==================================================
 
-    return tiposTurismoDisponibles.filter((tipo) =>
-      tipo.toLowerCase().includes(busquedaTurismo.trim().toLowerCase()),
+  const nombreInvalido =
+    tocado.nombreCompleto &&
+    form.nombreCompleto
+      .trim()
+      .length === 0;
+
+  const emailVacio =
+    tocado.email &&
+    form.email
+      .trim()
+      .length === 0;
+
+  const emailFormatoInvalido =
+    tocado.email &&
+    form.email
+      .trim()
+      .length > 0 &&
+    !EMAIL_REGEX.test(
+      form.email.trim()
     );
-  }, [busquedaTurismo, tiposTurismoDisponibles]);
+
+  const emailInvalido =
+    emailVacio ||
+    emailFormatoInvalido;
+
+  const cedulaVacia =
+    tocado.cedula &&
+    form.cedula
+      .trim()
+      .length === 0;
+
+  const cedulaFormatoInvalido =
+    tocado.cedula &&
+    form.cedula
+      .trim()
+      .length > 0 &&
+    !CEDULA_REGEX.test(
+      form.cedula.trim()
+    );
+
+  const cedulaInvalida =
+    cedulaVacia ||
+    cedulaFormatoInvalido;
+
+  const telefonoVacio =
+    tocado.telefono &&
+    form.telefono
+      .trim()
+      .length === 0;
+
+  const telefonoFormatoInvalido =
+    tocado.telefono &&
+    form.telefono
+      .trim()
+      .length > 0 &&
+    !TELEFONO_REGEX.test(
+      form.telefono.trim()
+    );
+
+  const telefonoInvalido =
+    telefonoVacio ||
+    telefonoFormatoInvalido;
+
+  const passwordCorta =
+    tocado.password &&
+    (
+      form.password.length === 0 ||
+      form.password.length < 6
+    );
+
+  const passwordsNoCoinciden =
+    tocado.confirmPassword &&
+    (
+      form.confirmPassword.length === 0 ||
+      form.password !==
+        form.confirmPassword
+    );
+
+  // ==================================================
+  // MODAL TURISMO
+  // ==================================================
+
+  const [
+    modalTurismoVisible,
+    setModalTurismoVisible,
+  ] = useState(false);
+
+  const [
+    busquedaTurismo,
+    setBusquedaTurismo,
+  ] = useState("");
+
+  const tiposTurismoFiltrados =
+    useMemo(() => {
+      if (!busquedaTurismo.trim()) {
+        return tiposTurismoDisponibles;
+      }
+
+      return tiposTurismoDisponibles.filter(
+        (tipo) =>
+          tipo
+            .toLowerCase()
+            .includes(
+              busquedaTurismo
+                .trim()
+                .toLowerCase()
+            )
+      );
+    }, [
+      busquedaTurismo,
+      tiposTurismoDisponibles,
+    ]);
 
   // ==================================================
   // VOLVER
@@ -133,35 +269,44 @@ const RegistroActorScreen = ({ navigation, route }) => {
   };
 
   // ==================================================
-  // CERRAR MODAL
+  // MODAL
   // ==================================================
 
-  const handleCerrarModalTurismo = () => {
-    setModalTurismoVisible(false);
-    setBusquedaTurismo("");
-  };
+  const handleCerrarModalTurismo =
+    () => {
+      setModalTurismoVisible(false);
+      setBusquedaTurismo("");
+    };
+
+  const handleSeleccionarTipoTurismo =
+    (tipo) => {
+      handleChange(
+        "tipoTurismo",
+        tipo
+      );
+
+      marcarTocado(
+        "tipoTurismo"
+      );
+
+      handleCerrarModalTurismo();
+    };
 
   // ==================================================
-  // SELECCIONAR TIPO DE TURISMO
+  // SUBMIT
   // ==================================================
 
-  const handleSeleccionarTipoTurismo = (tipo) => {
-    handleChange("tipoTurismo", tipo);
-
-    handleCerrarModalTurismo();
-  };
-
-  // ==================================================
-  // ENVIAR FORMULARIO
-  // ==================================================
-  //
-  // No crea la cuenta todavía: valida credenciales (incluyendo
-  // los campos propios de esta pantalla) y navega a
-  // SolicitarUbicacion, arrastrando los datos del perfil
-  // (role, tipoActor, estadoVerificacion incluidos) para
-  // armar el registro completo al final del flujo.
-  //
   const handleSubmit = () => {
+    setTocado({
+      nombreCompleto: true,
+      email: true,
+      cedula: true,
+      telefono: true,
+      password: true,
+      confirmPassword: true,
+      tipoTurismo: true,
+    });
+
     if (
       !validarCredenciales([
         "nombreCompleto",
@@ -169,40 +314,57 @@ const RegistroActorScreen = ({ navigation, route }) => {
         "cedula",
         "tipoTurismo",
       ])
-    )
+    ) {
       return;
+    }
 
-    navigation.navigate("SolicitarUbicacion", {
-      datosRegistro: {
-        role: ROLES.ACTOR_CULTURAL,
-        tipoActor,
-        estadoVerificacion: ESTADOS_VERIFICACION.PENDIENTE,
-        nombreCompleto: form.nombreCompleto,
-        email: form.email.trim(),
-        password: form.password,
-        cedula: form.cedula,
-        telefono: form.telefono,
-        tipoTurismo: form.tipoTurismo,
-      },
-    });
+    navigation.navigate(
+      "SolicitarUbicacion",
+      {
+        datosRegistro: {
+          role:
+            ROLES.ACTOR_CULTURAL,
+
+          tipoActor,
+
+          estadoVerificacion:
+            ESTADOS_VERIFICACION
+              .PENDIENTE,
+
+          nombreCompleto:
+            form.nombreCompleto,
+
+          email:
+            form.email.trim(),
+
+          password:
+            form.password,
+
+          cedula:
+            form.cedula,
+
+          telefono:
+            form.telefono,
+
+          tipoTurismo:
+            form.tipoTurismo,
+        },
+      }
+    );
   };
 
   // ==================================================
-  // GUARD — tipoActor inválido o ausente
+  // GUARD
   // ==================================================
-  //
-  // Si route.params.tipoActor llega undefined o no existe en
-  // ACTORES_CULTURALES_CONFIG (navegación rota, deep link mal
-  // formado, etc.), antes el formulario se mostraba igual con
-  // tiposTurismoDisponibles = [] en silencio, y tipoActor
-  // undefined terminaba viajando hasta setDoc en Firestore
-  // (que lo rechaza) recién al final de todo el flujo. Ahora
-  // se corta aquí, antes de que el usuario pierda tiempo
-  // llenando un formulario que no va a poder enviarse.
-  //
+
   if (!config) {
     return (
-      <View style={RegistroActorFormStyle.contenedor}>
+      <View
+        style={
+          RegistroActorFormStyle
+            .contenedor
+        }
+      >
         <View
           style={{
             flex: 1,
@@ -211,15 +373,37 @@ const RegistroActorScreen = ({ navigation, route }) => {
             padding: 24,
           }}
         >
-          <Text style={RegistroActorFormStyle.error}>
-            No se pudo determinar el tipo de actor cultural. Vuelve a la
-            pantalla anterior e inténtalo de nuevo.
+          <Text
+            style={
+              RegistroActorFormStyle
+                .error
+            }
+          >
+            No se pudo determinar el
+            tipo de actor cultural.
+            Vuelve a la pantalla
+            anterior e inténtalo de
+            nuevo.
           </Text>
+
           <TouchableOpacity
-            style={[RegistroActorFormStyle.boton, { marginTop: 16 }]}
+            style={[
+              RegistroActorFormStyle
+                .boton,
+              {
+                marginTop: 16,
+              },
+            ]}
             onPress={handleVolver}
           >
-            <Text style={RegistroActorFormStyle.botonTexto}>Volver</Text>
+            <Text
+              style={
+                RegistroActorFormStyle
+                  .botonTexto
+              }
+            >
+              Volver
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -231,180 +415,384 @@ const RegistroActorScreen = ({ navigation, route }) => {
   // ==================================================
 
   return (
-    <View style={RegistroActorFormStyle.contenedor}>
+    <View
+      style={
+        RegistroActorFormStyle
+          .contenedor
+      }
+    >
       {/* ==================================================
-          HEADER CON PATRÓN + CURVA
-          IDÉNTICO A RegistroTuristaScreen
+          HEADER
+          Queda FUERA del KeyboardAvoidingView
           ================================================== */}
 
-      <View style={RegistroActorFormStyle.header}>
+      <View
+        style={
+          RegistroActorFormStyle
+            .header
+        }
+      >
         <ImageBackground
-          source={require("../../assets/images/Patron-2.png")}
-          style={RegistroActorFormStyle.headerPatron}
+          source={require(
+            "../../assets/images/Patron-2.png"
+          )}
+          style={
+            RegistroActorFormStyle
+              .headerPatron
+          }
           resizeMode="cover"
         >
-          {/* ================================================
-              BOTÓN VOLVER
-              ================================================ */}
-
           <TouchableOpacity
             style={[
-              RegistroActorFormStyle.botonVolver,
+              RegistroActorFormStyle
+                .botonVolver,
               {
-                top: insets.top + 10,
+                top:
+                  insets.top + 10,
               },
             ]}
             onPress={handleVolver}
             activeOpacity={0.7}
           >
-            <Ionicons name="chevron-back" size={24} color="#2b2b2b" />
+            <Ionicons
+              name="chevron-back"
+              size={24}
+              color="#2b2b2b"
+            />
           </TouchableOpacity>
         </ImageBackground>
 
-        {/* ================================================
-            CURVA SVG
-            EXACTAMENTE LA MISMA DE REGISTROTURISTASCREEN
-            ================================================ */}
-
         <Svg
           pointerEvents="none"
-          style={RegistroActorFormStyle.curva}
+          style={
+            RegistroActorFormStyle
+              .curva
+          }
           width={SCREEN_WIDTH}
           height={CURVE_HEIGHT}
-          viewBox={`0 0 ${SCREEN_WIDTH} ${CURVE_HEIGHT}`}
+          viewBox={
+            `0 0 ${SCREEN_WIDTH} ${CURVE_HEIGHT}`
+          }
         >
-          <Path fill="#ffffff" d={curvaPath(SCREEN_WIDTH)} />
+          <Path
+            fill="#ffffff"
+            d={
+              curvaPath(
+                SCREEN_WIDTH
+              )
+            }
+          />
         </Svg>
       </View>
 
       {/* ==================================================
-          TÍTULO DE SECCIÓN
+          TÍTULO
+          También queda fuera
           ================================================== */}
 
-      <Text style={RegistroActorFormStyle.titulo}>{tituloEncabezado}</Text>
+      <Text
+        style={
+          RegistroActorFormStyle
+            .titulo
+        }
+      >
+        {tituloEncabezado}
+      </Text>
 
       {/* ==================================================
-          FORMULARIO
+          KEYBOARD AVOIDING VIEW
           ================================================== */}
 
       <KeyboardAvoidingView
-        style={RegistroActorFormStyle.scroll}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={[
+          RegistroActorFormStyle
+            .scroll,
+          {
+            flex: 1,
+          },
+        ]}
+        behavior={
+          Platform.OS === "ios"
+            ? "padding"
+            : "height"
+        }
+        keyboardVerticalOffset={0}
+        enabled
       >
         <ScrollView
-          contentContainerStyle={RegistroActorFormStyle.card}
+          style={{
+            flex: 1,
+          }}
+          contentContainerStyle={
+            RegistroActorFormStyle.card
+          }
           keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
+          keyboardDismissMode={
+            Platform.OS === "ios"
+              ? "interactive"
+              : "on-drag"
+          }
+          showsVerticalScrollIndicator={
+            false
+          }
+          nestedScrollEnabled
         >
           {/* ==================================================
-              NOMBRE COMPLETO
+              NOMBRE
               ================================================== */}
 
           <TextInput
-            style={RegistroActorFormStyle.input}
+            style={[
+              RegistroActorFormStyle
+                .input,
+
+              nombreInvalido &&
+                RegistroActorFormStyle
+                  .inputInvalido,
+            ]}
             placeholder="Nombre completo/Negocio"
             placeholderTextColor="#a8a8a8"
-            value={form.nombreCompleto}
-            onChangeText={(texto) => handleChange("nombreCompleto", texto)}
+            value={
+              form.nombreCompleto
+            }
+            onChangeText={(texto) =>
+              handleChange(
+                "nombreCompleto",
+                texto
+              )
+            }
+            onBlur={() =>
+              marcarTocado(
+                "nombreCompleto"
+              )
+            }
           />
 
+          {nombreInvalido ? (
+            <Text
+              style={
+                RegistroActorFormStyle
+                  .errorCampo
+              }
+            >
+              El nombre completo/negocio
+              es obligatorio.
+            </Text>
+          ) : null}
+
           {/* ==================================================
-              CORREO
+              EMAIL
               ================================================== */}
 
           <TextInput
-            style={RegistroActorFormStyle.input}
+            style={[
+              RegistroActorFormStyle
+                .input,
+
+              emailInvalido &&
+                RegistroActorFormStyle
+                  .inputInvalido,
+            ]}
             placeholder="Correo electrónico"
             placeholderTextColor="#a8a8a8"
             autoCapitalize="none"
             keyboardType="email-address"
             value={form.email}
-            onChangeText={(texto) => handleChange("email", texto)}
+            onChangeText={(texto) =>
+              handleChange(
+                "email",
+                texto
+              )
+            }
+            onBlur={() =>
+              marcarTocado("email")
+            }
           />
 
+          {emailVacio ? (
+            <Text
+              style={
+                RegistroActorFormStyle
+                  .errorCampo
+              }
+            >
+              El correo es obligatorio.
+            </Text>
+          ) : emailFormatoInvalido ? (
+            <Text
+              style={
+                RegistroActorFormStyle
+                  .errorCampo
+              }
+            >
+              Escribe un correo
+              electrónico válido.
+            </Text>
+          ) : null}
+
           {/* ==================================================
-              CÉDULA DE IDENTIDAD
+              CÉDULA
               ================================================== */}
 
           <TextInput
-            style={RegistroActorFormStyle.input}
+            style={[
+              RegistroActorFormStyle
+                .input,
+
+              cedulaInvalida &&
+                RegistroActorFormStyle
+                  .inputInvalido,
+            ]}
             placeholder="Cédula de identidad"
             placeholderTextColor="#a8a8a8"
             autoCapitalize="characters"
             keyboardType="default"
             maxLength={16}
             value={form.cedula}
-            onChangeText={(texto) => handleChange("cedula", texto)}
+            onChangeText={(texto) =>
+              handleChange(
+                "cedula",
+                texto
+              )
+            }
+            onBlur={() =>
+              marcarTocado(
+                "cedula"
+              )
+            }
           />
+
+          {cedulaVacia ? (
+            <Text
+              style={
+                RegistroActorFormStyle
+                  .errorCampo
+              }
+            >
+              La cédula es obligatoria.
+            </Text>
+          ) : cedulaFormatoInvalido ? (
+            <Text
+              style={
+                RegistroActorFormStyle
+                  .errorCampo
+              }
+            >
+              La cédula debe tener el
+              formato 000-000000-0000X.
+            </Text>
+          ) : null}
 
           {/* ==================================================
               TELÉFONO
               ================================================== */}
 
           <TextInput
-            style={RegistroActorFormStyle.input}
+            style={[
+              RegistroActorFormStyle
+                .input,
+
+              telefonoInvalido &&
+                RegistroActorFormStyle
+                  .inputInvalido,
+            ]}
             placeholder="Teléfono"
             placeholderTextColor="#a8a8a8"
             keyboardType="phone-pad"
             value={form.telefono}
-            onChangeText={(texto) => handleChange("telefono", texto)}
+            onChangeText={(texto) =>
+              handleChange(
+                "telefono",
+                texto
+              )
+            }
+            onBlur={() =>
+              marcarTocado(
+                "telefono"
+              )
+            }
           />
 
+          {telefonoVacio ? (
+            <Text
+              style={
+                RegistroActorFormStyle
+                  .errorCampo
+              }
+            >
+              El teléfono es obligatorio.
+            </Text>
+          ) : telefonoFormatoInvalido ? (
+            <Text
+              style={
+                RegistroActorFormStyle
+                  .errorCampo
+              }
+            >
+              Escribe un número de
+              teléfono válido.
+            </Text>
+          ) : null}
+
           {/* ==================================================
-              CONTRASEÑA
+              PASSWORD
               ================================================== */}
 
-          <View style={RegistroActorFormStyle.inputWrap}>
+          <View
+            style={
+              RegistroActorFormStyle
+                .inputWrap
+            }
+          >
             <TextInput
               style={[
-                RegistroActorFormStyle.input,
-                RegistroActorFormStyle.inputPassword,
+                RegistroActorFormStyle
+                  .input,
+
+                RegistroActorFormStyle
+                  .inputPassword,
+
+                passwordCorta &&
+                  RegistroActorFormStyle
+                    .inputInvalido,
               ]}
               placeholder="Contraseña"
               placeholderTextColor="#a8a8a8"
-              secureTextEntry={!mostrarPassword}
+              secureTextEntry={
+                !mostrarPassword
+              }
               value={form.password}
-              onChangeText={(texto) => handleChange("password", texto)}
+              onChangeText={(texto) =>
+                handleChange(
+                  "password",
+                  texto
+                )
+              }
+              onBlur={() =>
+                marcarTocado(
+                  "password"
+                )
+              }
             />
 
             <TouchableOpacity
-              style={RegistroActorFormStyle.iconoOjo}
-              onPress={() => setMostrarPassword((v) => !v)}
-              activeOpacity={0.7}
-            >
-              <Ionicons
-                name={mostrarPassword ? "eye-off-outline" : "eye-outline"}
-                size={22}
-                color="#086338"
-              />
-            </TouchableOpacity>
-          </View>
-
-          {/* ==================================================
-              CONFIRMAR CONTRASEÑA
-              ================================================== */}
-
-          <View style={RegistroActorFormStyle.inputWrap}>
-            <TextInput
-              style={[
-                RegistroActorFormStyle.input,
-                RegistroActorFormStyle.inputPassword,
-              ]}
-              placeholder="Confirmar contraseña"
-              placeholderTextColor="#a8a8a8"
-              secureTextEntry={!mostrarConfirmPassword}
-              value={form.confirmPassword}
-              onChangeText={(texto) => handleChange("confirmPassword", texto)}
-            />
-
-            <TouchableOpacity
-              style={RegistroActorFormStyle.iconoOjo}
-              onPress={() => setMostrarConfirmPassword((v) => !v)}
+              style={
+                RegistroActorFormStyle
+                  .iconoOjo
+              }
+              onPress={() =>
+                setMostrarPassword(
+                  (value) =>
+                    !value
+                )
+              }
               activeOpacity={0.7}
             >
               <Ionicons
                 name={
-                  mostrarConfirmPassword ? "eye-off-outline" : "eye-outline"
+                  mostrarPassword
+                    ? "eye-off-outline"
+                    : "eye-outline"
                 }
                 size={22}
                 color="#086338"
@@ -412,135 +800,340 @@ const RegistroActorScreen = ({ navigation, route }) => {
             </TouchableOpacity>
           </View>
 
+          {passwordCorta ? (
+            <Text
+              style={
+                RegistroActorFormStyle
+                  .errorCampo
+              }
+            >
+              {
+                form.password
+                  .length === 0
+                  ? "La contraseña es obligatoria."
+                  : "La contraseña debe tener al menos 6 caracteres."
+              }
+            </Text>
+          ) : null}
+
           {/* ==================================================
-              TIPO DE TURISMO
+              CONFIRMAR PASSWORD
+              ================================================== */}
+
+          <View
+            style={
+              RegistroActorFormStyle
+                .inputWrap
+            }
+          >
+            <TextInput
+              style={[
+                RegistroActorFormStyle
+                  .input,
+
+                RegistroActorFormStyle
+                  .inputPassword,
+
+                passwordsNoCoinciden &&
+                  RegistroActorFormStyle
+                    .inputInvalido,
+              ]}
+              placeholder="Confirmar contraseña"
+              placeholderTextColor="#a8a8a8"
+              secureTextEntry={
+                !mostrarConfirmPassword
+              }
+              value={
+                form.confirmPassword
+              }
+              onChangeText={(texto) =>
+                handleChange(
+                  "confirmPassword",
+                  texto
+                )
+              }
+              onBlur={() =>
+                marcarTocado(
+                  "confirmPassword"
+                )
+              }
+            />
+
+            <TouchableOpacity
+              style={
+                RegistroActorFormStyle
+                  .iconoOjo
+              }
+              onPress={() =>
+                setMostrarConfirmPassword(
+                  (value) =>
+                    !value
+                )
+              }
+              activeOpacity={0.7}
+            >
+              <Ionicons
+                name={
+                  mostrarConfirmPassword
+                    ? "eye-off-outline"
+                    : "eye-outline"
+                }
+                size={22}
+                color="#086338"
+              />
+            </TouchableOpacity>
+          </View>
+
+          {passwordsNoCoinciden ? (
+            <Text
+              style={
+                RegistroActorFormStyle
+                  .errorCampo
+              }
+            >
+              {
+                form.confirmPassword
+                  .length === 0
+                  ? "Confirma tu contraseña."
+                  : "Las contraseñas no coinciden."
+              }
+            </Text>
+          ) : null}
+
+          {/* ==================================================
+              TURISMO
               ================================================== */}
 
           <TouchableOpacity
-            style={RegistroActorFormStyle.dropdownInput}
-            onPress={() => setModalTurismoVisible(true)}
+            style={[
+              RegistroActorFormStyle
+                .dropdownInput,
+
+              tocado.tipoTurismo &&
+                !form.tipoTurismo &&
+                RegistroActorFormStyle
+                  .inputInvalido,
+            ]}
+            onPress={() =>
+              setModalTurismoVisible(
+                true
+              )
+            }
             activeOpacity={0.8}
           >
             <Text
               style={[
-                RegistroActorFormStyle.dropdownTexto,
-                !form.tipoTurismo && RegistroActorFormStyle.dropdownPlaceholder,
+                RegistroActorFormStyle
+                  .dropdownTexto,
+
+                !form.tipoTurismo &&
+                  RegistroActorFormStyle
+                    .dropdownPlaceholder,
               ]}
               numberOfLines={1}
             >
-              {form.tipoTurismo || "Tipo de turismo"}
+              {
+                form.tipoTurismo ||
+                "Tipo de turismo"
+              }
             </Text>
 
-            <Ionicons name="chevron-down-outline" size={20} color="#086338" />
+            <Ionicons
+              name="chevron-down-outline"
+              size={20}
+              color="#086338"
+            />
           </TouchableOpacity>
+
+          {tocado.tipoTurismo &&
+          !form.tipoTurismo ? (
+            <Text
+              style={
+                RegistroActorFormStyle
+                  .errorCampo
+              }
+            >
+              Selecciona un tipo de
+              turismo.
+            </Text>
+          ) : null}
 
           {/* ==================================================
               ERROR
               ================================================== */}
 
           {error ? (
-            <Text style={RegistroActorFormStyle.error}>{error}</Text>
+            <Text
+              style={
+                RegistroActorFormStyle
+                  .error
+              }
+            >
+              {error}
+            </Text>
           ) : null}
 
           {/* ==================================================
-              BOTÓN REGISTRARSE
+              BOTÓN
               ================================================== */}
 
           <TouchableOpacity
-            style={RegistroActorFormStyle.boton}
+            style={
+              RegistroActorFormStyle
+                .boton
+            }
             onPress={handleSubmit}
           >
-            <Text style={RegistroActorFormStyle.botonTexto}>Registrarse</Text>
+            <Text
+              style={
+                RegistroActorFormStyle
+                  .botonTexto
+              }
+            >
+              Registrarse
+            </Text>
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
 
       {/* ==================================================
-          MODAL — TIPO DE TURISMO
+          MODAL TURISMO
           ================================================== */}
 
       <Modal
-        visible={modalTurismoVisible}
+        visible={
+          modalTurismoVisible
+        }
         transparent
         animationType="fade"
-        onRequestClose={handleCerrarModalTurismo}
+        onRequestClose={
+          handleCerrarModalTurismo
+        }
       >
         <KeyboardAvoidingView
-          style={RegistroActorFormStyle.modalFondo}
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={
+            RegistroActorFormStyle
+              .modalFondo
+          }
+          behavior={
+            Platform.OS === "ios"
+              ? "padding"
+              : "height"
+          }
+          enabled
         >
-          {/* ================================================
-              FONDO PARA CERRAR MODAL
-              ================================================ */}
-
           <TouchableOpacity
-            style={RegistroActorFormStyle.modalFondoTouch}
+            style={
+              RegistroActorFormStyle
+                .modalFondoTouch
+            }
             activeOpacity={1}
-            onPress={handleCerrarModalTurismo}
+            onPress={
+              handleCerrarModalTurismo
+            }
           />
 
-          {/* ================================================
-              CAJA DEL MODAL
-              ================================================ */}
-
-          <View style={RegistroActorFormStyle.modalCaja}>
-            <Text style={RegistroActorFormStyle.modalTitulo}>
-              Selecciona tu tipo de turismo
+          <View
+            style={
+              RegistroActorFormStyle
+                .modalCaja
+            }
+          >
+            <Text
+              style={
+                RegistroActorFormStyle
+                  .modalTitulo
+              }
+            >
+              Selecciona tu tipo de
+              turismo
             </Text>
 
-            {/* ================================================
-                BUSCADOR
-                ================================================ */}
-
-            <View style={RegistroActorFormStyle.modalBusquedaWrap}>
+            <View
+              style={
+                RegistroActorFormStyle
+                  .modalBusquedaWrap
+              }
+            >
               <Ionicons
                 name="search-outline"
                 size={18}
                 color="#8a8a8a"
-                style={RegistroActorFormStyle.modalBusquedaIcono}
+                style={
+                  RegistroActorFormStyle
+                    .modalBusquedaIcono
+                }
               />
 
               <TextInput
-                style={RegistroActorFormStyle.modalBusquedaInput}
+                style={
+                  RegistroActorFormStyle
+                    .modalBusquedaInput
+                }
                 placeholder="Buscar tipo de turismo..."
                 placeholderTextColor="#a8a8a8"
-                value={busquedaTurismo}
-                onChangeText={setBusquedaTurismo}
+                value={
+                  busquedaTurismo
+                }
+                onChangeText={
+                  setBusquedaTurismo
+                }
                 autoFocus
               />
             </View>
 
-            {/* ================================================
-                LISTA
-                ================================================ */}
-
             <FlatList
-              data={tiposTurismoFiltrados}
-              keyExtractor={(item) => item}
+              data={
+                tiposTurismoFiltrados
+              }
+              keyExtractor={
+                (item) => item
+              }
               keyboardShouldPersistTaps="handled"
-              style={RegistroActorFormStyle.modalLista}
+              style={
+                RegistroActorFormStyle
+                  .modalLista
+              }
               ListEmptyComponent={
-                <Text style={RegistroActorFormStyle.modalVacioTexto}>
-                  No se encontraron tipos de turismo.
+                <Text
+                  style={
+                    RegistroActorFormStyle
+                      .modalVacioTexto
+                  }
+                >
+                  No se encontraron
+                  tipos de turismo.
                 </Text>
               }
               renderItem={({ item }) => {
-                const activo = form.tipoTurismo === item;
+                const activo =
+                  form.tipoTurismo ===
+                  item;
 
                 return (
                   <TouchableOpacity
                     style={[
-                      RegistroActorFormStyle.modalOpcion,
+                      RegistroActorFormStyle
+                        .modalOpcion,
 
-                      activo && RegistroActorFormStyle.modalOpcionActiva,
+                      activo &&
+                        RegistroActorFormStyle
+                          .modalOpcionActiva,
                     ]}
-                    onPress={() => handleSeleccionarTipoTurismo(item)}
+                    onPress={() =>
+                      handleSeleccionarTipoTurismo(
+                        item
+                      )
+                    }
                   >
                     <Text
                       style={[
-                        RegistroActorFormStyle.modalOpcionTexto,
+                        RegistroActorFormStyle
+                          .modalOpcionTexto,
 
-                        activo && RegistroActorFormStyle.modalOpcionTextoActivo,
+                        activo &&
+                          RegistroActorFormStyle
+                            .modalOpcionTextoActivo,
                       ]}
                     >
                       {item}

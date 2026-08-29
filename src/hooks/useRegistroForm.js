@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { registrarUsuario } from "../services/registro";
 import { mapFirebaseError } from "../utils/firebaseErrors";
+import { EMAIL_REGEX, CEDULA_REGEX, TELEFONO_REGEX } from "../utils/validators";
 
 // ==================================================
 // VALIDACIONES
 // ==================================================
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const CEDULA_REGEX = /^\d{3}-\d{6}-\d{4}[A-Za-z]$/;
-const TELEFONO_REGEX = /^[\d+\s-]{7,20}$/;
+// EMAIL_REGEX / CEDULA_REGEX / TELEFONO_REGEX ahora viven en
+// utils/validators.js para que LoginScreen use exactamente el
+// mismo patrón de correo que las pantallas de registro.
 
 // Etiquetas legibles para los mensajes de error de campos
 // requeridos. Cada pantalla decide cuáles de estos campos
@@ -123,7 +123,7 @@ export function useRegistroForm({ initialValues }) {
     error,
     setError,
     cargando,
-    validarCredenciales, // <- nuevo, expuesto para validar antes de navegar
+    validarCredenciales,
     registrar,
   };
 }

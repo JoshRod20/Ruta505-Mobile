@@ -35,6 +35,18 @@ const RegistroFormStyle = StyleSheet.create({
     height: "100%",
   },
 
+  inputInvalido: {
+  borderColor: "#d32f2f",
+  borderWidth: 1,
+},
+errorCampo: {
+  color: "#d32f2f",
+  fontSize: 12,
+  marginTop: -8,
+  marginBottom: 8,
+  marginLeft: 4,
+},
+
   botonVolver: {
     position: "absolute",
     left: 20,
