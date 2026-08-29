@@ -42,6 +42,7 @@ const LoginScreen = ({ navigation }) => {
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState("");
   const [cargando, setCargando] = useState(false);
+  const [enviandoRecuperacion, setEnviandoRecuperacion] = useState(false);
 
   const handleVolver = () => {
     navigation.goBack();
@@ -87,6 +88,12 @@ const LoginScreen = ({ navigation }) => {
       return;
     }
 
+    // Evita que un doble tap dispare múltiples envíos mientras
+    // la primera solicitud sigue en vuelo.
+    if (enviandoRecuperacion) return;
+
+    setEnviandoRecuperacion(true);
+
     try {
       await sendPasswordResetEmail(
         auth,
@@ -98,14 +105,17 @@ const LoginScreen = ({ navigation }) => {
         err.code !== "auth/invalid-email" &&
         err.code !== "auth/network-request-failed"
       ) {
+        // No revelamos si la cuenta existe o no.
         setFeedback(
           "Si el correo está registrado, te enviamos un enlace para restablecer tu contraseña."
         );
 
+        setEnviandoRecuperacion(false);
         return;
       }
 
       setError(mapFirebaseError(err.code));
+      setEnviandoRecuperacion(false);
 
       return;
     }
@@ -113,6 +123,7 @@ const LoginScreen = ({ navigation }) => {
     setFeedback(
       "Si el correo está registrado, te enviamos un enlace para restablecer tu contraseña."
     );
+    setEnviandoRecuperacion(false);
   };
 
   return (
@@ -152,6 +163,7 @@ const LoginScreen = ({ navigation }) => {
             en el último tramo sube de golpe hacia blanco. */}
 
         <Svg
+  pointerEvents="none"
   style={LoginScreenStyle.curva}
   width={SCREEN_WIDTH}
   height={CURVE_HEIGHT}
@@ -256,11 +268,16 @@ const LoginScreen = ({ navigation }) => {
           <TouchableOpacity
             style={LoginScreenStyle.enlaceWrap}
             onPress={handleForgotPassword}
+            disabled={enviandoRecuperacion}
           >
 
-            <Text style={LoginScreenStyle.enlace}>
-              ¿Olvidaste tu contraseña?
-            </Text>
+            {enviandoRecuperacion ? (
+              <ActivityIndicator color="#086338" size="small" />
+            ) : (
+              <Text style={LoginScreenStyle.enlace}>
+                ¿Olvidaste tu contraseña?
+              </Text>
+            )}
 
           </TouchableOpacity>
 

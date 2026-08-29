@@ -167,13 +167,23 @@ const RegistroTuristaScreen = ({ navigation }) => {
   // ENVIAR FORMULARIO
   // ==================================================
   //
-  // No crea la cuenta todavía: valida credenciales y navega
-  // a SeleccionarIntereses, arrastrando los datos del perfil
+  // No crea la cuenta todavía: valida credenciales (incluyendo
+  // los campos propios de esta pantalla) y navega a
+  // SeleccionarIntereses, arrastrando los datos del perfil
   // (incluyendo el role) para armar el registro completo al
   // final del flujo (Intereses -> Ubicación -> Firebase).
   //
   const handleSubmit = () => {
-    if (!validarCredenciales()) return;
+    if (
+      !validarCredenciales([
+        "nombreCompleto",
+        "telefono",
+        "edad",
+        "paisOrigen",
+        "idiomaPreferido",
+      ])
+    )
+      return;
 
     navigation.navigate("SeleccionarIntereses", {
       datosRegistro: {

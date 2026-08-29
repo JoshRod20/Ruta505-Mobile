@@ -78,8 +78,14 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const logout = async () => {
-    await signOut(auth);
-    setProfile(null);
+    try {
+      await signOut(auth);
+      // No hace falta setProfile(null) aquí: onAuthStateChanged
+      // se dispara con firebaseUser null y ya lo limpia.
+    } catch (err) {
+      console.error("Error cerrando sesión:", err);
+      throw err;
+    }
   };
 
   const { estado: estadoVerificacion, sancionVigente } = calcularEstadoEfectivo(profile);

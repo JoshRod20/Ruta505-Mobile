@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { View, Text, Image, TouchableOpacity, ActivityIndicator } from "react-native";
 import * as Location from "expo-location";
+import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import InteresesUbicacionStyle from "../../styles/auth/InteresesUbicacionStyle";
@@ -33,15 +34,19 @@ const TEXTOS_POR_ROL = {
   },
 };
 
-const SolicitarUbicacionScreen = ({ route }) => {
+const SolicitarUbicacionScreen = ({ navigation, route }) => {
   const insets = useSafeAreaInsets();
-  const { datosRegistro, intereses } = route.params;
+  const { datosRegistro, intereses } = route.params || {};
 
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState("");
 
   const textos =
-    TEXTOS_POR_ROL[datosRegistro.role] ?? TEXTOS_POR_ROL[ROLES.TURISTA];
+    TEXTOS_POR_ROL[datosRegistro?.role] ?? TEXTOS_POR_ROL[ROLES.TURISTA];
+
+  const handleVolver = () => {
+    navigation.goBack();
+  };
 
   const finalizarRegistro = async (ubicacion) => {
     const { email, password, ...perfil } = datosRegistro;
@@ -101,6 +106,38 @@ const SolicitarUbicacionScreen = ({ route }) => {
         { paddingTop: insets.top + 16 },
       ]}
     >
+      {/* ==================================================
+          BOTÓN VOLVER
+          ==================================================
+          Si registrarUsuario falla (correo inválido,
+          email-already-in-use, etc.), antes no había forma de
+          regresar a corregir los datos sin reiniciar la app.
+          Estilo en línea, igual que en SeleccionarIntereses.
+          Deshabilitado mientras `cargando` está en vuelo para
+          no interrumpir un registro que sí puede completarse.
+          ================================================== */}
+
+      <TouchableOpacity
+        onPress={handleVolver}
+        activeOpacity={0.7}
+        disabled={cargando}
+        style={{
+          position: "absolute",
+          top: insets.top + 10,
+          left: 16,
+          zIndex: 10,
+          width: 40,
+          height: 40,
+          borderRadius: 20,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "rgba(255,255,255,0.85)",
+          opacity: cargando ? 0.4 : 1,
+        }}
+      >
+        <Ionicons name="chevron-back" size={24} color="#2b2b2b" />
+      </TouchableOpacity>
+
       <View style={InteresesUbicacionStyle.barraProgreso}>
         <View
           style={[

@@ -44,8 +44,12 @@ const Stack =
 // true  = siempre muestra onboarding
 // false = utiliza AsyncStorage normalmente
 //
+// Envuelto en __DEV__ para que sea imposible que esta bandera
+// llegue activa a un build de producción por olvido, sin
+// importar el valor que quede escrito abajo.
+//
 
-const FORCE_ONBOARDING = false;
+const FORCE_ONBOARDING = __DEV__ && false;
 
 // ==================================================
 // FORZAR PANTALLA DE DESARROLLO (edición de estilos)
@@ -67,12 +71,16 @@ const FORCE_ONBOARDING = false;
 // autenticado (isLoggedIn === false) y ya completó el
 // onboarding, porque solo entonces se monta <AuthStack />.
 //
+// Igual que FORCE_ONBOARDING, va envuelto en __DEV__ para
+// que un build de producción nunca pueda arrancar en una
+// pantalla de desarrollo aunque el valor quede sin resetear.
+//
 // null                     = comportamiento normal (Welcome)
 // "SeleccionarIntereses"   = abre directo en Intereses
 // "SolicitarUbicacion"     = abre directo en Ubicación
 //
 
-const DEV_START_SCREEN = null; // <- cambia aquí: null | "SeleccionarIntereses" | "SolicitarUbicacion"
+const DEV_START_SCREEN = __DEV__ ? null : null; // <- cambia aquí: null | "SeleccionarIntereses" | "SolicitarUbicacion"
 
 // Con qué mock se prueba SolicitarUbicacion cuando
 // DEV_START_SCREEN === "SolicitarUbicacion".
@@ -197,8 +205,10 @@ const RootNavigator = () => {
   const {
     isLoggedIn,
     loadingAuth,
+    profile,
     role,
     estadoVerificacion,
+    sancion,
   } = useAuth();
 
   // ==================================================
@@ -220,18 +230,16 @@ const RootNavigator = () => {
   ] = useState(false);
 
   // ==================================================
-  // "EXPLORAR" MIENTRAS EL PERFIL ESTÁ PENDIENTE
+  // "EXPLORAR" MIENTRAS EL PERFIL NO TIENE ACCESO COMPLETO
   // ==================================================
   //
-  // Antes, un actor cultural pendiente solo veía
-  // PendienteAprobacionScreen sin poder acceder al resto
-  // de la app. Ahora puede elegir "Explorar" desde ahí y
-  // pasar a NavigationDrawer (Home) con funcionalidad
-  // reducida. No hace falta ningún useEffect para
-  // "desbloquear" al aprobarse: en cuanto
-  // estadoVerificacion cambia a "aprobado", estaPendiente
-  // se vuelve false solo y NavigationDrawer ya se muestra
-  // completo.
+  // Un actor cultural pendiente/suspendido/rechazado puede
+  // elegir "Explorar" desde PendienteAprobacionScreen y pasar
+  // a NavigationDrawer (Home) con funcionalidad reducida. No
+  // hace falta ningún useEffect para "desbloquear" al
+  // aprobarse: en cuanto estadoVerificacion cambia a
+  // "aprobado", estaRestringido se vuelve false solo y
+  // NavigationDrawer ya se muestra completo.
   //
   // Se reinicia a false al cerrar sesión, para que la
   // próxima cuenta que inicie sesión (aprobada o no) no
@@ -371,18 +379,64 @@ const RootNavigator = () => {
   }
 
   // ==================================================
-  // ACTOR CULTURAL PENDIENTE
+  // CUENTA AUTENTICADA, PERFIL AÚN NO CONFIRMADO
   // ==================================================
+  //
+  // isLoggedIn ya es true (Firebase Auth ya autenticó al
+  // usuario) pero el documento de perfil en Firestore
+  // todavía no existe. Esto pasa de forma normal durante los
+  // primeros instantes de un registro nuevo: el setDoc en
+  // registrarUsuario puede seguir en camino cuando
+  // onAuthStateChanged ya disparó. Antes esto caía a
+  // NavigationDrawer con role === null; ahora se muestra un
+  // loader hasta que el perfil llegue (loadingAuth vuelve a
+  // false con snapshot real) o hasta que el registro falle y
+  // registrarUsuario revierta la cuenta (isLoggedIn vuelve a
+  // false y regresa a AuthStack).
+  //
+  if (!profile) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
 
-  const estaPendiente =
-    role ===
-      ROLES.ACTOR_CULTURAL &&
-    estadoVerificacion ===
-      ESTADOS_VERIFICACION.PENDIENTE;
+  // ==================================================
+  // ACTOR CULTURAL SIN ACCESO COMPLETO
+  // ==================================================
+  //
+  // Cubre pendiente de aprobación, suspendido (con sanción
+  // vigente) y rechazado. Antes solo se cubría "pendiente";
+  // un actor suspendido o rechazado caía directo a
+  // NavigationDrawer con acceso completo.
+  //
+  // Se le pasan estadoVerificacion/sancion a
+  // PendienteAprobacionScreen para que pueda mostrar el
+  // mensaje correcto según el caso. OJO: no tengo ese
+  // componente — hoy probablemente asume que solo existe el
+  // estado "pendiente" y su texto/botón "Explorar" habrá que
+  // revisarlo para decidir si aplica igual a suspendido y
+  // rechazado, o si alguno de esos casos no debería ofrecer
+  // "Explorar" en absoluto (decisión de producto).
 
-  if (estaPendiente && !explorando) {
+  const estaRestringido =
+    role === ROLES.ACTOR_CULTURAL &&
+    (estadoVerificacion === ESTADOS_VERIFICACION.PENDIENTE ||
+      estadoVerificacion === ESTADOS_VERIFICACION.SUSPENDIDO ||
+      estadoVerificacion === ESTADOS_VERIFICACION.RECHAZADO);
+
+  if (estaRestringido && !explorando) {
     return (
       <PendienteAprobacionScreen
+        estadoVerificacion={estadoVerificacion}
+        sancion={sancion}
         onExplorar={() =>
           setExplorando(true)
         }

@@ -8,7 +8,7 @@ import { INTERESES_TURISTA } from "../../constants/intereses";
 
 const SeleccionarInteresesScreen = ({ navigation, route }) => {
   const insets = useSafeAreaInsets();
-  const { datosRegistro } = route.params;
+  const { datosRegistro } = route.params || {};
 
   const [seleccionados, setSeleccionados] = useState([]);
   const [error, setError] = useState("");
@@ -20,6 +20,10 @@ const SeleccionarInteresesScreen = ({ navigation, route }) => {
         ? prev.filter((item) => item !== interes)
         : [...prev, interes]
     );
+  };
+
+  const handleVolver = () => {
+    navigation.goBack();
   };
 
   const handleContinuar = () => {
@@ -41,6 +45,36 @@ const SeleccionarInteresesScreen = ({ navigation, route }) => {
         { paddingTop: insets.top + 16 },
       ]}
     >
+
+      {/* ==================================================
+          BOTÓN VOLVER
+          ==================================================
+          Sin esto, un error de registro más adelante en
+          SolicitarUbicacion dejaba al usuario sin forma de
+          regresar a corregir sus intereses o sus datos.
+          Estilo en línea a propósito: no depende de que
+          InteresesUbicacionStyle ya tenga una clase
+          botonVolver definida.
+          ================================================== */}
+
+      <TouchableOpacity
+        onPress={handleVolver}
+        activeOpacity={0.7}
+        style={{
+          position: "absolute",
+          top: insets.top + 10,
+          left: 16,
+          zIndex: 10,
+          width: 40,
+          height: 40,
+          borderRadius: 20,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "rgba(255,255,255,0.85)",
+        }}
+      >
+        <Ionicons name="chevron-back" size={24} color="#2b2b2b" />
+      </TouchableOpacity>
 
       <View style={InteresesUbicacionStyle.barraProgreso}>
         <View

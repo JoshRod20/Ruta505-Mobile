@@ -155,13 +155,22 @@ const RegistroActorScreen = ({ navigation, route }) => {
   // ENVIAR FORMULARIO
   // ==================================================
   //
-  // No crea la cuenta todavía: valida credenciales y navega
-  // a SolicitarUbicacion, arrastrando los datos del perfil
+  // No crea la cuenta todavía: valida credenciales (incluyendo
+  // los campos propios de esta pantalla) y navega a
+  // SolicitarUbicacion, arrastrando los datos del perfil
   // (role, tipoActor, estadoVerificacion incluidos) para
   // armar el registro completo al final del flujo.
   //
   const handleSubmit = () => {
-    if (!validarCredenciales()) return;
+    if (
+      !validarCredenciales([
+        "nombreCompleto",
+        "telefono",
+        "cedula",
+        "tipoTurismo",
+      ])
+    )
+      return;
 
     navigation.navigate("SolicitarUbicacion", {
       datosRegistro: {
@@ -177,6 +186,45 @@ const RegistroActorScreen = ({ navigation, route }) => {
       },
     });
   };
+
+  // ==================================================
+  // GUARD — tipoActor inválido o ausente
+  // ==================================================
+  //
+  // Si route.params.tipoActor llega undefined o no existe en
+  // ACTORES_CULTURALES_CONFIG (navegación rota, deep link mal
+  // formado, etc.), antes el formulario se mostraba igual con
+  // tiposTurismoDisponibles = [] en silencio, y tipoActor
+  // undefined terminaba viajando hasta setDoc en Firestore
+  // (que lo rechaza) recién al final de todo el flujo. Ahora
+  // se corta aquí, antes de que el usuario pierda tiempo
+  // llenando un formulario que no va a poder enviarse.
+  //
+  if (!config) {
+    return (
+      <View style={RegistroActorFormStyle.contenedor}>
+        <View
+          style={{
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 24,
+          }}
+        >
+          <Text style={RegistroActorFormStyle.error}>
+            No se pudo determinar el tipo de actor cultural. Vuelve a la
+            pantalla anterior e inténtalo de nuevo.
+          </Text>
+          <TouchableOpacity
+            style={[RegistroActorFormStyle.boton, { marginTop: 16 }]}
+            onPress={handleVolver}
+          >
+            <Text style={RegistroActorFormStyle.botonTexto}>Volver</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
 
   // ==================================================
   // RENDER
@@ -219,6 +267,7 @@ const RegistroActorScreen = ({ navigation, route }) => {
             ================================================ */}
 
         <Svg
+          pointerEvents="none"
           style={RegistroActorFormStyle.curva}
           width={SCREEN_WIDTH}
           height={CURVE_HEIGHT}
