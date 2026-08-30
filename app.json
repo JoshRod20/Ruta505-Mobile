@@ -29,7 +29,8 @@
         "foregroundImage": "./src/assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true,
+      "softwareKeyboardLayoutMode": "resize",
+      "edgeToEdgeEnabled": false,
       "package": "com.kennrod20.Ruta505"
     },
     "extra": {

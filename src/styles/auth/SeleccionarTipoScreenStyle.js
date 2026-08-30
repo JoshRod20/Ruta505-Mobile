@@ -27,6 +27,7 @@ const SeleccionarTipoScreenStyle = StyleSheet.create({
   header: {
     width: "100%",
     height: "35%",
+    marginTop: hp("3.4%"),
     position: "relative",
   },
 

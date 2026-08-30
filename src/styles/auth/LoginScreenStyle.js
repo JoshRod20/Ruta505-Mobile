@@ -31,6 +31,8 @@ const LoginScreenStyle = StyleSheet.create({
 
     height: 290,
 
+    marginTop: hp("3.4%"),
+
     position: "relative",
   },
 
@@ -38,6 +40,18 @@ const LoginScreenStyle = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
+
+  inputInvalido: {
+  borderColor: "#d32f2f",
+  borderWidth: 1,
+},
+errorCampo: {
+  color: "#d32f2f",
+  fontSize: 12,
+  marginTop: -8,
+  marginBottom: 8,
+  marginLeft: 4,
+},
 
   botonVolver: {
     position: "absolute",
