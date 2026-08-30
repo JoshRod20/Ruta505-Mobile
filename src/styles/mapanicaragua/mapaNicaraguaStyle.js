@@ -51,13 +51,15 @@ export const mapaNicaraguaStyle = StyleSheet.create({
     left: 16,
     right: 16,
     backgroundColor: "#FFFFFF",
-    borderRadius: 16,
-    padding: 18,
+    borderRadius: 20,
+    paddingHorizontal: 18,
+    paddingTop: 10,
+    paddingBottom: 18,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 14,
+    elevation: 8,
   },
   // Capa transparente que cubre el mapa completo mientras la tarjeta está
   // abierta. Detecta el toque "fuera de la tarjeta" para poder cerrarla.
@@ -68,55 +70,118 @@ export const mapaNicaraguaStyle = StyleSheet.create({
     right: 0,
     bottom: 0,
   },
+
+  // Barra de "arrastre" puramente decorativa — sugiere que la tarjeta es
+  // un panel que se puede descartar, en el mismo lenguaje visual de un
+  // bottom sheet aunque el cierre real sea con la X o tocando afuera.
+  tarjetaAsa: {
+    alignSelf: "center",
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "#E4E9EF",
+    marginBottom: 12,
+  },
+
+  tarjetaHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 10,
+  },
+  tarjetaBadge: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+  tarjetaBadgeIcono: {
+    fontSize: 22,
+  },
+  tarjetaHeaderTexto: {
+    flex: 1,
+    paddingTop: 2,
+  },
+  botonCerrarX: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#F2F4F7",
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 8,
+  },
+  botonCerrarXTexto: {
+    color: "#8A99A8",
+    fontSize: 14,
+    fontWeight: "700",
+  },
+
   tarjetaTitulo: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: "700",
     color: "#123B63",
-    marginBottom: 4,
   },
   tarjetaDescripcion: {
     fontSize: 14,
     color: "#4E6780",
     lineHeight: 20,
-    marginBottom: 10,
+    marginBottom: 12,
   },
   tarjetaUbicacionExacta: {
-    fontSize: 13,
+    fontSize: 12,
     color: "#8A99A8",
-    marginBottom: 10,
-    fontStyle: "italic",
+    marginTop: 2,
   },
   tarjetaFilaFotos: {
-    marginBottom: 10,
+    marginBottom: 14,
   },
   tarjetaFoto: {
-    width: 100,
-    height: 100,
-    borderRadius: 10,
+    width: 110,
+    height: 84,
+    borderRadius: 12,
     marginRight: 8,
   },
-  botonEditar: {
+
+  tarjetaEtaPill: {
     alignSelf: "flex-start",
-    marginBottom: 10,
+    backgroundColor: "#EAF5EE",
+    borderRadius: 20,
+    paddingHorizontal: 110,
     paddingVertical: 6,
+    marginBottom: 14,
   },
-  botonEditarTexto: {
-    color: "#123B63",
-    fontWeight: "600",
+  tarjetaEtaPillTexto: {
     fontSize: 13,
-    textDecorationLine: "underline",
-  },
-  tarjetaEta: {
-    fontSize: 15,
-    fontWeight: "600",
+    fontWeight: "700",
     color: "#1D7A46",
-    marginBottom: 10,
   },
-  tarjetaCerrar: {
-    marginTop: 10,
-    textAlign: "center",
-    color: "#8A99A8",
-    fontSize: 13,
+
+  tarjetaFilaAcciones: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  botonSecundario: {
+    borderWidth: 1.5,
+    borderColor: "#123B63",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  botonSecundarioTexto: {
+    color: "#123B63",
+    fontWeight: "700",
+    fontSize: 14,
+  },
+  botonPrimarioFlex: {
+    flex: 1,
+    backgroundColor: "#123B63",
+    borderRadius: 12,
+    paddingVertical: 13,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   botonPrimario: {

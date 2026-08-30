@@ -34,56 +34,97 @@ export const formularioExperienciaStyle = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 15,
     color: "#2D3748",
+    backgroundColor: "#FAFBFC",
   },
   inputMultilinea: {
     minHeight: 90,
     textAlignVertical: "top",
   },
-  filaCategorias: {
+filaCategorias: {
+  flexDirection: "row",
+  flexWrap: "wrap",
+  justifyContent: "space-between",
+},
+chipCategoria: {
+  width: "48%",
+  borderWidth: 1.5,
+  borderColor: "#D9DEE4",
+  borderRadius: 12,
+  paddingHorizontal: 12,
+  paddingVertical: 10,
+  marginBottom: 10,
+  backgroundColor: "#FFFFFF",
+  alignItems: "center",
+  justifyContent: "center",
+},
+chipCategoriaActiva: {
+  backgroundColor: "#123B63",
+  borderColor: "#123B63",
+},
+chipCategoriaTexto: {
+  fontSize: 13,
+  fontWeight: "600",
+  color: "#2D3748",
+  textAlign: "center",
+},
+chipCategoriaTextoActivo: {
+  fontSize: 13,
+  fontWeight: "600",
+  color: "#FFFFFF",
+  textAlign: "center",
+},
+chipCategoriaContenido: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+},
+chipCategoriaIcono: {
+  marginRight: 6,
+},
+
+  // Tarjeta única de ubicación (tocable → abre el mapa)
+  tarjetaUbicacion: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
+    alignItems: "center",
+    backgroundColor: "#F0F6FC",
+    borderWidth: 1.5,
+    borderColor: "#C5D6E8",
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    marginTop: 4,
   },
-  chipCategoria: {
+  tarjetaUbicacionIcono: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
     borderWidth: 1,
-    borderColor: "#D9DEE4",
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    marginRight: 8,
-    marginBottom: 8,
+    borderColor: "#D6E4F0",
   },
-  chipCategoriaActiva: {
-    backgroundColor: "#123B63",
-    borderColor: "#123B63",
+  tarjetaUbicacionTexto: {
+    flex: 1,
   },
-  chipCategoriaTexto: {
-    fontSize: 13,
-    color: "#2D3748",
-  },
-  cajaUbicacion: {
-    backgroundColor: "#F2F4F7",
-    borderRadius: 10,
-    padding: 12,
-  },
-  textoUbicacion: {
-    fontSize: 13,
+  tarjetaUbicacionCoords: {
+    fontSize: 14,
+    fontWeight: "700",
     color: "#1D7A46",
+    marginBottom: 2,
   },
-  textoUbicacionError: {
-    fontSize: 13,
-    color: "#B45309",
-  },
-  enlaceElegirMapa: {
-    marginTop: 8,
-    alignSelf: "flex-start",
-  },
-  enlaceElegirMapaTexto: {
-    fontSize: 13,
+  tarjetaUbicacionTitulo: {
+    fontSize: 14,
+    fontWeight: "700",
     color: "#123B63",
-    fontWeight: "600",
-    textDecorationLine: "underline",
+    marginBottom: 2,
   },
+  tarjetaUbicacionHint: {
+    fontSize: 12,
+    color: "#8A99A8",
+  },
+
   filaImagenes: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -124,6 +165,7 @@ export const formularioExperienciaStyle = StyleSheet.create({
     borderStyle: "dashed",
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: "#FAFBFC",
   },
   botonAgregarImagenTexto: {
     fontSize: 12,

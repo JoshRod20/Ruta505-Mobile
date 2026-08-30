@@ -6,11 +6,24 @@ import MapaNicaragua from "../components/MapaNicaragua";
 import ExperienciasCulturales from "../screens/comunidad/experienciasCulturales";
 import CustomTabBar from "../components/CustomTabBar";
 import FloatingNavButton from "../components/common/FloatingNavButton";
+import { useAuth } from "../context/AuthContext";
+import { PERMISOS, tienePermiso } from "../constants/permissions";
 
 const Tab = createBottomTabNavigator();
 
 export default function NavigationTabs({ navigation, route }) {
-  const initialTab = route?.params?.initialTab || "Inicio";
+  const { role } = useAuth();
+  const puedePublicarExperiencia = tienePermiso(
+    role,
+    PERMISOS.PUBLICAR_EXPERIENCIA
+  );
+
+  const initialTab =
+    route?.params?.initialTab &&
+    (route.params.initialTab !== "Publicar experiencias" ||
+      puedePublicarExperiencia)
+      ? route.params.initialTab
+      : "Inicio";
 
   return (
     <>
@@ -26,7 +39,12 @@ export default function NavigationTabs({ navigation, route }) {
       >
         <Tab.Screen name="Inicio" component={Home} />
         <Tab.Screen name="Mapa" component={MapaNicaragua} />
-        <Tab.Screen name="Publicar experiencias" component={ExperienciasCulturales} />
+        {puedePublicarExperiencia && (
+          <Tab.Screen
+            name="Publicar experiencias"
+            component={ExperienciasCulturales}
+          />
+        )}
       </Tab.Navigator>
     </>
   );

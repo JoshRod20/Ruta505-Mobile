@@ -12,16 +12,13 @@ import {
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
+import { Ionicons } from "@expo/vector-icons";
 import { formularioExperienciaStyle as s } from "../styles/mapanicaragua/Formularioexperienciastyle.js";
 import { CATEGORIAS_EXPERIENCIA } from "../services/Categoriasexperiencias.js";
 
-// Firestore permite máximo 1MB por documento, y base64 infla el tamaño
-// ~33% respecto al binario original. Con 2 imágenes de ~150KB cada una
-// en base64 (~450KB total con el resto de campos) nos quedamos con
-// margen de sobra. Si necesitas más resolución, baja MAX_IMAGENES en
-// vez de subir la calidad/tamaño.
+// Límites para evitar superar el tamaño máximo de documento en Firestore (1MB)
 const MAX_IMAGENES = 2;
-const ANCHO_REDIMENSIONADO = 700; // px — suficiente para verse bien en el detalle, no para zoom forense
+const ANCHO_REDIMENSIONADO = 700; // px
 const CALIDAD_COMPRESION = 0.5; // 0 a 1
 
 export default function FormularioExperiencia({
@@ -32,31 +29,32 @@ export default function FormularioExperiencia({
   onElegirEnMapa,
   modoEdicion = false,
   valoresIniciales = null,
+  sesionId = 0,
 }) {
   const [titulo, setTitulo] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [ubicacionExacta, setUbicacionExacta] = useState("");
   const [categoria, setCategoria] = useState(CATEGORIAS_EXPERIENCIA[0]);
-  const [imagenes, setImagenes] = useState([]); // array de strings "data:image/jpeg;base64,...."
+  const [imagenes, setImagenes] = useState([]);
   const [guardando, setGuardando] = useState(false);
   const [procesandoImagen, setProcesandoImagen] = useState(false);
 
-  // Precarga los campos cuando se abre en modo edición.
   useEffect(() => {
-    if (visible && modoEdicion && valoresIniciales) {
+    if (modoEdicion && valoresIniciales) {
       setTitulo(valoresIniciales.titulo ?? "");
       setDescripcion(valoresIniciales.descripcion ?? "");
       setUbicacionExacta(valoresIniciales.ubicacionExacta ?? "");
       setCategoria(
-        CATEGORIAS_EXPERIENCIA.find((c) => c.id === valoresIniciales.categoria) ||
-          CATEGORIAS_EXPERIENCIA[0]
+        CATEGORIAS_EXPERIENCIA.find(
+          (c) => c.id === valoresIniciales.categoria,
+        ) || CATEGORIAS_EXPERIENCIA[0],
       );
       setImagenes(valoresIniciales.imagenes ?? []);
-    } else if (visible && !modoEdicion) {
+    } else {
       limpiarCampos();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible, modoEdicion, valoresIniciales]);
+  }, [sesionId]);
 
   function limpiarCampos() {
     setTitulo("");
@@ -71,24 +69,28 @@ export default function FormularioExperiencia({
     onCancelar();
   }
 
+  /** Selecciona, redimensiona y convierte una imagen a Base64. */
   async function handleAgregarImagen() {
     if (imagenes.length >= MAX_IMAGENES) {
       Alert.alert(
         "Máximo alcanzado",
-        `Solo puedes agregar hasta ${MAX_IMAGENES} imágenes por experiencia (para no pasarte del límite de tamaño de Firestore).`
+        `Solo puedes agregar hasta ${MAX_IMAGENES} imágenes por experiencia.`,
       );
       return;
     }
 
     const permiso = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permiso.granted) {
-      Alert.alert("Permiso necesario", "Necesitamos acceso a tus fotos para agregar una imagen.");
+      Alert.alert(
+        "Permiso necesario",
+        "Necesitamos acceso a tus fotos para agregar una imagen.",
+      );
       return;
     }
 
     const resultado = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 1, // la compresión real la hace ImageManipulator después, aquí pedimos la original
+      mediaTypes: ["images"],
+      quality: 1,
       allowsEditing: true,
       aspect: [4, 3],
     });
@@ -97,8 +99,7 @@ export default function FormularioExperiencia({
 
     setProcesandoImagen(true);
     try {
-      // Redimensiona y comprime ANTES de convertir a base64 — es la
-      // única forma de mantener el documento de Firestore liviano.
+      // Compresión en cliente antes de la conversión a Base64
       const manipulado = await ImageManipulator.manipulateAsync(
         resultado.assets[0].uri,
         [{ resize: { width: ANCHO_REDIMENSIONADO } }],
@@ -106,7 +107,7 @@ export default function FormularioExperiencia({
           compress: CALIDAD_COMPRESION,
           format: ImageManipulator.SaveFormat.JPEG,
           base64: true,
-        }
+        },
       );
 
       const dataUri = `data:image/jpeg;base64,${manipulado.base64}`;
@@ -115,7 +116,7 @@ export default function FormularioExperiencia({
       if (pesoAproxKB > 400) {
         Alert.alert(
           "Imagen muy pesada",
-          `Esta imagen pesaría ~${pesoAproxKB}KB después de comprimida, es mucho para guardarla junto al resto del documento. Prueba con otra foto más simple.`
+          `La imagen comprimida excede el tamaño recomendado (${pesoAproxKB}KB).`,
         );
         return;
       }
@@ -132,10 +133,10 @@ export default function FormularioExperiencia({
     setImagenes((prev) => prev.filter((_, i) => i !== index));
   }
 
+  /** Procesa la solicitud de guardado */
   async function handleGuardar() {
-    if (!titulo.trim()) {
-      return; // validación mínima — el botón ya está disabled sin título
-    }
+    if (!titulo.trim()) return;
+
     setGuardando(true);
     try {
       await onGuardar({
@@ -152,12 +153,19 @@ export default function FormularioExperiencia({
   }
 
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={limpiarYCerrar}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent
+      onRequestClose={limpiarYCerrar}
+    >
       <View style={s.fondoOscuro}>
         <View style={s.hoja}>
           <ScrollView keyboardShouldPersistTaps="handled">
             <Text style={s.titulo}>
-              {modoEdicion ? "Editar experiencia" : "Nueva experiencia cultural"}
+              {modoEdicion
+                ? "Editar experiencia"
+                : "Nueva experiencia cultural"}
             </Text>
 
             <Text style={s.etiqueta}>Título</Text>
@@ -189,27 +197,51 @@ export default function FormularioExperiencia({
               placeholderTextColor="#8A99A8"
             />
 
+            {/* Selector de categorías */}
             <Text style={s.etiqueta}>Categoría</Text>
             <View style={s.filaCategorias}>
-              {CATEGORIAS_EXPERIENCIA.map((cat) => (
-                <TouchableOpacity
-                  key={cat.id}
-                  style={[s.chipCategoria, categoria.id === cat.id && s.chipCategoriaActiva]}
-                  onPress={() => setCategoria(cat)}
-                >
-                  <Text style={s.chipCategoriaTexto}>
-                    {cat.icono} {cat.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+              {CATEGORIAS_EXPERIENCIA.map((cat) => {
+                const activa = categoria.id === cat.id;
+                return (
+                  <TouchableOpacity
+                    key={cat.id}
+                    style={[s.chipCategoria, activa && s.chipCategoriaActiva]}
+                    onPress={() => setCategoria(cat)}
+                  >
+                    <View style={s.chipCategoriaContenido}>
+                      <Ionicons
+                        name={cat.icono}
+                        size={16}
+                        color={activa ? "#FFFFFF" : cat.color}
+                        style={s.chipCategoriaIcono}
+                      />
+                      <Text
+                        style={
+                          activa
+                            ? s.chipCategoriaTextoActivo
+                            : s.chipCategoriaTexto
+                        }
+                      >
+                        {cat.label}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
 
-            <Text style={s.etiqueta}>Fotos ({imagenes.length}/{MAX_IMAGENES})</Text>
+            {/* Galería e inserción de imágenes */}
+            <Text style={s.etiqueta}>
+              Fotos ({imagenes.length}/{MAX_IMAGENES})
+            </Text>
             <View style={s.filaImagenes}>
               {imagenes.map((uri, index) => (
                 <View key={index} style={s.miniaturaContenedor}>
                   <Image source={{ uri }} style={s.miniatura} />
-                  <TouchableOpacity style={s.botonQuitarImagen} onPress={() => quitarImagen(index)}>
+                  <TouchableOpacity
+                    style={s.botonQuitarImagen}
+                    onPress={() => quitarImagen(index)}
+                  >
                     <Text style={s.botonQuitarImagenTexto}>✕</Text>
                   </TouchableOpacity>
                 </View>
@@ -229,32 +261,62 @@ export default function FormularioExperiencia({
               )}
             </View>
 
-            <Text style={s.etiqueta}>Coordenadas</Text>
-            <View style={s.cajaUbicacion}>
-              {ubicacionActual ? (
-                <Text style={s.textoUbicacion}>
-                  📍 {ubicacionActual.lat.toFixed(5)}, {ubicacionActual.lon.toFixed(5)}
-                </Text>
-              ) : (
-                <Text style={s.textoUbicacionError}>
-                  ⚠️ No se detecta tu ubicación todavía. Espera unos segundos e inténtalo de nuevo.
-                </Text>
-              )}
-            </View>
-            {onElegirEnMapa && (
-              <TouchableOpacity onPress={onElegirEnMapa} style={s.enlaceElegirMapa}>
-                <Text style={s.enlaceElegirMapaTexto}>📍 Elegir otro lugar en el mapa</Text>
-              </TouchableOpacity>
-            )}
+            {/* Selector de coordenadas en mapa */}
+            <Text style={s.etiqueta}>Ubicación en el mapa</Text>
+            <TouchableOpacity
+              style={s.tarjetaUbicacion}
+              onPress={onElegirEnMapa}
+              activeOpacity={0.75}
+              disabled={!onElegirEnMapa}
+            >
+              <View style={s.tarjetaUbicacionIcono}>
+                <Ionicons
+                  name={ubicacionActual ? "location-sharp" : "locate-outline"}
+                  size={22}
+                  color={ubicacionActual ? "#1D7A46" : "#123B63"}
+                />
+              </View>
 
+              <View style={s.tarjetaUbicacionTexto}>
+                {ubicacionActual ? (
+                  <>
+                    <Text style={s.tarjetaUbicacionCoords}>
+                      {ubicacionActual.lat.toFixed(5)},{" "}
+                      {(ubicacionActual.lon ?? ubicacionActual.lng).toFixed(5)}
+                    </Text>
+                    <Text style={s.tarjetaUbicacionHint}>
+                      Toca para cambiar ubicación
+                    </Text>
+                  </>
+                ) : (
+                  <>
+                    <Text style={s.tarjetaUbicacionTitulo}>
+                      Elegir ubicación en el mapa
+                    </Text>
+                    <Text style={s.tarjetaUbicacionHint}>
+                      Necesaria para publicar
+                    </Text>
+                  </>
+                )}
+              </View>
+
+              <Ionicons name="chevron-forward" size={18} color="#8A99A8" />
+            </TouchableOpacity>
+
+            {/* Acciones de cancelación y guardado */}
             <View style={s.filaBotones}>
-              <TouchableOpacity style={s.botonCancelar} onPress={limpiarYCerrar} disabled={guardando}>
+              <TouchableOpacity
+                style={s.botonCancelar}
+                onPress={limpiarYCerrar}
+                disabled={guardando}
+              >
                 <Text style={s.botonCancelarTexto}>Cancelar</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
                   s.botonGuardar,
-                  (!titulo.trim() || !ubicacionActual || guardando) && s.botonGuardarDeshabilitado,
+                  (!titulo.trim() || !ubicacionActual || guardando) &&
+                    s.botonGuardarDeshabilitado,
                 ]}
                 onPress={handleGuardar}
                 disabled={!titulo.trim() || !ubicacionActual || guardando}
@@ -262,7 +324,9 @@ export default function FormularioExperiencia({
                 {guardando ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
-                  <Text style={s.botonGuardarTexto}>{modoEdicion ? "Guardar cambios" : "Guardar"}</Text>
+                  <Text style={s.botonGuardarTexto}>
+                    {modoEdicion ? "Guardar cambios" : "Guardar"}
+                  </Text>
                 )}
               </TouchableOpacity>
             </View>
