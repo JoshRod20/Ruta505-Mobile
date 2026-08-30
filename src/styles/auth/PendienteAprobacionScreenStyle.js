@@ -1,7 +1,9 @@
 import { StyleSheet } from "react-native";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 
 const COLOR_CREMA = "#fbf6ec";
 const COLOR_TINTA = "#2b2b2b";
+const COLOR_ACCENTO = "#086338"; // verde de marca, consistente con el resto de la app
 
 const PendienteAprobacionScreenStyle = StyleSheet.create({
   contenedor: {
@@ -41,6 +43,34 @@ const PendienteAprobacionScreenStyle = StyleSheet.create({
     opacity: 0.85,
     lineHeight: 19,
     textAlign: "center",
+  },
+
+  // ==================================================
+  // BOTONES (Explorar / Cerrar sesión)
+  // ==================================================
+
+  filaBotones: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+    marginTop: 16,
+  },
+  botonExplorar: {
+    alignItems: "center",
+    justifyContent: "center",
+    width: wp("30%"),
+    height: hp("5%"),
+    borderRadius: 999,
+    borderWidth: 1.8,
+    borderColor: COLOR_ACCENTO,
+    marginTop: hp("2%"),
+    backgroundColor: "#ffffff",
+  },
+  botonExplorarTexto: {
+    color: COLOR_ACCENTO,
+    fontWeight: "600",
+    fontSize: 14,
   },
 });
 

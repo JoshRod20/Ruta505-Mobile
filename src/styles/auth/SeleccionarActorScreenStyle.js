@@ -1,66 +1,130 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, Dimensions } from "react-native";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 
-const COLOR_CREMA = "#fbf6ec";
-const COLOR_CORAL = "#e07a5f";
-const COLOR_TINTA = "#2b2b2b";
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+
+// ==================================================
+// PALETA (igual que Login y SeleccionarTipo)
+// ==================================================
+const COLOR_HEADER = "#086338";
+const COLOR_TINTA = "#065F33";
 
 const SeleccionarActorScreenStyle = StyleSheet.create({
+  // ==================================================
+  // CONTENEDOR
+  // ==================================================
   contenedor: {
     flex: 1,
-    backgroundColor: COLOR_CREMA,
-    padding: 24,
+    backgroundColor: "#ffffff",
   },
-  volver: {
-    marginBottom: 16,
+
+  // ==================================================
+  // HEADER CON PATRÓN + CURVA
+  // ==================================================
+  header: {
+    width: "100%",
+    height: 250,
+    position: "relative",
+    marginTop: hp("3.4%"),
   },
-  volverTexto: {
-    color: COLOR_TINTA,
-    fontSize: 14,
-    fontWeight: "600",
+
+  headerPatron: {
+    width: "100%",
+    height: "100%",
   },
+
+  botonVolver: {
+    position: "absolute",
+    left: 20,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgb(255, 255, 255)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  curva: {
+    position: "absolute",
+    bottom: -1,
+    left: 0,
+  },
+
+  // ==================================================
+  // CONTENEDOR DEL CONTENIDO
+  // ==================================================
+  scroll: {
+    flex: 1,
+    zIndex: 10,
+  },
+
+  card: {
+    flexGrow: 1,
+    width: "100%",
+    backgroundColor: "#ffffff",
+    paddingHorizontal: "6%",
+    paddingTop: "6%",
+    paddingBottom: "6%",
+    alignItems: "center",
+  },
+
+  // ==================================================
+  // TÍTULO
+  // ==================================================
   titulo: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: COLOR_TINTA,
+    fontSize: 28,
+    fontFamily: "Poppins-Bold",
+    color: COLOR_HEADER,
     textAlign: "center",
-    marginBottom: 6,
+    lineHeight: 32,
+    marginBottom: "8%",
   },
-  subtitulo: {
-    fontSize: 13,
-    color: COLOR_TINTA,
-    opacity: 0.7,
-    textAlign: "center",
-    marginBottom: 24,
-  },
+
+  // ==================================================
+  // GRID 2x2
+  // ==================================================
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
+    width: "100%",
+    paddingHorizontal: "2%",
   },
-  tarjeta: {
-    width: "48%",
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-    borderLeftWidth: 4,
-    borderLeftColor: COLOR_CORAL,
+
+  opcion: {
+    width: "46%",
+    alignItems: "center",
+    marginBottom: "6%",
+  },
+
+  imagenContainer: {
+    width: "100%",
+    aspectRatio: 1,
+    maxWidth: "100%",
+    borderRadius: 18,
+    backgroundColor: "#F5F5F5",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: "6%",
+    overflow: "hidden",
     shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowOffset: { width: 0, height: 1 },
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
   },
-  tarjetaTitulo: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: COLOR_TINTA,
-    marginBottom: 4,
+
+  imagen: {
+    width: "100%",
+    height: "100%",
   },
-  tarjetaDescripcion: {
-    fontSize: 12,
-    color: COLOR_TINTA,
-    opacity: 0.7,
+
+  opcionTitulo: {
+    fontSize: 14,
+    fontFamily: "Inter-Regular",
+    color: COLOR_HEADER,
+    textAlign: "center",
+    lineHeight: 18,
   },
 });
 

@@ -1,55 +1,128 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, Dimensions } from "react-native";
 
-const COLOR_CREMA = "#fbf6ec";
-const COLOR_HOJA = "#4caf50";
-const COLOR_TINTA = "#2b2b2b";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+
+const { width, height } = Dimensions.get("window");
+
+// ==================================================
+// PALETA (exactamente la misma que LoginScreen)
+// ==================================================
+const COLOR_HEADER = "#086338";
+const COLOR_AZUL = "#009fe3";
+const COLOR_VERDE = "#95c11f";
+const COLOR_TINTA = "#065F33";
 
 const SeleccionarTipoScreenStyle = StyleSheet.create({
+  // ==================================================
+  // CONTENEDOR
+  // ==================================================
   contenedor: {
     flex: 1,
-    backgroundColor: COLOR_CREMA,
-    padding: 24,
+    backgroundColor: "#ffffff",
+  },
+
+  // ==================================================
+  // HEADER CON PATRÓN + CURVA
+  // ==================================================
+  header: {
+    width: "100%",
+    height: "35%",
+    marginTop: hp("3.4%"),
+    position: "relative",
+  },
+
+  headerPatron: {
+    width: "100%",
+    height: "100%",
+  },
+
+  botonVolver: {
+    position: "absolute",
+    left: 20,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgb(255, 255, 255)",
+    alignItems: "center",
     justifyContent: "center",
   },
+
+  curva: {
+    position: "absolute",
+    bottom: -1,
+    left: 0,
+  },
+
+  // ==================================================
+  // CONTENEDOR DEL CONTENIDO
+  // ==================================================
+  scroll: {
+    flex: 1,
+    zIndex: 10,
+  },
+
+  card: {
+    flexGrow: 1,
+    width: "100%",
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    alignItems: "center",
+  },
+
+  // ==================================================
+  // TÍTULO
+  // ==================================================
   titulo: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: COLOR_TINTA,
+    fontSize: 28,
+    fontFamily: "Poppins-Bold",
+    color: COLOR_HEADER,
     textAlign: "center",
-    marginBottom: 6,
+    lineHeight: 32,
+    marginBottom: 40,
   },
-  subtitulo: {
-    fontSize: 14,
-    color: COLOR_TINTA,
-    opacity: 0.7,
-    textAlign: "center",
-    marginBottom: 28,
+
+  // ==================================================
+  // OPCIONES
+  // ==================================================
+  opcionesContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    paddingHorizontal: 8,
   },
-  tarjeta: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
+
+  opcion: {
+    alignItems: "center",
+    width: (width - 80) / 2,
+  },
+
+  imagenContainer: {
+    width: 130,
+    height: 130,
+    borderRadius: 20,
+    backgroundColor: "#F5F5F5",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 14,
+    overflow: "hidden",
     shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowOffset: { width: 0, height: 1 },
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  tarjetaTitulo: {
-    fontSize: 17,
-    fontWeight: "600",
-    color: COLOR_TINTA,
-    marginBottom: 4,
+
+  imagen: {
+    width: "100%",
+    height: "100%",
   },
-  tarjetaDescripcion: {
-    fontSize: 13,
-    color: COLOR_TINTA,
-    opacity: 0.7,
-  },
-  tarjetaAcento: {
-    borderLeftWidth: 4,
-    borderLeftColor: COLOR_HOJA,
+
+  opcionTitulo: {
+    fontSize: 15,
+    fontFamily: "Inter-Regular",
+    color: COLOR_HEADER,
+    textAlign: "center",
   },
 });
 

@@ -1,7 +1,4 @@
-import {
-  useMemo,
-  useState,
-} from "react";
+import { useMemo, useState } from "react";
 
 import {
   Dimensions,
@@ -21,21 +18,25 @@ import Svg, { Path } from "react-native-svg";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import {
-  useRegistroForm,
-} from "../../hooks/useRegistroForm";
+import { useRegistroForm } from "../../hooks/useRegistroForm";
 
 import {
+  ESTADOS_VERIFICACION,
   ROLES,
 } from "../../constants/roles";
 
 import {
+  ACTORES_CULTURALES_CONFIG,
+} from "../../constants/actoresCulturales";
+
+import {
+  CEDULA_REGEX,
   EMAIL_REGEX,
   TELEFONO_REGEX,
 } from "../../utils/validators";
 
-import RegistroTuristaScreenStyle
-  from "../../styles/auth/RegistroFormStyle";
+import RegistroActorFormStyle
+  from "../../styles/auth/RegistroActorFormStyle";
 
 // ==================================================
 // DIMENSIONES
@@ -53,15 +54,15 @@ const CURVE_HEIGHT = 130;
 const curvaPath = (w) => `
   M0,${CURVE_HEIGHT * 0.99}
 
-  C${w * 0.20},${CURVE_HEIGHT * 0.98}
+  C${w * 0.2},${CURVE_HEIGHT * 0.98}
    ${w * 0.38},${CURVE_HEIGHT * 0.85}
-   ${w * 0.50},${CURVE_HEIGHT * 0.62}
+   ${w * 0.5},${CURVE_HEIGHT * 0.62}
 
-  C${w * 0.62},${CURVE_HEIGHT * 0.40}
+  C${w * 0.62},${CURVE_HEIGHT * 0.4}
    ${w * 0.72},${CURVE_HEIGHT * 0.15}
    ${w * 0.85},${CURVE_HEIGHT * 0.06}
 
-  C${w * 0.90},${CURVE_HEIGHT * 0.02}
+  C${w * 0.9},${CURVE_HEIGHT * 0.02}
    ${w * 0.95},0
    ${w},0
 
@@ -72,74 +73,33 @@ const curvaPath = (w) => `
 `;
 
 // ==================================================
-// IDIOMAS
-// ==================================================
-
-const IDIOMAS = [
-  "Español",
-  "English",
-  "Français",
-  "Português",
-  "Deutsch",
-  "Italiano",
-  "中文",
-  "日本語",
-  "한국어",
-  "Русский",
-  "العربية",
-  "Otro",
-];
-
-// ==================================================
-// PAÍSES
-// ==================================================
-
-const PAISES = [
-  "Nicaragua",
-  "Costa Rica",
-  "Honduras",
-  "El Salvador",
-  "Guatemala",
-  "Panamá",
-  "Belice",
-  "México",
-  "Estados Unidos",
-  "Canadá",
-  "Colombia",
-  "Venezuela",
-  "Ecuador",
-  "Perú",
-  "Bolivia",
-  "Chile",
-  "Argentina",
-  "Uruguay",
-  "Paraguay",
-  "Brasil",
-  "España",
-  "Francia",
-  "Alemania",
-  "Italia",
-  "Portugal",
-  "Reino Unido",
-  "Países Bajos",
-  "Suiza",
-  "China",
-  "Japón",
-  "Corea del Sur",
-  "India",
-  "Australia",
-  "Otro país",
-];
-
-// ==================================================
 // COMPONENTE
 // ==================================================
 
-const RegistroTuristaScreen = ({
+const RegistroActorScreen = ({
   navigation,
+  route,
 }) => {
-  const insets =
-    useSafeAreaInsets();
+  const insets = useSafeAreaInsets();
+
+  // ==================================================
+  // ACTOR
+  // ==================================================
+
+  const { tipoActor } =
+    route.params || {};
+
+  const config =
+    ACTORES_CULTURALES_CONFIG[
+      tipoActor
+    ];
+
+  const tiposTurismoDisponibles =
+    config?.tiposTurismo ?? [];
+
+  const tituloEncabezado =
+    config?.tituloEncabezado ||
+    "Datos Generales";
 
   // ==================================================
   // FORMULARIO
@@ -161,12 +121,11 @@ const RegistroTuristaScreen = ({
     initialValues: {
       nombreCompleto: "",
       email: "",
+      cedula: "",
       telefono: "",
       password: "",
       confirmPassword: "",
-      edad: "",
-      paisOrigen: "",
-      idiomaPreferido: "",
+      tipoTurismo: "",
     },
   });
 
@@ -174,14 +133,10 @@ const RegistroTuristaScreen = ({
   // CAMPOS TOCADOS
   // ==================================================
 
-  const [
-    tocado,
-    setTocado,
-  ] = useState({});
+  const [tocado, setTocado] =
+    useState({});
 
-  const marcarTocado = (
-    campo
-  ) => {
+  const marcarTocado = (campo) => {
     setTocado((prev) => ({
       ...prev,
       [campo]: true,
@@ -217,6 +172,25 @@ const RegistroTuristaScreen = ({
     emailVacio ||
     emailFormatoInvalido;
 
+  const cedulaVacia =
+    tocado.cedula &&
+    form.cedula
+      .trim()
+      .length === 0;
+
+  const cedulaFormatoInvalido =
+    tocado.cedula &&
+    form.cedula
+      .trim()
+      .length > 0 &&
+    !CEDULA_REGEX.test(
+      form.cedula.trim()
+    );
+
+  const cedulaInvalida =
+    cedulaVacia ||
+    cedulaFormatoInvalido;
+
   const telefonoVacio =
     tocado.telefono &&
     form.telefono
@@ -236,14 +210,14 @@ const RegistroTuristaScreen = ({
     telefonoVacio ||
     telefonoFormatoInvalido;
 
-  const passwordInvalida =
+  const passwordCorta =
     tocado.password &&
     (
       form.password.length === 0 ||
       form.password.length < 6
     );
 
-  const confirmPasswordInvalida =
+  const passwordsNoCoinciden =
     tocado.confirmPassword &&
     (
       form.confirmPassword.length === 0 ||
@@ -251,111 +225,40 @@ const RegistroTuristaScreen = ({
         form.confirmPassword
     );
 
-  const edadInvalida =
+  // ==================================================
+  // MODAL TURISMO
+  // ==================================================
+
+  const [
+    modalTurismoVisible,
+    setModalTurismoVisible,
+  ] = useState(false);
+
+  const [
+    busquedaTurismo,
+    setBusquedaTurismo,
+  ] = useState("");
+
+  const tiposTurismoFiltrados =
     useMemo(() => {
-      if (!tocado.edad) {
-        return false;
+      if (!busquedaTurismo.trim()) {
+        return tiposTurismoDisponibles;
       }
 
-      if (
-        !form.edad ||
-        !String(
-          form.edad
-        ).trim()
-      ) {
-        return true;
-      }
-
-      const edadNum =
-        Number(form.edad);
-
-      return (
-        !Number.isFinite(
-          edadNum
-        ) ||
-        edadNum <= 0 ||
-        edadNum > 120
+      return tiposTurismoDisponibles.filter(
+        (tipo) =>
+          tipo
+            .toLowerCase()
+            .includes(
+              busquedaTurismo
+                .trim()
+                .toLowerCase()
+            )
       );
     }, [
-      tocado.edad,
-      form.edad,
+      busquedaTurismo,
+      tiposTurismoDisponibles,
     ]);
-
-  const paisInvalido =
-    tocado.paisOrigen &&
-    !form.paisOrigen;
-
-  const idiomaInvalido =
-    tocado.idiomaPreferido &&
-    !form.idiomaPreferido;
-
-  // ==================================================
-  // MODALES
-  // ==================================================
-
-  const [
-    modalIdiomaVisible,
-    setModalIdiomaVisible,
-  ] = useState(false);
-
-  const [
-    modalPaisVisible,
-    setModalPaisVisible,
-  ] = useState(false);
-
-  const [
-    busquedaIdioma,
-    setBusquedaIdioma,
-  ] = useState("");
-
-  const [
-    busquedaPais,
-    setBusquedaPais,
-  ] = useState("");
-
-  // ==================================================
-  // FILTRADO
-  // ==================================================
-
-  const idiomasFiltrados =
-    useMemo(() => {
-      if (
-        !busquedaIdioma.trim()
-      ) {
-        return IDIOMAS;
-      }
-
-      return IDIOMAS.filter(
-        (idioma) =>
-          idioma
-            .toLowerCase()
-            .includes(
-              busquedaIdioma
-                .trim()
-                .toLowerCase()
-            )
-      );
-    }, [busquedaIdioma]);
-
-  const paisesFiltrados =
-    useMemo(() => {
-      if (
-        !busquedaPais.trim()
-      ) {
-        return PAISES;
-      }
-
-      return PAISES.filter(
-        (pais) =>
-          pais
-            .toLowerCase()
-            .includes(
-              busquedaPais
-                .trim()
-                .toLowerCase()
-            )
-      );
-    }, [busquedaPais]);
 
   // ==================================================
   // VOLVER
@@ -366,59 +269,27 @@ const RegistroTuristaScreen = ({
   };
 
   // ==================================================
-  // MODAL IDIOMA
+  // MODAL
   // ==================================================
 
-  const handleCerrarModalIdioma =
+  const handleCerrarModalTurismo =
     () => {
-      setModalIdiomaVisible(false);
-      setBusquedaIdioma("");
+      setModalTurismoVisible(false);
+      setBusquedaTurismo("");
     };
 
-  // ==================================================
-  // MODAL PAÍS
-  // ==================================================
-
-  const handleCerrarModalPais =
-    () => {
-      setModalPaisVisible(false);
-      setBusquedaPais("");
-    };
-
-  // ==================================================
-  // SELECCIONAR IDIOMA
-  // ==================================================
-
-  const handleSeleccionarIdioma =
-    (idioma) => {
+  const handleSeleccionarTipoTurismo =
+    (tipo) => {
       handleChange(
-        "idiomaPreferido",
-        idioma
+        "tipoTurismo",
+        tipo
       );
 
       marcarTocado(
-        "idiomaPreferido"
+        "tipoTurismo"
       );
 
-      handleCerrarModalIdioma();
-    };
-
-  // ==================================================
-  // SELECCIONAR PAÍS
-  // ==================================================
-
-  const handleSeleccionarPais =
-    (pais) => {
-      handleChange(
-        "paisOrigen",
-        pais
-      );
-
-      marcarTocado(
-        "paisOrigen"
-      );
-
-      handleCerrarModalPais();
+      handleCerrarModalTurismo();
     };
 
   // ==================================================
@@ -429,32 +300,36 @@ const RegistroTuristaScreen = ({
     setTocado({
       nombreCompleto: true,
       email: true,
+      cedula: true,
       telefono: true,
       password: true,
       confirmPassword: true,
-      edad: true,
-      paisOrigen: true,
-      idiomaPreferido: true,
+      tipoTurismo: true,
     });
 
     if (
       !validarCredenciales([
         "nombreCompleto",
         "telefono",
-        "edad",
-        "paisOrigen",
-        "idiomaPreferido",
+        "cedula",
+        "tipoTurismo",
       ])
     ) {
       return;
     }
 
     navigation.navigate(
-      "SeleccionarIntereses",
+      "SolicitarUbicacion",
       {
         datosRegistro: {
           role:
-            ROLES.TURISTA,
+            ROLES.ACTOR_CULTURAL,
+
+          tipoActor,
+
+          estadoVerificacion:
+            ESTADOS_VERIFICACION
+              .PENDIENTE,
 
           nombreCompleto:
             form.nombreCompleto,
@@ -465,27 +340,75 @@ const RegistroTuristaScreen = ({
           password:
             form.password,
 
+          cedula:
+            form.cedula,
+
           telefono:
             form.telefono,
 
-          edad:
-            form.edad,
-
-          tipoTurista:
-            form.paisOrigen ===
-            "Nicaragua"
-              ? "nacional"
-              : "extranjero",
-
-          paisOrigen:
-            form.paisOrigen,
-
-          idiomaPreferido:
-            form.idiomaPreferido,
+          tipoTurismo:
+            form.tipoTurismo,
         },
       }
     );
   };
+
+  // ==================================================
+  // GUARD
+  // ==================================================
+
+  if (!config) {
+    return (
+      <View
+        style={
+          RegistroActorFormStyle
+            .contenedor
+        }
+      >
+        <View
+          style={{
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 24,
+          }}
+        >
+          <Text
+            style={
+              RegistroActorFormStyle
+                .error
+            }
+          >
+            No se pudo determinar el
+            tipo de actor cultural.
+            Vuelve a la pantalla
+            anterior e inténtalo de
+            nuevo.
+          </Text>
+
+          <TouchableOpacity
+            style={[
+              RegistroActorFormStyle
+                .boton,
+              {
+                marginTop: 16,
+              },
+            ]}
+            onPress={handleVolver}
+          >
+            <Text
+              style={
+                RegistroActorFormStyle
+                  .botonTexto
+              }
+            >
+              Volver
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
 
   // ==================================================
   // RENDER
@@ -494,17 +417,18 @@ const RegistroTuristaScreen = ({
   return (
     <View
       style={
-        RegistroTuristaScreenStyle
+        RegistroActorFormStyle
           .contenedor
       }
     >
       {/* ==================================================
-          HEADER FIJO
+          HEADER
+          Queda FUERA del KeyboardAvoidingView
           ================================================== */}
 
       <View
         style={
-          RegistroTuristaScreenStyle
+          RegistroActorFormStyle
             .header
         }
       >
@@ -513,16 +437,15 @@ const RegistroTuristaScreen = ({
             "../../assets/images/Patron-2.png"
           )}
           style={
-            RegistroTuristaScreenStyle
+            RegistroActorFormStyle
               .headerPatron
           }
           resizeMode="cover"
         >
           <TouchableOpacity
             style={[
-              RegistroTuristaScreenStyle
+              RegistroActorFormStyle
                 .botonVolver,
-
               {
                 top:
                   insets.top + 10,
@@ -539,14 +462,10 @@ const RegistroTuristaScreen = ({
           </TouchableOpacity>
         </ImageBackground>
 
-        {/* ==================================================
-            CURVA
-            ================================================== */}
-
         <Svg
           pointerEvents="none"
           style={
-            RegistroTuristaScreenStyle
+            RegistroActorFormStyle
               .curva
           }
           width={SCREEN_WIDTH}
@@ -567,33 +486,27 @@ const RegistroTuristaScreen = ({
       </View>
 
       {/* ==================================================
-          TÍTULO FIJO
-
-          IMPORTANTE:
-          Ahora está FUERA del KeyboardAvoidingView
-          y FUERA del ScrollView.
+          TÍTULO
+          También queda fuera
           ================================================== */}
 
       <Text
         style={
-          RegistroTuristaScreenStyle
+          RegistroActorFormStyle
             .titulo
         }
       >
-        DATOS GENERALES
+        {tituloEncabezado}
       </Text>
 
       {/* ==================================================
           KEYBOARD AVOIDING VIEW
-
-          Solo el formulario se adapta al teclado.
           ================================================== */}
 
       <KeyboardAvoidingView
         style={[
-          RegistroTuristaScreenStyle
+          RegistroActorFormStyle
             .scroll,
-
           {
             flex: 1,
           },
@@ -606,17 +519,12 @@ const RegistroTuristaScreen = ({
         keyboardVerticalOffset={0}
         enabled
       >
-        {/* ==================================================
-            SCROLL DEL FORMULARIO
-            ================================================== */}
-
         <ScrollView
           style={{
             flex: 1,
           }}
           contentContainerStyle={
-            RegistroTuristaScreenStyle
-              .card
+            RegistroActorFormStyle.card
           }
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode={
@@ -635,14 +543,14 @@ const RegistroTuristaScreen = ({
 
           <TextInput
             style={[
-              RegistroTuristaScreenStyle
+              RegistroActorFormStyle
                 .input,
 
               nombreInvalido &&
-                RegistroTuristaScreenStyle
+                RegistroActorFormStyle
                   .inputInvalido,
             ]}
-            placeholder="Nombre completo"
+            placeholder="Nombre completo/Negocio"
             placeholderTextColor="#a8a8a8"
             value={
               form.nombreCompleto
@@ -663,12 +571,12 @@ const RegistroTuristaScreen = ({
           {nombreInvalido ? (
             <Text
               style={
-                RegistroTuristaScreenStyle
+                RegistroActorFormStyle
                   .errorCampo
               }
             >
-              El nombre completo es
-              obligatorio.
+              El nombre completo/negocio
+              es obligatorio.
             </Text>
           ) : null}
 
@@ -678,11 +586,11 @@ const RegistroTuristaScreen = ({
 
           <TextInput
             style={[
-              RegistroTuristaScreenStyle
+              RegistroActorFormStyle
                 .input,
 
               emailInvalido &&
-                RegistroTuristaScreenStyle
+                RegistroActorFormStyle
                   .inputInvalido,
             ]}
             placeholder="Correo electrónico"
@@ -697,16 +605,14 @@ const RegistroTuristaScreen = ({
               )
             }
             onBlur={() =>
-              marcarTocado(
-                "email"
-              )
+              marcarTocado("email")
             }
           />
 
           {emailVacio ? (
             <Text
               style={
-                RegistroTuristaScreenStyle
+                RegistroActorFormStyle
                   .errorCampo
               }
             >
@@ -715,7 +621,7 @@ const RegistroTuristaScreen = ({
           ) : emailFormatoInvalido ? (
             <Text
               style={
-                RegistroTuristaScreenStyle
+                RegistroActorFormStyle
                   .errorCampo
               }
             >
@@ -725,16 +631,69 @@ const RegistroTuristaScreen = ({
           ) : null}
 
           {/* ==================================================
+              CÉDULA
+              ================================================== */}
+
+          <TextInput
+            style={[
+              RegistroActorFormStyle
+                .input,
+
+              cedulaInvalida &&
+                RegistroActorFormStyle
+                  .inputInvalido,
+            ]}
+            placeholder="Cédula de identidad"
+            placeholderTextColor="#a8a8a8"
+            autoCapitalize="characters"
+            keyboardType="default"
+            maxLength={16}
+            value={form.cedula}
+            onChangeText={(texto) =>
+              handleChange(
+                "cedula",
+                texto
+              )
+            }
+            onBlur={() =>
+              marcarTocado(
+                "cedula"
+              )
+            }
+          />
+
+          {cedulaVacia ? (
+            <Text
+              style={
+                RegistroActorFormStyle
+                  .errorCampo
+              }
+            >
+              La cédula es obligatoria.
+            </Text>
+          ) : cedulaFormatoInvalido ? (
+            <Text
+              style={
+                RegistroActorFormStyle
+                  .errorCampo
+              }
+            >
+              La cédula debe tener el
+              formato 000-000000-0000X.
+            </Text>
+          ) : null}
+
+          {/* ==================================================
               TELÉFONO
               ================================================== */}
 
           <TextInput
             style={[
-              RegistroTuristaScreenStyle
+              RegistroActorFormStyle
                 .input,
 
               telefonoInvalido &&
-                RegistroTuristaScreenStyle
+                RegistroActorFormStyle
                   .inputInvalido,
             ]}
             placeholder="Teléfono"
@@ -757,7 +716,7 @@ const RegistroTuristaScreen = ({
           {telefonoVacio ? (
             <Text
               style={
-                RegistroTuristaScreenStyle
+                RegistroActorFormStyle
                   .errorCampo
               }
             >
@@ -766,7 +725,7 @@ const RegistroTuristaScreen = ({
           ) : telefonoFormatoInvalido ? (
             <Text
               style={
-                RegistroTuristaScreenStyle
+                RegistroActorFormStyle
                   .errorCampo
               }
             >
@@ -776,25 +735,25 @@ const RegistroTuristaScreen = ({
           ) : null}
 
           {/* ==================================================
-              CONTRASEÑA
+              PASSWORD
               ================================================== */}
 
           <View
             style={
-              RegistroTuristaScreenStyle
+              RegistroActorFormStyle
                 .inputWrap
             }
           >
             <TextInput
               style={[
-                RegistroTuristaScreenStyle
+                RegistroActorFormStyle
                   .input,
 
-                RegistroTuristaScreenStyle
+                RegistroActorFormStyle
                   .inputPassword,
 
-                passwordInvalida &&
-                  RegistroTuristaScreenStyle
+                passwordCorta &&
+                  RegistroActorFormStyle
                     .inputInvalido,
               ]}
               placeholder="Contraseña"
@@ -818,7 +777,7 @@ const RegistroTuristaScreen = ({
 
             <TouchableOpacity
               style={
-                RegistroTuristaScreenStyle
+                RegistroActorFormStyle
                   .iconoOjo
               }
               onPress={() =>
@@ -841,10 +800,10 @@ const RegistroTuristaScreen = ({
             </TouchableOpacity>
           </View>
 
-          {passwordInvalida ? (
+          {passwordCorta ? (
             <Text
               style={
-                RegistroTuristaScreenStyle
+                RegistroActorFormStyle
                   .errorCampo
               }
             >
@@ -858,25 +817,25 @@ const RegistroTuristaScreen = ({
           ) : null}
 
           {/* ==================================================
-              CONFIRMAR CONTRASEÑA
+              CONFIRMAR PASSWORD
               ================================================== */}
 
           <View
             style={
-              RegistroTuristaScreenStyle
+              RegistroActorFormStyle
                 .inputWrap
             }
           >
             <TextInput
               style={[
-                RegistroTuristaScreenStyle
+                RegistroActorFormStyle
                   .input,
 
-                RegistroTuristaScreenStyle
+                RegistroActorFormStyle
                   .inputPassword,
 
-                confirmPasswordInvalida &&
-                  RegistroTuristaScreenStyle
+                passwordsNoCoinciden &&
+                  RegistroActorFormStyle
                     .inputInvalido,
               ]}
               placeholder="Confirmar contraseña"
@@ -902,7 +861,7 @@ const RegistroTuristaScreen = ({
 
             <TouchableOpacity
               style={
-                RegistroTuristaScreenStyle
+                RegistroActorFormStyle
                   .iconoOjo
               }
               onPress={() =>
@@ -925,10 +884,10 @@ const RegistroTuristaScreen = ({
             </TouchableOpacity>
           </View>
 
-          {confirmPasswordInvalida ? (
+          {passwordsNoCoinciden ? (
             <Text
               style={
-                RegistroTuristaScreenStyle
+                RegistroActorFormStyle
                   .errorCampo
               }
             >
@@ -942,157 +901,71 @@ const RegistroTuristaScreen = ({
           ) : null}
 
           {/* ==================================================
-              EDAD
+              TURISMO
               ================================================== */}
 
-          <TextInput
+          <TouchableOpacity
             style={[
-              RegistroTuristaScreenStyle
-                .input,
+              RegistroActorFormStyle
+                .dropdownInput,
 
-              edadInvalida &&
-                RegistroTuristaScreenStyle
+              tocado.tipoTurismo &&
+                !form.tipoTurismo &&
+                RegistroActorFormStyle
                   .inputInvalido,
             ]}
-            placeholder="Edad"
-            placeholderTextColor="#a8a8a8"
-            keyboardType="number-pad"
-            value={form.edad}
-            onChangeText={(texto) =>
-              handleChange(
-                "edad",
-                texto
+            onPress={() =>
+              setModalTurismoVisible(
+                true
               )
             }
-            onBlur={() =>
-              marcarTocado(
-                "edad"
-              )
-            }
-          />
-
-          {edadInvalida ? (
-            <Text
-              style={
-                RegistroTuristaScreenStyle
-                  .errorCampo
-              }
-            >
-              Escribe una edad válida.
-            </Text>
-          ) : null}
-
-          {/* ==================================================
-              SELECTORES
-              ================================================== */}
-
-          <View
-            style={
-              RegistroTuristaScreenStyle
-                .selectoresFila
-            }
+            activeOpacity={0.8}
           >
-            {/* IDIOMA */}
-
-            <TouchableOpacity
-              style={[
-                RegistroTuristaScreenStyle
-                  .selectorBoton,
-
-                idiomaInvalido &&
-                  RegistroTuristaScreenStyle
-                    .inputInvalido,
-              ]}
-              onPress={() =>
-                setModalIdiomaVisible(
-                  true
-                )
-              }
-              activeOpacity={0.8}
-            >
-              <Text
-                style={
-                  RegistroTuristaScreenStyle
-                    .selectorTexto
-                }
-                numberOfLines={1}
-              >
-                {
-                  form.idiomaPreferido ||
-                  "Idioma"
-                }
-              </Text>
-            </TouchableOpacity>
-
-            {/* PAÍS */}
-
-            <TouchableOpacity
-              style={[
-                RegistroTuristaScreenStyle
-                  .selectorBoton,
-
-                paisInvalido &&
-                  RegistroTuristaScreenStyle
-                    .inputInvalido,
-              ]}
-              onPress={() =>
-                setModalPaisVisible(
-                  true
-                )
-              }
-              activeOpacity={0.8}
-            >
-              <Text
-                style={
-                  RegistroTuristaScreenStyle
-                    .selectorTexto
-                }
-                numberOfLines={1}
-              >
-                {
-                  form.paisOrigen ||
-                  "País"
-                }
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* ==================================================
-              ERRORES SELECTORES
-              ================================================== */}
-
-          {idiomaInvalido ? (
             <Text
-              style={
-                RegistroTuristaScreenStyle
-                  .errorCampo
-              }
+              style={[
+                RegistroActorFormStyle
+                  .dropdownTexto,
+
+                !form.tipoTurismo &&
+                  RegistroActorFormStyle
+                    .dropdownPlaceholder,
+              ]}
+              numberOfLines={1}
             >
-              Selecciona tu idioma
-              preferido.
+              {
+                form.tipoTurismo ||
+                "Tipo de turismo"
+              }
             </Text>
-          ) : null}
 
-          {paisInvalido ? (
+            <Ionicons
+              name="chevron-down-outline"
+              size={20}
+              color="#086338"
+            />
+          </TouchableOpacity>
+
+          {tocado.tipoTurismo &&
+          !form.tipoTurismo ? (
             <Text
               style={
-                RegistroTuristaScreenStyle
+                RegistroActorFormStyle
                   .errorCampo
               }
             >
-              Selecciona tu país de
-              origen.
+              Selecciona un tipo de
+              turismo.
             </Text>
           ) : null}
 
           {/* ==================================================
-              ERROR GENERAL
+              ERROR
               ================================================== */}
 
           {error ? (
             <Text
               style={
-                RegistroTuristaScreenStyle
+                RegistroActorFormStyle
                   .error
               }
             >
@@ -1106,14 +979,14 @@ const RegistroTuristaScreen = ({
 
           <TouchableOpacity
             style={
-              RegistroTuristaScreenStyle
+              RegistroActorFormStyle
                 .boton
             }
             onPress={handleSubmit}
           >
             <Text
               style={
-                RegistroTuristaScreenStyle
+                RegistroActorFormStyle
                   .botonTexto
               }
             >
@@ -1124,22 +997,22 @@ const RegistroTuristaScreen = ({
       </KeyboardAvoidingView>
 
       {/* ==================================================
-          MODAL IDIOMA
+          MODAL TURISMO
           ================================================== */}
 
       <Modal
         visible={
-          modalIdiomaVisible
+          modalTurismoVisible
         }
         transparent
         animationType="fade"
         onRequestClose={
-          handleCerrarModalIdioma
+          handleCerrarModalTurismo
         }
       >
         <KeyboardAvoidingView
           style={
-            RegistroTuristaScreenStyle
+            RegistroActorFormStyle
               .modalFondo
           }
           behavior={
@@ -1151,33 +1024,34 @@ const RegistroTuristaScreen = ({
         >
           <TouchableOpacity
             style={
-              RegistroTuristaScreenStyle
+              RegistroActorFormStyle
                 .modalFondoTouch
             }
             activeOpacity={1}
             onPress={
-              handleCerrarModalIdioma
+              handleCerrarModalTurismo
             }
           />
 
           <View
             style={
-              RegistroTuristaScreenStyle
+              RegistroActorFormStyle
                 .modalCaja
             }
           >
             <Text
               style={
-                RegistroTuristaScreenStyle
+                RegistroActorFormStyle
                   .modalTitulo
               }
             >
-              Selecciona tu idioma
+              Selecciona tu tipo de
+              turismo
             </Text>
 
             <View
               style={
-                RegistroTuristaScreenStyle
+                RegistroActorFormStyle
                   .modalBusquedaWrap
               }
             >
@@ -1186,23 +1060,23 @@ const RegistroTuristaScreen = ({
                 size={18}
                 color="#8a8a8a"
                 style={
-                  RegistroTuristaScreenStyle
+                  RegistroActorFormStyle
                     .modalBusquedaIcono
                 }
               />
 
               <TextInput
                 style={
-                  RegistroTuristaScreenStyle
+                  RegistroActorFormStyle
                     .modalBusquedaInput
                 }
-                placeholder="Buscar idioma..."
+                placeholder="Buscar tipo de turismo..."
                 placeholderTextColor="#a8a8a8"
                 value={
-                  busquedaIdioma
+                  busquedaTurismo
                 }
                 onChangeText={
-                  setBusquedaIdioma
+                  setBusquedaTurismo
                 }
                 autoFocus
               />
@@ -1210,204 +1084,55 @@ const RegistroTuristaScreen = ({
 
             <FlatList
               data={
-                idiomasFiltrados
+                tiposTurismoFiltrados
               }
               keyExtractor={
                 (item) => item
               }
               keyboardShouldPersistTaps="handled"
               style={
-                RegistroTuristaScreenStyle
+                RegistroActorFormStyle
                   .modalLista
               }
               ListEmptyComponent={
                 <Text
                   style={
-                    RegistroTuristaScreenStyle
+                    RegistroActorFormStyle
                       .modalVacioTexto
                   }
                 >
                   No se encontraron
-                  idiomas.
+                  tipos de turismo.
                 </Text>
               }
               renderItem={({ item }) => {
                 const activo =
-                  form.idiomaPreferido ===
+                  form.tipoTurismo ===
                   item;
 
                 return (
                   <TouchableOpacity
                     style={[
-                      RegistroTuristaScreenStyle
+                      RegistroActorFormStyle
                         .modalOpcion,
 
                       activo &&
-                        RegistroTuristaScreenStyle
+                        RegistroActorFormStyle
                           .modalOpcionActiva,
                     ]}
                     onPress={() =>
-                      handleSeleccionarIdioma(
+                      handleSeleccionarTipoTurismo(
                         item
                       )
                     }
                   >
                     <Text
                       style={[
-                        RegistroTuristaScreenStyle
+                        RegistroActorFormStyle
                           .modalOpcionTexto,
 
                         activo &&
-                          RegistroTuristaScreenStyle
-                            .modalOpcionTextoActivo,
-                      ]}
-                    >
-                      {item}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              }}
-            />
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
-
-      {/* ==================================================
-          MODAL PAÍS
-          ================================================== */}
-
-      <Modal
-        visible={
-          modalPaisVisible
-        }
-        transparent
-        animationType="fade"
-        onRequestClose={
-          handleCerrarModalPais
-        }
-      >
-        <KeyboardAvoidingView
-          style={
-            RegistroTuristaScreenStyle
-              .modalFondo
-          }
-          behavior={
-            Platform.OS === "ios"
-              ? "padding"
-              : "height"
-          }
-          enabled
-        >
-          <TouchableOpacity
-            style={
-              RegistroTuristaScreenStyle
-                .modalFondoTouch
-            }
-            activeOpacity={1}
-            onPress={
-              handleCerrarModalPais
-            }
-          />
-
-          <View
-            style={
-              RegistroTuristaScreenStyle
-                .modalCaja
-            }
-          >
-            <Text
-              style={
-                RegistroTuristaScreenStyle
-                  .modalTitulo
-              }
-            >
-              Selecciona tu país
-            </Text>
-
-            <View
-              style={
-                RegistroTuristaScreenStyle
-                  .modalBusquedaWrap
-              }
-            >
-              <Ionicons
-                name="search-outline"
-                size={18}
-                color="#8a8a8a"
-                style={
-                  RegistroTuristaScreenStyle
-                    .modalBusquedaIcono
-                }
-              />
-
-              <TextInput
-                style={
-                  RegistroTuristaScreenStyle
-                    .modalBusquedaInput
-                }
-                placeholder="Buscar país..."
-                placeholderTextColor="#a8a8a8"
-                value={
-                  busquedaPais
-                }
-                onChangeText={
-                  setBusquedaPais
-                }
-                autoFocus
-              />
-            </View>
-
-            <FlatList
-              data={
-                paisesFiltrados
-              }
-              keyExtractor={
-                (item) => item
-              }
-              keyboardShouldPersistTaps="handled"
-              style={
-                RegistroTuristaScreenStyle
-                  .modalLista
-              }
-              ListEmptyComponent={
-                <Text
-                  style={
-                    RegistroTuristaScreenStyle
-                      .modalVacioTexto
-                  }
-                >
-                  No se encontraron
-                  países.
-                </Text>
-              }
-              renderItem={({ item }) => {
-                const activo =
-                  form.paisOrigen ===
-                  item;
-
-                return (
-                  <TouchableOpacity
-                    style={[
-                      RegistroTuristaScreenStyle
-                        .modalOpcion,
-
-                      activo &&
-                        RegistroTuristaScreenStyle
-                          .modalOpcionActiva,
-                    ]}
-                    onPress={() =>
-                      handleSeleccionarPais(
-                        item
-                      )
-                    }
-                  >
-                    <Text
-                      style={[
-                        RegistroTuristaScreenStyle
-                          .modalOpcionTexto,
-
-                        activo &&
-                          RegistroTuristaScreenStyle
+                          RegistroActorFormStyle
                             .modalOpcionTextoActivo,
                       ]}
                     >
@@ -1424,4 +1149,4 @@ const RegistroTuristaScreen = ({
   );
 };
 
-export default RegistroTuristaScreen;
+export default RegistroActorScreen;
