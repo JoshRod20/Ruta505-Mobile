@@ -364,6 +364,7 @@ const RegistroActorScreen = ({
           RegistroActorFormStyle
             .contenedor
         }
+        testID="registro-actor-screen-guard"
       >
         <View
           style={{
@@ -387,6 +388,7 @@ const RegistroActorScreen = ({
           </Text>
 
           <TouchableOpacity
+            testID="registro-actor-back-button-guard"
             style={[
               RegistroActorFormStyle
                 .boton,
@@ -420,6 +422,7 @@ const RegistroActorScreen = ({
         RegistroActorFormStyle
           .contenedor
       }
+      testID="registro-actor-screen"
     >
       {/* ==================================================
           HEADER
@@ -443,6 +446,7 @@ const RegistroActorScreen = ({
           resizeMode="cover"
         >
           <TouchableOpacity
+            testID="registro-actor-back-button"
             style={[
               RegistroActorFormStyle
                 .botonVolver,
@@ -542,6 +546,7 @@ const RegistroActorScreen = ({
               ================================================== */}
 
           <TextInput
+            testID="registro-actor-nombre-input"
             style={[
               RegistroActorFormStyle
                 .input,
@@ -585,6 +590,7 @@ const RegistroActorScreen = ({
               ================================================== */}
 
           <TextInput
+            testID="registro-actor-email-input"
             style={[
               RegistroActorFormStyle
                 .input,
@@ -635,6 +641,7 @@ const RegistroActorScreen = ({
               ================================================== */}
 
           <TextInput
+            testID="registro-actor-cedula-input"
             style={[
               RegistroActorFormStyle
                 .input,
@@ -688,6 +695,7 @@ const RegistroActorScreen = ({
               ================================================== */}
 
           <TextInput
+            testID="registro-actor-telefono-input"
             style={[
               RegistroActorFormStyle
                 .input,
@@ -745,6 +753,7 @@ const RegistroActorScreen = ({
             }
           >
             <TextInput
+              testID="registro-actor-password-input"
               style={[
                 RegistroActorFormStyle
                   .input,
@@ -776,6 +785,7 @@ const RegistroActorScreen = ({
             />
 
             <TouchableOpacity
+              testID="registro-actor-toggle-password-button"
               style={
                 RegistroActorFormStyle
                   .iconoOjo
@@ -827,6 +837,7 @@ const RegistroActorScreen = ({
             }
           >
             <TextInput
+              testID="registro-actor-confirm-password-input"
               style={[
                 RegistroActorFormStyle
                   .input,
@@ -860,6 +871,7 @@ const RegistroActorScreen = ({
             />
 
             <TouchableOpacity
+              testID="registro-actor-toggle-confirm-password-button"
               style={
                 RegistroActorFormStyle
                   .iconoOjo
@@ -905,6 +917,7 @@ const RegistroActorScreen = ({
               ================================================== */}
 
           <TouchableOpacity
+            testID="registro-actor-tipo-turismo-selector"
             style={[
               RegistroActorFormStyle
                 .dropdownInput,
@@ -964,6 +977,7 @@ const RegistroActorScreen = ({
 
           {error ? (
             <Text
+              testID="registro-actor-error-text"
               style={
                 RegistroActorFormStyle
                   .error
@@ -978,6 +992,7 @@ const RegistroActorScreen = ({
               ================================================== */}
 
           <TouchableOpacity
+            testID="registro-actor-submit-button"
             style={
               RegistroActorFormStyle
                 .boton
@@ -1023,6 +1038,7 @@ const RegistroActorScreen = ({
           enabled
         >
           <TouchableOpacity
+            testID="registro-actor-modal-turismo-backdrop"
             style={
               RegistroActorFormStyle
                 .modalFondoTouch
@@ -1038,6 +1054,7 @@ const RegistroActorScreen = ({
               RegistroActorFormStyle
                 .modalCaja
             }
+            testID="registro-actor-modal-turismo"
           >
             <Text
               style={
@@ -1066,6 +1083,7 @@ const RegistroActorScreen = ({
               />
 
               <TextInput
+                testID="registro-actor-modal-turismo-search"
                 style={
                   RegistroActorFormStyle
                     .modalBusquedaInput
@@ -1112,6 +1130,7 @@ const RegistroActorScreen = ({
 
                 return (
                   <TouchableOpacity
+                    testID={`registro-actor-turismo-item-${item}`}
                     style={[
                       RegistroActorFormStyle
                         .modalOpcion,

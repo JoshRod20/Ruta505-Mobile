@@ -1,0 +1,35 @@
+appId: com.kennrod20.Ruta505
+---
+- launchApp:
+    clearState: true
+
+- runFlow: utils/saltar_onboarding.yaml
+
+- assertVisible:
+    id: "welcome-screen"
+
+# --- Welcome -> Login -> Welcome ---
+- tapOn:
+    id: "welcome-iniciar-sesion-button"
+
+- assertVisible:
+    id: "login-screen"
+
+- tapOn:
+    id: "login-back-button"
+
+- assertVisible:
+    id: "welcome-screen"
+
+# --- Welcome -> SeleccionarTipo -> Welcome ---
+- tapOn:
+    id: "welcome-registrar-cuenta-button"
+
+- assertVisible:
+    id: "seleccionar-tipo-screen"
+
+- tapOn:
+    id: "seleccionar-tipo-back-button"
+
+- assertVisible:
+    id: "welcome-screen"

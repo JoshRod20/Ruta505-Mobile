@@ -51,7 +51,7 @@ const SeleccionarTipoScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={SeleccionarTipoScreenStyle.contenedor}>
+    <View style={SeleccionarTipoScreenStyle.contenedor} testID="seleccionar-tipo-screen">
 
       {/* ==================================================
           HEADER CON PATRÓN CULTURAL + CURVA
@@ -66,6 +66,7 @@ const SeleccionarTipoScreen = ({ navigation }) => {
         >
 
           <TouchableOpacity
+            testID="seleccionar-tipo-back-button"
             style={[
               SeleccionarTipoScreenStyle.botonVolver,
               { top: insets.top + 10 },
@@ -124,6 +125,7 @@ const SeleccionarTipoScreen = ({ navigation }) => {
           {tiposUsuario.map((tipo) => (
             <TouchableOpacity
               key={tipo.id}
+              testID={`seleccionar-tipo-option-${tipo.id}`}
               style={SeleccionarTipoScreenStyle.opcion}
               activeOpacity={0.8}
               onPress={() => navigation.navigate(tipo.ruta)}

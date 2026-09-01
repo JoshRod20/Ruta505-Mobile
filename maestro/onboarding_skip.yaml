@@ -1,0 +1,23 @@
+appId: com.kennrod20.Ruta505
+---
+- launchApp:
+    clearState: true
+
+# Timeout largo: en un build de desarrollo, tras clearState la app
+# puede tardar en descargar/construir el bundle de JS antes de montar
+# la primera pantalla (más que el timeout por defecto de assertVisible).
+- extendedWaitUntil:
+    visible:
+      id: "onboarding-screen"
+    timeout: 60000
+
+- tapOn:
+    id: "onboarding-skip-button"
+
+# Timeout largo: tras completar el onboarding, RootNavigator también
+# espera a que Firebase Auth resuelva (loadingAuth) antes de mostrar
+# Welcome; en frío eso puede tardar más que el timeout por defecto.
+- extendedWaitUntil:
+    visible:
+      id: "welcome-screen"
+    timeout: 30000

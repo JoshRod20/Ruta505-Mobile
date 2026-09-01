@@ -105,6 +105,7 @@ const SolicitarUbicacionScreen = ({ navigation, route }) => {
         InteresesUbicacionStyle.contenedor,
         { paddingTop: insets.top + 16 },
       ]}
+      testID="solicitar-ubicacion-screen"
     >
       {/* ==================================================
           BOTÓN VOLVER
@@ -118,6 +119,7 @@ const SolicitarUbicacionScreen = ({ navigation, route }) => {
           ================================================== */}
 
       <TouchableOpacity
+        testID="solicitar-ubicacion-back-button"
         onPress={handleVolver}
         activeOpacity={0.7}
         disabled={cargando}
@@ -170,10 +172,16 @@ const SolicitarUbicacionScreen = ({ navigation, route }) => {
         </Text>
 
         {error ? (
-          <Text style={InteresesUbicacionStyle.error}>{error}</Text>
+          <Text
+            testID="solicitar-ubicacion-error-text"
+            style={InteresesUbicacionStyle.error}
+          >
+            {error}
+          </Text>
         ) : null}
 
         <TouchableOpacity
+          testID="solicitar-ubicacion-activar-button"
           style={[
             InteresesUbicacionStyle.botonNaranja,
             cargando && InteresesUbicacionStyle.botonDeshabilitado,

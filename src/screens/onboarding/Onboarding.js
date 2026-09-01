@@ -781,6 +781,7 @@ const Onboarding = ({ onComplete }) => {
   return (
     <View
       style={styles.container}
+      testID="onboarding-screen"
       {...panResponder.panHandlers}
     >
       {/* ==================================================
@@ -933,6 +934,7 @@ const Onboarding = ({ onComplete }) => {
                       style={
                         styles.dots
                       }
+                      testID="onboarding-dots"
                     >
                       {SLIDES.map(
                         (
@@ -943,6 +945,7 @@ const Onboarding = ({ onComplete }) => {
                             key={
                               item.id
                             }
+                            testID={`onboarding-dot-${item.id}`}
                             style={[
                               styles.dot,
 
@@ -1013,6 +1016,7 @@ const Onboarding = ({ onComplete }) => {
                         ]}
                       >
                         <Pressable
+                          testID="onboarding-cta-button"
                           onPress={
                             finish
                           }
@@ -1048,6 +1052,7 @@ const Onboarding = ({ onComplete }) => {
           ================================================== */}
 
       <Pressable
+        testID="onboarding-skip-button"
         onPress={skip}
         style={
           styles.skipButton

@@ -50,7 +50,7 @@ const SeleccionarActorScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={SeleccionarActorScreenStyle.contenedor}>
+    <View style={SeleccionarActorScreenStyle.contenedor} testID="seleccionar-actor-screen">
 
       {/* ==================================================
           HEADER CON PATRÓN CULTURAL + CURVA
@@ -65,6 +65,7 @@ const SeleccionarActorScreen = ({ navigation }) => {
         >
 
           <TouchableOpacity
+            testID="seleccionar-actor-back-button"
             style={[
               SeleccionarActorScreenStyle.botonVolver,
               { top: insets.top + 10 },
@@ -123,6 +124,7 @@ const SeleccionarActorScreen = ({ navigation }) => {
           {actoresCulturales.map((actor) => (
             <TouchableOpacity
               key={actor.id}
+              testID={`seleccionar-actor-option-${actor.id}`}
               style={SeleccionarActorScreenStyle.opcion}
               activeOpacity={0.8}
               onPress={() =>

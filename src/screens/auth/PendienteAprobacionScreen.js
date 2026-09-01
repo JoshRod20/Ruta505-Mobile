@@ -16,7 +16,10 @@ const PendienteAprobacionScreen = ({ onExplorar }) => {
   const { profile } = useAuth();
 
   return (
-    <View style={PendienteAprobacionScreenStyle.contenedor}>
+    <View
+      style={PendienteAprobacionScreenStyle.contenedor}
+      testID="pendiente-aprobacion-screen"
+    >
       <Text style={PendienteAprobacionScreenStyle.titulo}>Tu cuenta está en revisión</Text>
       <Text style={PendienteAprobacionScreenStyle.subtitulo}>
         El equipo de soporte de Ruta 505 está revisando tu perfil. Te notificaremos por correo cuando sea aprobado.
@@ -30,6 +33,7 @@ const PendienteAprobacionScreen = ({ onExplorar }) => {
 
         <View style={PendienteAprobacionScreenStyle.filaBotones}>
           <TouchableOpacity
+            testID="pendiente-aprobacion-explorar-button"
             style={PendienteAprobacionScreenStyle.botonExplorar}
             onPress={onExplorar}
             activeOpacity={0.8}

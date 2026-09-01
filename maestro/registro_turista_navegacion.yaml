@@ -1,0 +1,104 @@
+appId: com.kennrod20.Ruta505
+#
+# El campo email usa la variable ${MAESTRO_EMAIL}. Ejecuta así para
+# darle un valor (útil si algún día descomentas el paso final que sí
+# crea la cuenta):
+#   maestro test registro_turista_navegacion.yaml -e MAESTRO_EMAIL=prueba@ruta505.com
+#
+# Si no pasas -e MAESTRO_EMAIL, Maestro pedirá el valor o fallará al
+# interpolar; puedes reemplazar "${MAESTRO_EMAIL}" por un correo fijo
+# si prefieres no usar variables.
+---
+- launchApp:
+    clearState: true
+
+- runFlow: utils/saltar_onboarding.yaml
+
+- tapOn:
+    id: "welcome-registrar-cuenta-button"
+
+- assertVisible:
+    id: "seleccionar-tipo-screen"
+
+- tapOn:
+    id: "seleccionar-tipo-option-turista"
+
+- assertVisible:
+    id: "registro-turista-screen"
+
+# --- Datos generales ---
+- tapOn:
+    id: "registro-turista-nombre-input"
+- inputText: "Usuario de Prueba"
+- hideKeyboard
+
+- tapOn:
+    id: "registro-turista-email-input"
+- inputText: "${MAESTRO_EMAIL}"
+- hideKeyboard
+
+- tapOn:
+    id: "registro-turista-telefono-input"
+- inputText: "88888888"
+- hideKeyboard
+
+- tapOn:
+    id: "registro-turista-password-input"
+- inputText: "123456"
+- hideKeyboard
+
+- tapOn:
+    id: "registro-turista-confirm-password-input"
+- inputText: "123456"
+- hideKeyboard
+
+- tapOn:
+    id: "registro-turista-edad-input"
+- inputText: "25"
+- hideKeyboard
+
+# --- Idioma (lista fija IDIOMAS de la propia pantalla) ---
+- tapOn:
+    id: "registro-turista-idioma-selector"
+
+- assertVisible:
+    id: "registro-turista-modal-idioma"
+
+- tapOn:
+    id: "registro-turista-idioma-item-Español"
+
+# --- País (lista fija PAISES de la propia pantalla) ---
+- tapOn:
+    id: "registro-turista-pais-selector"
+
+- assertVisible:
+    id: "registro-turista-modal-pais"
+
+- tapOn:
+    id: "registro-turista-pais-item-Nicaragua"
+
+- tapOn:
+    id: "registro-turista-submit-button"
+
+# --- Intereses ---
+- assertVisible:
+    id: "seleccionar-intereses-screen"
+
+- tapOn:
+    id: "seleccionar-intereses-item-Turismo cultural e histórico"
+
+- tapOn:
+    id: "seleccionar-intereses-continue-button"
+
+# --- Ubicación ---
+- assertVisible:
+    id: "solicitar-ubicacion-screen"
+
+# Se detiene aquí a propósito: tocar "Activar ubicación" ejecuta un
+# registrarUsuario real contra Firebase (crea una cuenta de verdad).
+# Descomenta solo si quieres una prueba end-to-end completa, con un
+# MAESTRO_EMAIL único en cada corrida para no chocar con
+# "email-already-in-use".
+#
+# - tapOn:
+#     id: "solicitar-ubicacion-activar-button"

@@ -1,0 +1,83 @@
+appId: com.kennrod20.Ruta505
+#
+# Igual que en registro_turista_navegacion.yaml: pasa el email con
+#   maestro test registro_actor_navegacion.yaml -e MAESTRO_EMAIL=actor@ruta505.com
+---
+- launchApp:
+    clearState: true
+
+- runFlow: utils/saltar_onboarding.yaml
+
+- tapOn:
+    id: "welcome-registrar-cuenta-button"
+
+- assertVisible:
+    id: "seleccionar-tipo-screen"
+
+- tapOn:
+    id: "seleccionar-tipo-option-actor-cultural"
+
+- assertVisible:
+    id: "seleccionar-actor-screen"
+
+- tapOn:
+    id: "seleccionar-actor-option-artesano"
+
+- assertVisible:
+    id: "registro-actor-screen"
+
+# --- Datos generales ---
+- tapOn:
+    id: "registro-actor-nombre-input"
+- inputText: "Actor de Prueba"
+- hideKeyboard
+
+- tapOn:
+    id: "registro-actor-email-input"
+- inputText: "${MAESTRO_EMAIL}"
+- hideKeyboard
+
+- tapOn:
+    id: "registro-actor-cedula-input"
+- inputText: "001-010101-0001A"
+- hideKeyboard
+
+- tapOn:
+    id: "registro-actor-telefono-input"
+- inputText: "88888888"
+- hideKeyboard
+
+- tapOn:
+    id: "registro-actor-password-input"
+- inputText: "123456"
+- hideKeyboard
+
+- tapOn:
+    id: "registro-actor-confirm-password-input"
+- inputText: "123456"
+- hideKeyboard
+
+# --- Tipo de turismo ---
+- tapOn:
+    id: "registro-actor-tipo-turismo-selector"
+
+- assertVisible:
+    id: "registro-actor-modal-turismo"
+
+# Opción real de ACTORES_CULTURALES_CONFIG[ACTOR_TYPES.ARTESANO].tiposTurismo
+# (constants/actoresCulturales.js).
+- tapOn:
+    id: "registro-actor-turismo-item-Venta de artesanías"
+
+- tapOn:
+    id: "registro-actor-submit-button"
+
+# --- Ubicación (el actor cultural no pasa por SeleccionarIntereses) ---
+- assertVisible:
+    id: "solicitar-ubicacion-screen"
+
+# Igual que en el flujo de turista: no se toca "Activar ubicación"
+# para no crear una cuenta real en Firebase en cada corrida.
+#
+# - tapOn:
+#     id: "solicitar-ubicacion-activar-button"

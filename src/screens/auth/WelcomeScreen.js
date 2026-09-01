@@ -13,7 +13,7 @@ const WelcomeScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={WelcomeScreenStyle.contenedor}>
+    <View style={WelcomeScreenStyle.contenedor} testID="welcome-screen">
 
       <Image
         source={require("../../assets/images/LogoRuta505.png")}
@@ -22,6 +22,7 @@ const WelcomeScreen = ({ navigation }) => {
       />
 
       <TouchableOpacity
+        testID="welcome-iniciar-sesion-button"
         style={WelcomeScreenStyle.boton}
         onPress={handleIniciarSesion}
         activeOpacity={0.85}
@@ -32,6 +33,7 @@ const WelcomeScreen = ({ navigation }) => {
       </TouchableOpacity>
 
       <TouchableOpacity
+        testID="welcome-registrar-cuenta-button"
         style={WelcomeScreenStyle.enlaceWrap}
         onPress={handleRegistrarCuenta}
         activeOpacity={0.7}

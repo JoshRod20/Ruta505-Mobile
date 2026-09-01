@@ -343,6 +343,7 @@ const RootNavigator = () => {
   ) {
     return (
       <View
+        testID="root-loading-auth"
         style={{
           flex: 1,
           alignItems: "center",
@@ -397,6 +398,7 @@ const RootNavigator = () => {
   if (!profile) {
     return (
       <View
+        testID="root-loading-profile"
         style={{
           flex: 1,
           alignItems: "center",

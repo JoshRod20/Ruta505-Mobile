@@ -1,0 +1,31 @@
+appId: com.kennrod20.Ruta505
+---
+- launchApp:
+    clearState: true
+
+- assertVisible:
+    id: "onboarding-screen"
+
+- assertVisible:
+    id: "onboarding-dot-bienvenida"
+
+# Slide 1 (bienvenida) -> Slide 2 (esencia)
+- swipe:
+    direction: LEFT
+
+# Slide 2 -> Slide 3 (comunidades)
+- swipe:
+    direction: LEFT
+
+# Slide 3 -> Slide 4 (experiencia), donde aparece el botón "Comenzar"
+- swipe:
+    direction: LEFT
+
+- assertVisible:
+    id: "onboarding-cta-button"
+
+- tapOn:
+    id: "onboarding-cta-button"
+
+- assertVisible:
+    id: "welcome-screen"

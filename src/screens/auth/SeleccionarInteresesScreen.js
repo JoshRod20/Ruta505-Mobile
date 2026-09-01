@@ -44,6 +44,7 @@ const SeleccionarInteresesScreen = ({ navigation, route }) => {
         InteresesUbicacionStyle.contenedor,
         { paddingTop: insets.top + 16 },
       ]}
+      testID="seleccionar-intereses-screen"
     >
 
       {/* ==================================================
@@ -58,6 +59,7 @@ const SeleccionarInteresesScreen = ({ navigation, route }) => {
           ================================================== */}
 
       <TouchableOpacity
+        testID="seleccionar-intereses-back-button"
         onPress={handleVolver}
         activeOpacity={0.7}
         style={{
@@ -99,6 +101,7 @@ const SeleccionarInteresesScreen = ({ navigation, route }) => {
           const activo = seleccionados.includes(item);
           return (
             <TouchableOpacity
+              testID={`seleccionar-intereses-item-${item}`}
               style={InteresesUbicacionStyle.opcionFila}
               onPress={() => alternarInteres(item)}
               activeOpacity={0.7}
@@ -120,10 +123,16 @@ const SeleccionarInteresesScreen = ({ navigation, route }) => {
       />
 
       {error ? (
-        <Text style={InteresesUbicacionStyle.error}>{error}</Text>
+        <Text
+          testID="seleccionar-intereses-error-text"
+          style={InteresesUbicacionStyle.error}
+        >
+          {error}
+        </Text>
       ) : null}
 
       <TouchableOpacity
+        testID="seleccionar-intereses-continue-button"
         style={InteresesUbicacionStyle.boton}
         onPress={handleContinuar}
         activeOpacity={0.85}

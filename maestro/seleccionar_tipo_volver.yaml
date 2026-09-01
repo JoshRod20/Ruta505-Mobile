@@ -1,0 +1,38 @@
+appId: com.kennrod20.Ruta505
+---
+- launchApp:
+    clearState: true
+
+- runFlow: utils/saltar_onboarding.yaml
+
+- tapOn:
+    id: "welcome-registrar-cuenta-button"
+
+- assertVisible:
+    id: "seleccionar-tipo-screen"
+
+# --- SeleccionarTipo -> SeleccionarActor -> SeleccionarTipo ---
+- tapOn:
+    id: "seleccionar-tipo-option-actor-cultural"
+
+- assertVisible:
+    id: "seleccionar-actor-screen"
+
+- tapOn:
+    id: "seleccionar-actor-back-button"
+
+- assertVisible:
+    id: "seleccionar-tipo-screen"
+
+# --- SeleccionarTipo -> RegistroTurista -> SeleccionarTipo ---
+- tapOn:
+    id: "seleccionar-tipo-option-turista"
+
+- assertVisible:
+    id: "registro-turista-screen"
+
+- tapOn:
+    id: "registro-turista-back-button"
+
+- assertVisible:
+    id: "seleccionar-tipo-screen"

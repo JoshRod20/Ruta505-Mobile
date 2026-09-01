@@ -1,0 +1,26 @@
+# Subflow — NO se ejecuta solo, se invoca desde otros flows con:
+#   - runFlow: utils/saltar_onboarding.yaml
+#
+# Se asume que se llama justo después de "launchApp: clearState: true",
+# así que el onboarding SIEMPRE aparece primero. Usa extendedWaitUntil
+# con un timeout largo (60s) porque, en un build de desarrollo (dev
+# client / Expo Go), tras clearState la app puede tardar en descargar
+# y construir el bundle de JS antes de que RootNavigator monte nada —
+# más de lo que assertVisible espera por defecto (~17s).
+appId: com.kennrod20.Ruta505
+---
+- extendedWaitUntil:
+    visible:
+      id: "onboarding-skip-button"
+    timeout: 60000
+
+- tapOn:
+    id: "onboarding-skip-button"
+
+# Timeout largo: tras completar el onboarding, RootNavigator también
+# espera a que Firebase Auth resuelva (loadingAuth) antes de mostrar
+# Welcome; en frío eso puede tardar más que el timeout por defecto.
+- extendedWaitUntil:
+    visible:
+      id: "welcome-screen"
+    timeout: 30000

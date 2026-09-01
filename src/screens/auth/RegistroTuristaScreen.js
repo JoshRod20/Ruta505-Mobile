@@ -497,6 +497,7 @@ const RegistroTuristaScreen = ({
         RegistroTuristaScreenStyle
           .contenedor
       }
+      testID="registro-turista-screen"
     >
       {/* ==================================================
           HEADER FIJO
@@ -519,6 +520,7 @@ const RegistroTuristaScreen = ({
           resizeMode="cover"
         >
           <TouchableOpacity
+            testID="registro-turista-back-button"
             style={[
               RegistroTuristaScreenStyle
                 .botonVolver,
@@ -634,6 +636,7 @@ const RegistroTuristaScreen = ({
               ================================================== */}
 
           <TextInput
+            testID="registro-turista-nombre-input"
             style={[
               RegistroTuristaScreenStyle
                 .input,
@@ -677,6 +680,7 @@ const RegistroTuristaScreen = ({
               ================================================== */}
 
           <TextInput
+            testID="registro-turista-email-input"
             style={[
               RegistroTuristaScreenStyle
                 .input,
@@ -729,6 +733,7 @@ const RegistroTuristaScreen = ({
               ================================================== */}
 
           <TextInput
+            testID="registro-turista-telefono-input"
             style={[
               RegistroTuristaScreenStyle
                 .input,
@@ -786,6 +791,7 @@ const RegistroTuristaScreen = ({
             }
           >
             <TextInput
+              testID="registro-turista-password-input"
               style={[
                 RegistroTuristaScreenStyle
                   .input,
@@ -817,6 +823,7 @@ const RegistroTuristaScreen = ({
             />
 
             <TouchableOpacity
+              testID="registro-turista-toggle-password-button"
               style={
                 RegistroTuristaScreenStyle
                   .iconoOjo
@@ -868,6 +875,7 @@ const RegistroTuristaScreen = ({
             }
           >
             <TextInput
+              testID="registro-turista-confirm-password-input"
               style={[
                 RegistroTuristaScreenStyle
                   .input,
@@ -901,6 +909,7 @@ const RegistroTuristaScreen = ({
             />
 
             <TouchableOpacity
+              testID="registro-turista-toggle-confirm-password-button"
               style={
                 RegistroTuristaScreenStyle
                   .iconoOjo
@@ -946,6 +955,7 @@ const RegistroTuristaScreen = ({
               ================================================== */}
 
           <TextInput
+            testID="registro-turista-edad-input"
             style={[
               RegistroTuristaScreenStyle
                 .input,
@@ -995,6 +1005,7 @@ const RegistroTuristaScreen = ({
             {/* IDIOMA */}
 
             <TouchableOpacity
+              testID="registro-turista-idioma-selector"
               style={[
                 RegistroTuristaScreenStyle
                   .selectorBoton,
@@ -1027,6 +1038,7 @@ const RegistroTuristaScreen = ({
             {/* PAÍS */}
 
             <TouchableOpacity
+              testID="registro-turista-pais-selector"
               style={[
                 RegistroTuristaScreenStyle
                   .selectorBoton,
@@ -1091,6 +1103,7 @@ const RegistroTuristaScreen = ({
 
           {error ? (
             <Text
+              testID="registro-turista-error-text"
               style={
                 RegistroTuristaScreenStyle
                   .error
@@ -1105,6 +1118,7 @@ const RegistroTuristaScreen = ({
               ================================================== */}
 
           <TouchableOpacity
+            testID="registro-turista-submit-button"
             style={
               RegistroTuristaScreenStyle
                 .boton
@@ -1150,6 +1164,7 @@ const RegistroTuristaScreen = ({
           enabled
         >
           <TouchableOpacity
+            testID="registro-turista-modal-idioma-backdrop"
             style={
               RegistroTuristaScreenStyle
                 .modalFondoTouch
@@ -1165,6 +1180,7 @@ const RegistroTuristaScreen = ({
               RegistroTuristaScreenStyle
                 .modalCaja
             }
+            testID="registro-turista-modal-idioma"
           >
             <Text
               style={
@@ -1192,6 +1208,7 @@ const RegistroTuristaScreen = ({
               />
 
               <TextInput
+                testID="registro-turista-modal-idioma-search"
                 style={
                   RegistroTuristaScreenStyle
                     .modalBusquedaInput
@@ -1238,6 +1255,7 @@ const RegistroTuristaScreen = ({
 
                 return (
                   <TouchableOpacity
+                    testID={`registro-turista-idioma-item-${item}`}
                     style={[
                       RegistroTuristaScreenStyle
                         .modalOpcion,
@@ -1299,6 +1317,7 @@ const RegistroTuristaScreen = ({
           enabled
         >
           <TouchableOpacity
+            testID="registro-turista-modal-pais-backdrop"
             style={
               RegistroTuristaScreenStyle
                 .modalFondoTouch
@@ -1314,6 +1333,7 @@ const RegistroTuristaScreen = ({
               RegistroTuristaScreenStyle
                 .modalCaja
             }
+            testID="registro-turista-modal-pais"
           >
             <Text
               style={
@@ -1341,6 +1361,7 @@ const RegistroTuristaScreen = ({
               />
 
               <TextInput
+                testID="registro-turista-modal-pais-search"
                 style={
                   RegistroTuristaScreenStyle
                     .modalBusquedaInput
@@ -1387,6 +1408,7 @@ const RegistroTuristaScreen = ({
 
                 return (
                   <TouchableOpacity
+                    testID={`registro-turista-pais-item-${item}`}
                     style={[
                       RegistroTuristaScreenStyle
                         .modalOpcion,

@@ -350,6 +350,7 @@ const LoginScreen = ({
         LoginScreenStyle
           .contenedor
       }
+      testID="login-screen"
     >
       {/* ==================================================
           HEADER FIJO
@@ -371,6 +372,7 @@ const LoginScreen = ({
           resizeMode="cover"
         >
           <TouchableOpacity
+            testID="login-back-button"
             style={[
               LoginScreenStyle
                 .botonVolver,
@@ -503,6 +505,7 @@ const LoginScreen = ({
               ================================================== */}
 
           <TextInput
+            testID="login-email-input"
             style={[
               LoginScreenStyle.input,
 
@@ -557,6 +560,7 @@ const LoginScreen = ({
             }
           >
             <TextInput
+              testID="login-password-input"
               style={[
                 LoginScreenStyle
                   .input,
@@ -585,6 +589,7 @@ const LoginScreen = ({
             />
 
             <TouchableOpacity
+              testID="login-toggle-password-button"
               style={
                 LoginScreenStyle
                   .iconoOjo
@@ -626,6 +631,7 @@ const LoginScreen = ({
               ================================================== */}
 
           <TouchableOpacity
+            testID="login-forgot-password-button"
             style={
               LoginScreenStyle
                 .enlaceWrap
@@ -661,6 +667,7 @@ const LoginScreen = ({
 
           {error ? (
             <Text
+              testID="login-error-text"
               style={
                 LoginScreenStyle.error
               }
@@ -675,6 +682,7 @@ const LoginScreen = ({
 
           {feedback ? (
             <Text
+              testID="login-feedback-text"
               style={
                 LoginScreenStyle.exito
               }
@@ -688,6 +696,7 @@ const LoginScreen = ({
               ================================================== */}
 
           <TouchableOpacity
+            testID="login-submit-button"
             style={[
               LoginScreenStyle.boton,
 
@@ -719,6 +728,7 @@ const LoginScreen = ({
               ================================================== */}
 
           <TouchableOpacity
+            testID="login-go-register-button"
             style={
               LoginScreenStyle
                 .registrarseWrap

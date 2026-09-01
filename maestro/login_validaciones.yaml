@@ -1,0 +1,78 @@
+appId: com.kennrod20.Ruta505
+---
+- launchApp:
+    clearState: true
+
+- runFlow: utils/saltar_onboarding.yaml
+
+- tapOn:
+    id: "welcome-iniciar-sesion-button"
+
+- assertVisible:
+    id: "login-screen"
+
+# --- Envío vacío: deben aparecer errores de campo requerido ---
+- tapOn:
+    id: "login-submit-button"
+
+- assertVisible:
+    text: "Completa tu correo y contraseña."
+
+# --- Correo con formato inválido ---
+- tapOn:
+    id: "login-email-input"
+- inputText: "correo-invalido"
+- hideKeyboard
+
+- tapOn:
+    id: "login-password-input"
+- inputText: "123456"
+- hideKeyboard
+
+- tapOn:
+    id: "login-submit-button"
+
+- assertVisible:
+    text: "Escribe un correo electrónico válido."
+
+# --- Mostrar/ocultar contraseña no debe romper la pantalla ---
+- tapOn:
+    id: "login-toggle-password-button"
+
+# --- "¿Olvidaste tu contraseña?" sin correo válido muestra error ---
+- tapOn:
+    id: "login-email-input"
+- eraseText
+- hideKeyboard
+- tapOn:
+    id: "login-forgot-password-button"
+
+- assertVisible:
+    text: "Escribe tu correo para enviarte el enlace."
+
+# --- Enlace "¿No tienes cuenta? Regístrate" ---
+- tapOn:
+    id: "login-go-register-button"
+
+- assertVisible:
+    id: "seleccionar-tipo-screen"
+
+- tapOn:
+    id: "seleccionar-tipo-back-button"
+
+- extendedWaitUntil:
+    visible:
+      id: "welcome-screen"
+    timeout: 30000
+
+# --- Volver a Welcome desde Login directamente ---
+- tapOn:
+    id: "welcome-iniciar-sesion-button"
+
+- tapOn:
+    id: "login-back-button"
+
+- extendedWaitUntil:
+    visible:
+      id: "welcome-screen"
+    timeout: 30000

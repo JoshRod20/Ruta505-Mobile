@@ -6,7 +6,11 @@ const LogoutButton = () => {
   const { logout } = useAuth();
 
   return (
-    <TouchableOpacity style={LogoutButtonStyle.boton} onPress={logout}>
+    <TouchableOpacity
+      testID="logout-button"
+      style={LogoutButtonStyle.boton}
+      onPress={logout}
+    >
       <Text style={LogoutButtonStyle.texto}>Cerrar sesión</Text>
     </TouchableOpacity>
   );
