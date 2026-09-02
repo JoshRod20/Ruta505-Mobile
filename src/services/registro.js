@@ -1,4 +1,4 @@
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "./firebase";
 
@@ -58,6 +58,14 @@ export const registrarUsuario = async (email, password, datosPerfil) => {
       );
     });
     throw err;
+  }
+
+  // No bloqueamos el registro si esto falla (ej. sin internet en ese
+  // instante); el usuario podrá reenviarlo después desde la app.
+  try {
+    await sendEmailVerification(credenciales.user);
+  } catch (err) {
+    console.warn("No se pudo enviar el correo de verificación:", err);
   }
 
   return uid;

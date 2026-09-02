@@ -12,6 +12,11 @@ import {
 
 import QRCode from "react-native-qrcode-svg";
 
+import {
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+} from "firebase/auth";
+
 import { auth } from "../../services/firebase";
 import {
   totpYaActivado,
@@ -19,6 +24,7 @@ import {
   confirmarEnrolamientoTotp,
   desactivarTotp,
 } from "../../services/mfa";
+import { enviarCorreoVerificacion } from "../../services/emailVerification";
 import { mapFirebaseError } from "../../utils/firebaseErrors";
 
 import FloatingNavButton from "../../components/common/FloatingNavButton";
@@ -29,13 +35,15 @@ const ActivarDobleFactorScreen = ({ navigation }) => {
     totpYaActivado(auth.currentUser)
   );
 
-  // inicio | qr
+  // inicio | correo_no_verificado | reautenticar | qr
   const [paso, setPaso] = useState("inicio");
 
   const [secretInfo, setSecretInfo] = useState(null);
   const [codigo, setCodigo] = useState("");
+  const [passwordReauth, setPasswordReauth] = useState("");
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState("");
+  const [correoReenviado, setCorreoReenviado] = useState(false);
 
   const handleChangeCodigo = (texto) => {
     setCodigo(texto.replace(/[^0-9]/g, "").slice(0, 6));
@@ -46,33 +54,79 @@ const ActivarDobleFactorScreen = ({ navigation }) => {
     setPaso("inicio");
     setSecretInfo(null);
     setCodigo("");
+    setPasswordReauth("");
     setError("");
   };
 
   // ==================================================
-  // INICIAR ENROLAMIENTO
+  // INTENTAR ENROLAR (usado por "Activar" y por los
+  // reintentos tras verificar correo / reautenticar)
   // ==================================================
 
-  const handleIniciar = async () => {
+  const intentarEnrolar = async () => {
     setError("");
     setCargando(true);
 
     try {
       const info = await iniciarEnrolamientoTotp();
       setSecretInfo(info);
+      setCorreoReenviado(false);
       setPaso("qr");
     } catch (err) {
-      // TEMPORAL: mostrar el código real para diagnosticar. Quitar
-      // esta línea (dejar solo el mensaje de mapFirebaseError) una
-      // vez resuelto el problema.
-      console.log("Error al iniciar enrolamiento TOTP:", err.code, err.message);
-
-      setError(
-        err.code === "auth/requires-recent-login"
-          ? "Por seguridad, vuelve a iniciar sesión antes de activar esto."
-          : `${mapFirebaseError(err.code)} (${err.code || err.message || "sin código"})`
-      );
+      if (err.code === "auth/unverified-email") {
+        setPaso("correo_no_verificado");
+      } else if (err.code === "auth/requires-recent-login") {
+        setPaso("reautenticar");
+      } else {
+        setError(mapFirebaseError(err.code));
+      }
     } finally {
+      setCargando(false);
+    }
+  };
+
+  // ==================================================
+  // CORREO NO VERIFICADO
+  // ==================================================
+
+  const handleReenviarCorreo = async () => {
+    setError("");
+    setCargando(true);
+
+    try {
+      await enviarCorreoVerificacion();
+      setCorreoReenviado(true);
+    } catch (err) {
+      setError(mapFirebaseError(err.code));
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  // ==================================================
+  // REAUTENTICAR (login reciente, sin cerrar sesión)
+  // ==================================================
+
+  const handleConfirmarReautenticacion = async () => {
+    setError("");
+
+    if (!passwordReauth) {
+      setError("Ingresa tu contraseña.");
+      return;
+    }
+
+    setCargando(true);
+
+    try {
+      const credential = EmailAuthProvider.credential(
+        auth.currentUser.email,
+        passwordReauth
+      );
+      await reauthenticateWithCredential(auth.currentUser, credential);
+      setPasswordReauth("");
+      await intentarEnrolar();
+    } catch (err) {
+      setError(mapFirebaseError(err.code));
       setCargando(false);
     }
   };
@@ -142,9 +196,7 @@ const ActivarDobleFactorScreen = ({ navigation }) => {
   // ==================================================
 
   return (
-    <ScrollView
-      contentContainerStyle={ActivarDobleFactorStyle.contenedor}
-    >
+    <ScrollView contentContainerStyle={ActivarDobleFactorStyle.contenedor}>
       <FloatingNavButton
         icon="arrow-back-outline"
         onPress={() => navigation.goBack()}
@@ -198,7 +250,7 @@ const ActivarDobleFactorScreen = ({ navigation }) => {
 
           <TouchableOpacity
             style={ActivarDobleFactorStyle.boton}
-            onPress={handleIniciar}
+            onPress={intentarEnrolar}
             disabled={cargando}
           >
             {cargando ? (
@@ -206,6 +258,97 @@ const ActivarDobleFactorScreen = ({ navigation }) => {
             ) : (
               <Text style={ActivarDobleFactorStyle.botonTexto}>Activar</Text>
             )}
+          </TouchableOpacity>
+        </>
+      ) : paso === "correo_no_verificado" ? (
+        <>
+          <Text style={ActivarDobleFactorStyle.subtitulo}>
+            Antes de activar esto necesitas verificar tu correo. Te
+            enviamos (o puedes reenviar) un link de confirmación a tu
+            bandeja de entrada.
+          </Text>
+
+          {correoReenviado ? (
+            <Text style={ActivarDobleFactorStyle.subtitulo}>
+              Listo, te reenviamos el correo. Revisa tu bandeja (y spam).
+            </Text>
+          ) : null}
+
+          {error ? (
+            <Text style={ActivarDobleFactorStyle.error}>{error}</Text>
+          ) : null}
+
+          <TouchableOpacity
+            style={ActivarDobleFactorStyle.boton}
+            onPress={handleReenviarCorreo}
+            disabled={cargando}
+          >
+            {cargando ? (
+              <ActivityIndicator color="#ffffff" />
+            ) : (
+              <Text style={ActivarDobleFactorStyle.botonTexto}>
+                Reenviar correo de verificación
+              </Text>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={ActivarDobleFactorStyle.boton}
+            onPress={intentarEnrolar}
+            disabled={cargando}
+          >
+            {cargando ? (
+              <ActivityIndicator color="#ffffff" />
+            ) : (
+              <Text style={ActivarDobleFactorStyle.botonTexto}>
+                Ya verifiqué mi correo
+              </Text>
+            )}
+          </TouchableOpacity>
+        </>
+      ) : paso === "reautenticar" ? (
+        <>
+          <Text style={ActivarDobleFactorStyle.subtitulo}>
+            Por seguridad, confirma tu contraseña para continuar (esto no
+            cierra tu sesión, solo confirma que sigues siendo tú).
+          </Text>
+
+          <TextInput
+            style={ActivarDobleFactorStyle.input}
+            placeholder="Contraseña"
+            placeholderTextColor="#a8a8a8"
+            secureTextEntry
+            value={passwordReauth}
+            onChangeText={(texto) => {
+              setPasswordReauth(texto);
+              if (error) setError("");
+            }}
+          />
+
+          {error ? (
+            <Text style={ActivarDobleFactorStyle.error}>{error}</Text>
+          ) : null}
+
+          <TouchableOpacity
+            style={ActivarDobleFactorStyle.boton}
+            onPress={handleConfirmarReautenticacion}
+            disabled={cargando}
+          >
+            {cargando ? (
+              <ActivityIndicator color="#ffffff" />
+            ) : (
+              <Text style={ActivarDobleFactorStyle.botonTexto}>
+                Confirmar contraseña
+              </Text>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={ActivarDobleFactorStyle.enlaceWrap}
+            onPress={reiniciarFlujo}
+            disabled={cargando}
+          >
+            <Text style={ActivarDobleFactorStyle.enlace}>Cancelar</Text>
           </TouchableOpacity>
         </>
       ) : (
