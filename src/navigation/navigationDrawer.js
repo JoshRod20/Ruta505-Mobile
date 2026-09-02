@@ -6,6 +6,7 @@ import {
   DrawerItem,
 } from "@react-navigation/drawer";
 import PerfilUsuario from "../components/PerfilUsuario";
+import ActivarDobleFactorScreen from "../screens/perfil/ActivarDobleFactorScreen";
 import AcercaDe from "../screens/acercaDe";
 import NavigationTabs from "./navigationTabs";
 import { useAuth } from "../context/AuthContext";
@@ -13,11 +14,7 @@ import { drawerStyle } from "../styles/navigation/navigationDrawerStyle";
 
 const Drawer = createDrawerNavigator();
 
-// Nombre único de la pantalla del drawer que contiene los tabs.
-// Los nombres de las pestañas ("Inicio", "Mapa", "Publicar experiencias")
-// viven DENTRO de NavigationTabs, nunca como Drawer.Screen aparte —
-// así evitamos tanto la colisión de nombres como tener 3 copias
-// distintas del mismo Tab.Navigator con estado independiente.
+// Nombre de la ruta principal que agrupa los tabs para evitar duplicados o colisiones.
 const MAIN_ROUTE = "MainDrawer";
 
 function CustomDrawerContent(props) {
@@ -32,12 +29,7 @@ function CustomDrawerContent(props) {
       </View>
 
       <DrawerContentScrollView {...props} contentContainerStyle={drawerStyle.drawerScroll}>
-        {/*
-          El drawer solo lista lo que NO está en la barra de tabs
-          (Inicio, Mapa, Publicar experiencias ya se acceden desde ahí).
-          Esto evita el problema de saltar entre tabs "por fuera" del
-          Tab.Navigator, que era la causa de los bugs anteriores.
-        */}
+        {/* Solo muestra pantallas fuera de la barra de tabs para evitar conflictos de navegación. */}
         <DrawerItem
           label="Mi cuenta"
           labelStyle={drawerStyle.drawerLabel}
@@ -79,20 +71,20 @@ export default function NavigationDrawer() {
       }}
       drawerContent={(props) => <CustomDrawerContent {...props} />}
     >
-      {/*
-        UNA sola pantalla para los tabs. "Inicio", "Mapa" y "Publicar
-        experiencias" viven DENTRO de este NavigationTabs, no aquí — el
-        drawer nunca navega hacia ellas, solo hacia lo que no está en
-        la barra de tabs (Mi cuenta, Acerca de).
-      */}
+      {/* Pantalla contenedora de tabs; las pestañas internas se gestionan dentro de NavigationTabs. */}
       <Drawer.Screen
         name={MAIN_ROUTE}
         component={NavigationTabs}
-        options={{ drawerItemStyle: { height: 0 } }} // no lo listamos aquí, ya está en el menú custom
+        options={{ drawerItemStyle: { height: 0 } }} // Oculto del drawer por defecto; se maneja en el menú custom.
       />
       <Drawer.Screen
         name="MiCuentaDrawer"
         component={PerfilUsuario}
+        options={{ drawerItemStyle: { height: 0 } }}
+      />
+      <Drawer.Screen
+        name="ActivarDobleFactorDrawer"
+        component={ActivarDobleFactorScreen}
         options={{ drawerItemStyle: { height: 0 } }}
       />
       <Drawer.Screen

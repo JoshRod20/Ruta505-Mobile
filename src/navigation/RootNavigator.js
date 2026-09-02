@@ -24,6 +24,7 @@ import Onboarding from "../screens/onboarding/Onboarding";
 
 import WelcomeScreen from "../screens/auth/WelcomeScreen";
 import LoginScreen from "../screens/auth/LoginScreen";
+import VerificarCodigoScreen from "../screens/auth/VerificarCodigoScreen";
 import SeleccionarTipoScreen from "../screens/auth/SeleccionarTipoScreen";
 import SeleccionarActorScreen from "../screens/auth/SeleccionarActorScreen";
 import RegistroActorScreen from "../screens/auth/RegistroActorScreen";
@@ -37,60 +38,16 @@ import NavigationDrawer from "./navigationDrawer";
 const Stack =
   createNativeStackNavigator();
 
-// ==================================================
-// FORZAR ONBOARDING DURANTE DESARROLLO
-// ==================================================
-//
-// true  = siempre muestra onboarding
-// false = utiliza AsyncStorage normalmente
-//
-// Envuelto en __DEV__ para que sea imposible que esta bandera
-// llegue activa a un build de producción por olvido, sin
-// importar el valor que quede escrito abajo.
-//
-
+// Bandera en __DEV__ para forzar onboarding.
 const FORCE_ONBOARDING = __DEV__ && false;
 
-// ==================================================
-// FORZAR PANTALLA DE DESARROLLO (edición de estilos)
-// ==================================================
-//
-// Útil para entrar directo a "SeleccionarIntereses" o
-// "SolicitarUbicacion" sin pasar por todo el flujo de
-// registro. Estas pantallas dependen de route.params,
-// así que se les inyectan datos de prueba (mock) via
-// initialParams cuando la bandera está activa.
-//
-// IMPORTANTE: cambiar este valor no tiene efecto con
-// Fast Refresh (guardar el archivo). Para que tome
-// efecto hay que recargar la app por completo:
-// presiona "r" en la terminal de Expo, o cierra y
-// vuelve a abrir la app en el dispositivo/emulador.
-//
-// Además, esto solo aplica si el usuario NO está
-// autenticado (isLoggedIn === false) y ya completó el
-// onboarding, porque solo entonces se monta <AuthStack />.
-//
-// Igual que FORCE_ONBOARDING, va envuelto en __DEV__ para
-// que un build de producción nunca pueda arrancar en una
-// pantalla de desarrollo aunque el valor quede sin resetear.
-//
-// null                     = comportamiento normal (Welcome)
-// "SeleccionarIntereses"   = abre directo en Intereses
-// "SolicitarUbicacion"     = abre directo en Ubicación
-//
+// Configuración para forzar pantalla inicial durante desarrollo.
+const DEV_START_SCREEN = __DEV__ ? null : null; // null | "SeleccionarIntereses" | "SolicitarUbicacion"
 
-const DEV_START_SCREEN = __DEV__ ? null : null; // <- cambia aquí: null | "SeleccionarIntereses" | "SolicitarUbicacion"
+// Rol mock para pruebas en SolicitarUbicacion ("turista" | "actor").
+const DEV_MOCK_ROL = "turista";
 
-// Con qué mock se prueba SolicitarUbicacion cuando
-// DEV_START_SCREEN === "SolicitarUbicacion".
-// "turista" = flujo con intereses (2 segmentos de progreso)
-// "actor"   = flujo directo desde registro de actor cultural
-//             (1 segmento de progreso, textos distintos)
-const DEV_MOCK_ROL = "turista"; // <- cambia aquí: "turista" | "actor"
-
-// Datos de prueba para que las pantallas no exploten
-// al recibir route.params vacío.
+// Mocks de datos para pruebas en desarrollo.
 const MOCK_DATOS_REGISTRO_TURISTA = {
   role: ROLES.TURISTA,
   nombreCompleto: "Usuario de Prueba",
@@ -120,10 +77,7 @@ const MOCK_INTERESES = [
   "Turismo cultural e histórico",
 ];
 
-// ==================================================
-// STACK DE AUTENTICACIÓN
-// ==================================================
-
+// Stack de navegación para la autenticación.
 const AuthStack = () => (
   <Stack.Navigator
     initialRouteName={DEV_START_SCREEN || "Welcome"}
@@ -139,6 +93,11 @@ const AuthStack = () => (
     <Stack.Screen
       name="Login"
       component={LoginScreen}
+    />
+
+    <Stack.Screen
+      name="VerificarCodigo"
+      component={VerificarCodigoScreen}
     />
 
     <Stack.Screen
@@ -197,10 +156,7 @@ const AuthStack = () => (
   </Stack.Navigator>
 );
 
-// ==================================================
-// ROOT NAVIGATOR
-// ==================================================
-
+// Navegador principal.
 const RootNavigator = () => {
   const {
     isLoggedIn,
@@ -211,40 +167,17 @@ const RootNavigator = () => {
     sancion,
   } = useAuth();
 
-  // ==================================================
-  // ESTADO DE CARGA
-  // ==================================================
-
   const [
     loadingOnboarding,
     setLoadingOnboarding,
   ] = useState(true);
-
-  // ==================================================
-  // ESTADO ONBOARDING
-  // ==================================================
 
   const [
     onboardingCompleted,
     setOnboardingCompleted,
   ] = useState(false);
 
-  // ==================================================
-  // "EXPLORAR" MIENTRAS EL PERFIL NO TIENE ACCESO COMPLETO
-  // ==================================================
-  //
-  // Un actor cultural pendiente/suspendido/rechazado puede
-  // elegir "Explorar" desde PendienteAprobacionScreen y pasar
-  // a NavigationDrawer (Home) con funcionalidad reducida. No
-  // hace falta ningún useEffect para "desbloquear" al
-  // aprobarse: en cuanto estadoVerificacion cambia a
-  // "aprobado", estaRestringido se vuelve false solo y
-  // NavigationDrawer ya se muestra completo.
-  //
-  // Se reinicia a false al cerrar sesión, para que la
-  // próxima cuenta que inicie sesión (aprobada o no) no
-  // arrastre el "Explorar" de la sesión anterior.
-
+  // Controla el modo "Explorar" para actores con acceso restringido.
   const [
     explorando,
     setExplorando,
@@ -256,10 +189,7 @@ const RootNavigator = () => {
     }
   }, [isLoggedIn]);
 
-  // ==================================================
-  // COMPROBAR ONBOARDING
-  // ==================================================
-
+  // Verifica el estado del onboarding en AsyncStorage o modo forzado.
   useEffect(() => {
     const checkOnboarding =
       async () => {
@@ -267,10 +197,6 @@ const RootNavigator = () => {
           console.log(
             "Comprobando onboarding..."
           );
-
-          // ==========================================
-          // MODO FORZADO
-          // ==========================================
 
           if (FORCE_ONBOARDING) {
             console.log(
@@ -283,10 +209,6 @@ const RootNavigator = () => {
 
             return;
           }
-
-          // ==========================================
-          // ASYNC STORAGE
-          // ==========================================
 
           const completed =
             await hasCompletedOnboarding();
@@ -318,10 +240,6 @@ const RootNavigator = () => {
     checkOnboarding();
   }, []);
 
-  // ==================================================
-  // CALLBACK DEL ONBOARDING
-  // ==================================================
-
   const handleOnboardingComplete =
     () => {
       console.log(
@@ -333,10 +251,7 @@ const RootNavigator = () => {
       );
     };
 
-  // ==================================================
-  // CARGANDO
-  // ==================================================
-
+  // Pantalla de carga global.
   if (
     loadingAuth ||
     loadingOnboarding
@@ -356,10 +271,7 @@ const RootNavigator = () => {
     );
   }
 
-  // ==================================================
-  // ONBOARDING
-  // ==================================================
-
+  // Renderiza el flujo de Onboarding si no se ha completado.
   if (!onboardingCompleted) {
     return (
       <Onboarding
@@ -370,30 +282,12 @@ const RootNavigator = () => {
     );
   }
 
-  // ==================================================
-  // USUARIO NO AUTENTICADO
-  // ==================================================
-
+  // Flujo para usuarios no autenticados.
   if (!isLoggedIn) {
     return <AuthStack />;
   }
 
-  // ==================================================
-  // CUENTA AUTENTICADA, PERFIL AÚN NO CONFIRMADO
-  // ==================================================
-  //
-  // isLoggedIn ya es true (Firebase Auth ya autenticó al
-  // usuario) pero el documento de perfil en Firestore
-  // todavía no existe. Esto pasa de forma normal durante los
-  // primeros instantes de un registro nuevo: el setDoc en
-  // registrarUsuario puede seguir en camino cuando
-  // onAuthStateChanged ya disparó. Antes esto caía a
-  // NavigationDrawer con role === null; ahora se muestra un
-  // loader hasta que el perfil llegue (loadingAuth vuelve a
-  // false con snapshot real) o hasta que el registro falle y
-  // registrarUsuario revierta la cuenta (isLoggedIn vuelve a
-  // false y regresa a AuthStack).
-  //
+  // Espera a que cargue el perfil en Firestore tras el login.
   if (!profile) {
     return (
       <View
@@ -408,24 +302,7 @@ const RootNavigator = () => {
     );
   }
 
-  // ==================================================
-  // ACTOR CULTURAL SIN ACCESO COMPLETO
-  // ==================================================
-  //
-  // Cubre pendiente de aprobación, suspendido (con sanción
-  // vigente) y rechazado. Antes solo se cubría "pendiente";
-  // un actor suspendido o rechazado caía directo a
-  // NavigationDrawer con acceso completo.
-  //
-  // Se le pasan estadoVerificacion/sancion a
-  // PendienteAprobacionScreen para que pueda mostrar el
-  // mensaje correcto según el caso. OJO: no tengo ese
-  // componente — hoy probablemente asume que solo existe el
-  // estado "pendiente" y su texto/botón "Explorar" habrá que
-  // revisarlo para decidir si aplica igual a suspendido y
-  // rechazado, o si alguno de esos casos no debería ofrecer
-  // "Explorar" en absoluto (decisión de producto).
-
+  // Restricción para actores culturales pendientes, suspendidos o rechazados.
   const estaRestringido =
     role === ROLES.ACTOR_CULTURAL &&
     (estadoVerificacion === ESTADOS_VERIFICACION.PENDIENTE ||
@@ -444,10 +321,7 @@ const RootNavigator = () => {
     );
   }
 
-  // ==================================================
-  // USUARIO AUTENTICADO
-  // ==================================================
-
+  // Vista principal para usuarios autenticados y con permisos completos.
   return <NavigationDrawer />;
 };
 
