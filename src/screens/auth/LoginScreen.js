@@ -22,6 +22,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import {
+  getMultiFactorResolver,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
 } from "firebase/auth";
@@ -239,6 +240,26 @@ const LoginScreen = ({
           password
         );
       } catch (err) {
+        // La contraseña ya fue validada; falta el código de la
+        // app autenticadora (2FA) para completar el login.
+        if (
+          err.code ===
+          "auth/multi-factor-auth-required"
+        ) {
+          const resolver =
+            getMultiFactorResolver(
+              auth,
+              err
+            );
+
+          navigation.navigate(
+            "VerificarCodigo",
+            { resolver }
+          );
+
+          return;
+        }
+
         setError(
           mapFirebaseError(
             err.code
