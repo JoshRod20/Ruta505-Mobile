@@ -1,5 +1,3 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
-
 # dependencies
 node_modules/
 
@@ -31,7 +29,17 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
+.env.local
 .env*.local
+
+# Firebase / Google service files
+google-services.json
+GoogleService-Info.plist
+
+# EAS / credenciales de firma
+credentials.json
+*.keystore
 
 # typescript
 *.tsbuildinfo
@@ -39,3 +47,7 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# builds locales (si se usa --local)
+*.apk
+*.aab

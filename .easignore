@@ -1,0 +1,16 @@
+# Archivos que NO se suben al comprimir el proyecto para EAS Build.
+# Reduce el tiempo de "Compressing project files and uploading to EAS Build".
+# Nota: .easignore NO hereda de .gitignore, hay que declarar todo aquí.
+
+.git
+.expo
+node_modules
+*.md
+!DEPLOY.md
+
+# Docs internos que no necesita el build
+docs/
+
+# Excluye PNGs sueltos por defecto, pero conserva los assets reales de la app
+*.png
+!src/assets/**/*.png
