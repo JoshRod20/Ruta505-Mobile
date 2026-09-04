@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Ruta505",
-    "slug": "ruta505",
+    "slug": "Ruta505",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./src/assets/icon.png",
@@ -31,13 +31,14 @@
       },
       "softwareKeyboardLayoutMode": "resize",
       "edgeToEdgeEnabled": false,
-      "package": "com.kennrod20.Ruta505"
+      "package": "com.kennrod20.Ruta505",
+      "versionCode": 1
     },
     "extra": {
       "eas": {
-        "projectId": "35422456-fbe5-4727-a9f4-02fe4e39a8c7"
+        "projectId": "fe02da5c-c2c9-4b2c-b79b-3403f5e95001"
       }
     },
-    "owner": "crisvargasmz"
+    "owner": "kennrod20"
   }
 }

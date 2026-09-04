@@ -5,15 +5,35 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Mismo proyecto de Firebase que la PWA — misma colección "users",
 // mismas reglas de Firestore, mismas cuentas de Authentication.
+//
+// Los valores vienen de variables de entorno (ver .env / .env.example)
+// en vez de estar hardcodeados, para poder usar distintos valores por
+// entorno (preview/producción) sin tocar código, y no dejarlos fijos
+// en el historial de git.
 const firebaseConfig = {
-  apiKey: "AIzaSyDwzL-hLoWpblezYIYlIJXNkPaTAAdXlZ8",
-  authDomain: "ruta505.firebaseapp.com",
-  projectId: "ruta505",
-  storageBucket: "ruta505.firebasestorage.app",
-  messagingSenderId: "65945086045",
-  appId: "1:65945086045:web:36e92b414a14b744fe45b4",
-  measurementId: "G-ELKCD18NDZ",
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
+
+// Aviso en desarrollo si falta alguna variable (evita errores confusos
+// de "Firebase: Error (auth/invalid-api-key)" sin saber por qué)
+if (__DEV__) {
+  const faltantes = Object.entries(firebaseConfig)
+    .filter(([key, value]) => key !== "measurementId" && !value)
+    .map(([key]) => key);
+
+  if (faltantes.length > 0) {
+    console.warn(
+      `[firebaseConfig] Faltan variables de entorno: ${faltantes.join(", ")}. ` +
+        "Revisa tu archivo .env (basado en .env.example)."
+    );
+  }
+}
 
 const appfirebase = initializeApp(firebaseConfig);
 
