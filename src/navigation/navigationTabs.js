@@ -8,6 +8,8 @@ import CustomTabBar from "../components/CustomTabBar";
 import FloatingNavButton from "../components/common/FloatingNavButton";
 import { useAuth } from "../context/AuthContext";
 import { PERMISOS, tienePermiso } from "../constants/permissions";
+import GenerateQr from "../screens/actorCultural/generateQr";
+import CulturalProfile from "../screens/actorCultural/culturalProfile";
 
 const Tab = createBottomTabNavigator();
 
@@ -45,6 +47,8 @@ export default function NavigationTabs({ navigation, route }) {
             component={ExperienciasCulturales}
           />
         )}
+        <Tab.Screen name="Generar QR" component={GenerateQr} />
+        <Tab.Screen name="Perfil cultural" component={CulturalProfile} />
       </Tab.Navigator>
     </>
   );

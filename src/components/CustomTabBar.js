@@ -11,37 +11,43 @@ const ICONS = {
   Rutas: "return-up-back",
   Agenda: "calendar",
   Perfil: "person",
+  "Generar QR": "qr-code",
+  "Perfil cultural": "person-circle",
 };
+
+const ICON_SIZE_ACTIVE = 26;
+const ICON_SIZE_INACTIVE = 26;   // más alto = íconos inactivos más grandes
 
 const BAR_HEIGHT = 68;      // altura total de la barra
 const NOTCH_RADIUS = 50;    // profundidad del hueco (más alto = más profundo)
 const CORNER_RADIUS = 17;   // radio de las esquinas superiores de la barra
 
+const EDGE_INSET = -30; // espacio mínimo entre el hueco y el borde (0 = el hueco toca el borde)
+
 function getBarPath(width, height, cx, tabWidth) {
-  const notchWidth = NOTCH_RADIUS * 1.4;
-  const margin = -25;
-  const minGap = NOTCH_RADIUS * 0.1; // distancia mínima entre cx y cada borde
+  const maxHalf = NOTCH_RADIUS * 1.4;
 
-  let left = cx - notchWidth;
-  let right = cx + notchWidth;
+  // Medio ancho simétrico: se reduce solo cerca de los bordes
+  const half = Math.max(
+    NOTCH_RADIUS * 0.3,
+    Math.min(maxHalf, cx - EDGE_INSET, width - cx - EDGE_INSET)
+  );
 
-  // Recorta los bordes si chocan con la esquina
-  left = Math.max(left, CORNER_RADIUS + margin);
-  right = Math.min(right, width - CORNER_RADIUS - margin);
+  const left = cx - half;
+  const right = cx + half;
 
-  // GUARDA CLAVE: si el recorte invirtió la relación con cx, corrige left/right
-  // para que nunca crucen ni se acerquen demasiado a cx (evita el espejo)
-  if (cx - left < minGap) left = cx - minGap;
-  if (right - cx < minGap) right = cx + minGap;
+  // La esquina se encoge si no hay espacio para ella
+  const cl = Math.min(CORNER_RADIUS, Math.max(left, 0));
+  const cr = Math.min(CORNER_RADIUS, Math.max(width - right, 0));
 
   return `
-    M0,${CORNER_RADIUS}
-    Q0,0 ${CORNER_RADIUS},0
+    M0,${cl}
+    Q0,0 ${cl},0
     L${left},0
-    C${left + (cx - left) * 0.55},0 ${cx - (cx - left) * 0.45},${NOTCH_RADIUS} ${cx},${NOTCH_RADIUS}
-    C${cx + (right - cx) * 0.45},${NOTCH_RADIUS} ${right - (right - cx) * 0.55},0 ${right},0
-    L${width - CORNER_RADIUS},0
-    Q${width},0 ${width},${CORNER_RADIUS}
+    C${left + half * 0.55},0 ${cx - half * 0.45},${NOTCH_RADIUS} ${cx},${NOTCH_RADIUS}
+    C${cx + half * 0.45},${NOTCH_RADIUS} ${right - half * 0.55},0 ${right},0
+    L${width - cr},0
+    Q${width},0 ${width},${cr}
     L${width},${height}
     L0,${height}
     Z
@@ -129,7 +135,7 @@ export default function CustomTabBar({ state, descriptors, navigation }) {
         });
         const scale = lift.interpolate({
           inputRange: [0, 1],
-          outputRange: [0.7, 1], // scale: de qué tamaño parte al aparecer
+          outputRange: [0.8, 1], // tamaño del ícono (más alto = ícono inactivo más grande)
         });
 
         const iconName = ICONS[route.name] || "ellipse";
@@ -158,10 +164,8 @@ export default function CustomTabBar({ state, descriptors, navigation }) {
               />
               <Ionicons
                 name={isFocused ? iconName : `${iconName}-outline`}
-                size={24}
-                color={
-                  isFocused ? styles.activeTintColor : styles.inactiveTintColor
-                }
+                size={isFocused ? ICON_SIZE_ACTIVE : ICON_SIZE_INACTIVE}
+                color={isFocused ? styles.activeTintColor : styles.inactiveTintColor}
                 style={{ position: "absolute" }}
               />
             </Animated.View>

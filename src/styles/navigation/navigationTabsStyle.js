@@ -1,9 +1,10 @@
 import { StyleSheet } from "react-native";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 
 export const navigationTabsStyle = StyleSheet.create({
   tabBar: {
     flexDirection: "row",
-    height: 68,
+    height: hp("8%"),
     position: "absolute",
     left: 0,
     right: 0,
@@ -21,20 +22,20 @@ export const navigationTabsStyle = StyleSheet.create({
     height: "100%",
   },
   iconWrapper: {
-    width: 56,
-    height: 56,
+    width: wp("14.5%"),
+    height: wp("14.5%"),
     alignItems: "center",
     justifyContent: "center",
   },
   iconCircle: {
     position: "absolute",
-    width: 58,
-    height: 58,
-    borderRadius: 29,
+    width: wp("14.5%"),
+    height: wp("14.5%"),
+    borderRadius: wp("14.5%") / 2,
   },
-  barColor: "#F5A623",
-  activeCircleColor: "#29B6E8",
+  barColor: "#065F33",
+  activeCircleColor: "#95C11F",
   activeTintColor: "#fff",
   inactiveTintColor: "rgba(255,255,255,0.85)",
-  sidePadding: 2, // espacio reservado a cada lado para que el notch nunca choque con la esquina
+  sidePadding: wp("2%"), // espacio reservado a cada lado para que el notch nunca choque con la esquina
 });
