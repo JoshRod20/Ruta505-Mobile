@@ -3,35 +3,31 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
 import Home from "../components/Home";
 import MapaNicaragua from "../components/MapaNicaragua";
-import ExperienciasCulturales from "../screens/comunidad/experienciasCulturales";
 import CustomTabBar from "../components/CustomTabBar";
-import FloatingNavButton from "../components/common/FloatingNavButton";
 import { useAuth } from "../context/AuthContext";
 import { PERMISOS, tienePermiso } from "../constants/permissions";
 
 const Tab = createBottomTabNavigator();
 
-export default function NavigationTabs({ navigation, route }) {
+// El "+" de la barra no es una pantalla de tabs: solo ocupa su lugar en la barra.
+// CustomTabBar intercepta su toque; todavía no abre nada (después mostrará
+// varias opciones de registro). "Publicar Experiencia" ya es una pantalla
+// independiente ("PublicarExperienciaDrawer") que se abre desde el Home.
+const BotonAgregar = () => null;
+
+export default function NavigationTabs({ route }) {
   const { role } = useAuth();
-  const puedePublicarExperiencia = tienePermiso(
+  const mostrarBotonAgregar = tienePermiso(
     role,
     PERMISOS.PUBLICAR_EXPERIENCIA
   );
 
-  const initialTab =
-    route?.params?.initialTab &&
-    (route.params.initialTab !== "Publicar experiencias" ||
-      puedePublicarExperiencia)
-      ? route.params.initialTab
-      : "Inicio";
+  const initialTab = ["Inicio", "Mapa"].includes(route?.params?.initialTab)
+    ? route.params.initialTab
+    : "Inicio";
 
   return (
     <>
-      <FloatingNavButton
-        icon="menu-outline"
-        onPress={() => navigation.openDrawer()}
-        accessibilityLabel="Abrir menú"
-      />
       <Tab.Navigator
         initialRouteName={initialTab}
         screenOptions={{ headerShown: false }}
@@ -39,11 +35,8 @@ export default function NavigationTabs({ navigation, route }) {
       >
         <Tab.Screen name="Inicio" component={Home} />
         <Tab.Screen name="Mapa" component={MapaNicaragua} />
-        {puedePublicarExperiencia && (
-          <Tab.Screen
-            name="Publicar experiencias"
-            component={ExperienciasCulturales}
-          />
+        {mostrarBotonAgregar && (
+          <Tab.Screen name="Agregar" component={BotonAgregar} />
         )}
       </Tab.Navigator>
     </>

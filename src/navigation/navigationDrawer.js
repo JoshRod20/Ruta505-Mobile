@@ -9,6 +9,7 @@ import PerfilUsuario from "../components/PerfilUsuario";
 import ActivarDobleFactorScreen from "../screens/perfil/ActivarDobleFactorScreen";
 import AcercaDe from "../screens/acercaDe";
 import NavigationTabs from "./navigationTabs";
+import ExperienciasCulturales from "../screens/comunidad/experienciasCulturales";
 import { useAuth } from "../context/AuthContext";
 import { drawerStyle } from "../styles/navigation/navigationDrawerStyle";
 
@@ -76,6 +77,12 @@ export default function NavigationDrawer() {
         name={MAIN_ROUTE}
         component={NavigationTabs}
         options={{ drawerItemStyle: { height: 0 } }} // Oculto del drawer por defecto; se maneja en el menú custom.
+      />
+      {/* Publicar Experiencia: pantalla independiente, sin barra de tabs. Se abre desde el botón "Nueva publicación" del Home. */}
+      <Drawer.Screen
+        name="PublicarExperienciaDrawer"
+        component={ExperienciasCulturales}
+        options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
       />
       <Drawer.Screen
         name="MiCuentaDrawer"

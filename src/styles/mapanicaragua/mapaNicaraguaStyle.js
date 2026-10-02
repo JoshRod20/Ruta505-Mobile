@@ -212,6 +212,22 @@ export const mapaNicaraguaStyle = StyleSheet.create({
     shadowRadius: 6,
     elevation: 6,
   },
+  lugarBuscadoContenedor: {
+    alignItems: "center",
+  },
+  lugarBuscadoEtiqueta: {
+    backgroundColor: "#8CC219",
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    maxWidth: 180,
+    marginBottom: 2,
+  },
+  lugarBuscadoTexto: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#FFFFFF",
+  },
   botonAgregarTexto: {
     color: "#FFFFFF",
     fontSize: 30,

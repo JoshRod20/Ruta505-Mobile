@@ -29,6 +29,8 @@ import {
   crearExperiencia,
   escucharExperiencias,
   actualizarExperiencia,
+  esUbicacionDeMapa,
+  TIPO_UBICACION,
 } from "../services/Experienciasservice.js";
 import {
   iconoDeCategoria,
@@ -37,6 +39,8 @@ import {
 import NavegacionRuta from "../components/NavegacionRuta.js";
 import FormularioExperiencia from "../components/Formularioexperiencia.js";
 import SeleccionarUbicacionMapa from "../components/Seleccionarubicacionmapa.js";
+import BarraBusquedaMapa from "../components/BarraBusquedaMapa.js";
+import TarjetaUbicacion from "../components/TarjetaUbicacion.js";
 import { useAuth } from "../context/AuthContext";
 import { usePermisos } from "../hooks/usePermisos";
 import { PERMISOS } from "../constants/permissions";
@@ -78,7 +82,6 @@ async function pedirPermisoUbicacion() {
 
 export default function MapaNicaragua() {
   const insets = useSafeAreaInsets();
-  const topOffset = insets.top + 4 + 28 + 4;
   const mapRef = useRef(null);
   const cameraRef = useRef(null);
   const { user, role, sancionVigente } = useAuth();
@@ -95,6 +98,7 @@ export default function MapaNicaragua() {
   const [formularioSesionId, setFormularioSesionId] = useState(0); // Forzar reset del formulario
   const [puntoSeleccionado, setPuntoSeleccionado] = useState(null);
   const [epocaMarcadores, setEpocaMarcadores] = useState(0); // Forzar remount de ViewAnnotation
+  const [lugarBuscado, setLugarBuscado] = useState(null); // { nombre, lat, lon } elegido en la barra de búsqueda
 
   const cerrarTarjeta = useCallback(() => {
     setPuntoSeleccionado(null);
@@ -129,8 +133,11 @@ export default function MapaNicaragua() {
   useEffect(() => {
     const cancelarSuscripcion = escucharExperiencias(
       (experiencias) => {
-        // Filtra puntos sin coordenadas válidas para evitar crashes
-        const conCoordenadasValidas = experiencias.filter(
+        // El mapa solo muestra ubicaciones de negocios (las experiencias
+        // del Home no aparecen aquí) y descarta las que no tengan
+        // coordenadas válidas para evitar crashes.
+        const ubicaciones = experiencias.filter(esUbicacionDeMapa);
+        const conCoordenadasValidas = ubicaciones.filter(
           (e) =>
             typeof e.lat === "number" &&
             typeof e.lng === "number" &&
@@ -138,10 +145,10 @@ export default function MapaNicaragua() {
             !Number.isNaN(e.lng),
         );
 
-        const descartados = experiencias.length - conCoordenadasValidas.length;
+        const descartados = ubicaciones.length - conCoordenadasValidas.length;
         if (descartados > 0) {
           console.warn(
-            `${descartados} experiencia(s) sin lat/lng válidos — omitidas.`,
+            `${descartados} ubicación(es) sin lat/lng válidos — omitidas.`,
           );
         }
 
@@ -160,6 +167,7 @@ export default function MapaNicaragua() {
       if (experienciaEnEdicion) {
         await actualizarExperiencia(experienciaEnEdicion.id, {
           ...datosFormulario,
+          tipo: TIPO_UBICACION,
           lat: ubicacion.lat,
           lng: ubicacion.lon,
         });
@@ -167,13 +175,14 @@ export default function MapaNicaragua() {
       } else {
         await crearExperiencia({
           ...datosFormulario,
+          tipo: TIPO_UBICACION,
           lat: ubicacion.lat,
           lng: ubicacion.lon,
           creadoPor: user?.uid ?? null,
         });
         Alert.alert(
           "Listo",
-          "Tu experiencia ya está visible en el mapa para todos.",
+          "Tu ubicación ya está visible en el mapa para todos.",
         );
       }
       setFormularioVisible(false);
@@ -212,6 +221,28 @@ export default function MapaNicaragua() {
   function handleCancelarSelectorMapa() {
     setSelectorMapaVisible(false);
     setFormularioVisible(true);
+  }
+
+  // Búsqueda: vuela a una ubicación guardada y abre su tarjeta
+  function handleSeleccionarPuntoBuscado(punto) {
+    setLugarBuscado(null);
+    setPuntoSeleccionado(punto);
+    cameraRef.current?.setStop({
+      center: [punto.lng, punto.lat],
+      zoom: 16,
+      duration: 1200,
+    });
+  }
+
+  // Búsqueda: vuela a un lugar/calle y deja un pin temporal
+  function handleSeleccionarLugarBuscado(lugar) {
+    cerrarTarjeta();
+    setLugarBuscado(lugar);
+    cameraRef.current?.setStop({
+      center: [lugar.lon, lugar.lat],
+      zoom: 16,
+      duration: 1200,
+    });
   }
 
   function moverCamaraA(lat, lon) {
@@ -376,6 +407,27 @@ export default function MapaNicaragua() {
               </ViewAnnotation>
             ))}
 
+            {/* Pin temporal del lugar elegido en la barra de búsqueda */}
+            {lugarBuscado && (
+              <ViewAnnotation
+                key={`lugar-${lugarBuscado.lat}-${lugarBuscado.lon}`}
+                id="lugarBuscado"
+                lngLat={[lugarBuscado.lon, lugarBuscado.lat]}
+              >
+                <View style={mapaNicaraguaStyle.lugarBuscadoContenedor}>
+                  <View style={mapaNicaraguaStyle.lugarBuscadoEtiqueta}>
+                    <Text
+                      style={mapaNicaraguaStyle.lugarBuscadoTexto}
+                      numberOfLines={1}
+                    >
+                      {lugarBuscado.nombre}
+                    </Text>
+                  </View>
+                  <Ionicons name="location-sharp" size={34} color="#0E5A34" />
+                </View>
+              </ViewAnnotation>
+            )}
+
             {/* Capa nativa para los títulos de los puntos */}
             <GeoJSONSource
               id="etiquetasSource"
@@ -414,14 +466,12 @@ export default function MapaNicaragua() {
           </Map>
 
           <FloatingNavButton />
-          <Text
-            style={[
-              mapaNicaraguaStyle.title,
-              { position: "absolute", top: topOffset },
-            ]}
-          >
-            Mapa de Nicaragua
-          </Text>
+          <BarraBusquedaMapa
+            puntos={puntos}
+            onSeleccionarPunto={handleSeleccionarPuntoBuscado}
+            onSeleccionarLugar={handleSeleccionarLugarBuscado}
+            onLimpiar={() => setLugarBuscado(null)}
+          />
 
           {/* Botón para agregar nueva experiencia */}
           {puedePublicar && (
@@ -440,131 +490,20 @@ export default function MapaNicaragua() {
             </TouchableWithoutFeedback>
           )}
 
-          {/* Tarjeta de detalle del punto seleccionado */}
+          {/* Hoja "Detalles de la ubicación" del punto seleccionado */}
           {puntoSeleccionado && (
-            <View style={mapaNicaraguaStyle.tarjeta}>
-              <View style={mapaNicaraguaStyle.tarjetaAsa} />
-
-              <View style={mapaNicaraguaStyle.tarjetaHeader}>
-                <View
-                  style={[
-                    mapaNicaraguaStyle.tarjetaBadge,
-                    {
-                      backgroundColor: colorDeCategoria(
-                        puntoSeleccionado.categoria,
-                      ),
-                    },
-                  ]}
-                >
-                  <Ionicons
-                    name={iconoDeCategoria(puntoSeleccionado.categoria)}
-                    size={22}
-                    color="#FFFFFF"
-                  />
-                </View>
-                <View style={mapaNicaraguaStyle.tarjetaHeaderTexto}>
-                  <Text
-                    style={mapaNicaraguaStyle.tarjetaTitulo}
-                    numberOfLines={2}
-                  >
-                    {puntoSeleccionado.titulo}
-                  </Text>
-                  {!!puntoSeleccionado.ubicacionExacta && (
-                    <View
-                      style={{ flexDirection: "row", alignItems: "center" }}
-                    >
-                      <Ionicons
-                        name="location-sharp"
-                        size={14}
-                        color="#123B63"
-                        style={{ marginRight: 4 }}
-                      />
-                      <Text
-                        style={mapaNicaraguaStyle.tarjetaUbicacionExacta}
-                        numberOfLines={1}
-                      >
-                        {puntoSeleccionado.ubicacionExacta}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-                <TouchableOpacity
-                  style={mapaNicaraguaStyle.botonCerrarX}
-                  onPress={cerrarTarjeta}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                >
-                  <Text style={mapaNicaraguaStyle.botonCerrarXTexto}>✕</Text>
-                </TouchableOpacity>
-              </View>
-
-              <Text style={mapaNicaraguaStyle.tarjetaDescripcion}>
-                {puntoSeleccionado.descripcion}
-              </Text>
-
-              {/* Imágenes en base64 */}
-              {Array.isArray(puntoSeleccionado.imagenes) &&
-                puntoSeleccionado.imagenes.length > 0 && (
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    style={mapaNicaraguaStyle.tarjetaFilaFotos}
-                  >
-                    {puntoSeleccionado.imagenes.map((uri, index) => (
-                      <Image
-                        key={index}
-                        source={{ uri }}
-                        style={mapaNicaraguaStyle.tarjetaFoto}
-                      />
-                    ))}
-                  </ScrollView>
-                )}
-
-              {ruta && ruta.destino.id === puntoSeleccionado.id && (
-                <View style={mapaNicaraguaStyle.tarjetaEtaPill}>
-                  <Text style={mapaNicaraguaStyle.tarjetaEtaPillTexto}>
-                    🕒 {ruta.duracionMin} min · {ruta.distanciaKm} km
-                  </Text>
-                </View>
-              )}
-
-              <View style={mapaNicaraguaStyle.tarjetaFilaAcciones}>
-                {user?.uid && puntoSeleccionado.creadoPor === user.uid && (
-                  <TouchableOpacity
-                    style={mapaNicaraguaStyle.botonSecundario}
-                    onPress={() => abrirFormularioParaEditar(puntoSeleccionado)}
-                  >
-                    <Text style={mapaNicaraguaStyle.botonSecundarioTexto}>
-                      Editar
-                    </Text>
-                  </TouchableOpacity>
-                )}
-
-                {ruta && ruta.destino.id === puntoSeleccionado.id ? (
-                  <TouchableOpacity
-                    style={mapaNicaraguaStyle.botonPrimarioFlex}
-                    onPress={() => setNavegando(true)}
-                  >
-                    <Text style={mapaNicaraguaStyle.botonPrimarioTexto}>
-                      Iniciar navegación
-                    </Text>
-                  </TouchableOpacity>
-                ) : (
-                  <TouchableOpacity
-                    style={mapaNicaraguaStyle.botonPrimarioFlex}
-                    onPress={() => handleTrazarRuta(puntoSeleccionado)}
-                    disabled={cargandoRuta}
-                  >
-                    {cargandoRuta ? (
-                      <ActivityIndicator color="#fff" />
-                    ) : (
-                      <Text style={mapaNicaraguaStyle.botonPrimarioTexto}>
-                        Trazar ruta hasta aquí
-                      </Text>
-                    )}
-                  </TouchableOpacity>
-                )}
-              </View>
-            </View>
+            <TarjetaUbicacion
+              punto={puntoSeleccionado}
+              ruta={ruta}
+              cargandoRuta={cargandoRuta}
+              puedeEditar={
+                !!user?.uid && puntoSeleccionado.creadoPor === user.uid
+              }
+              onCerrar={cerrarTarjeta}
+              onEditar={() => abrirFormularioParaEditar(puntoSeleccionado)}
+              onTrazarRuta={() => handleTrazarRuta(puntoSeleccionado)}
+              onIniciarNavegacion={() => setNavegando(true)}
+            />
           )}
         </View>
       )}

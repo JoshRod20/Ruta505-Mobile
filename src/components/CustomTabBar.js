@@ -7,7 +7,7 @@ import { navigationTabsStyle as styles } from "../styles/navigation/navigationTa
 const ICONS = {
   Inicio: "home",
   Mapa: "location",
-  "Publicar experiencias": "add-circle",
+  Agregar: "add-circle",
   Rutas: "return-up-back",
   Agenda: "calendar",
   Perfil: "person",
@@ -112,6 +112,12 @@ export default function CustomTabBar({ state, descriptors, navigation }) {
         const lift = liftAnims[index];
 
         const onPress = () => {
+          // El "+" no cambia de pestaña. TODO: abrir aquí las opciones de
+          // registro cuando estén definidas.
+          if (route.name === "Agregar") {
+            return;
+          }
+
           const event = navigation.emit({
             type: "tabPress",
             target: route.key,

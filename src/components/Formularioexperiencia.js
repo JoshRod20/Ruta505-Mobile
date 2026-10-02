@@ -13,7 +13,10 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import { Ionicons } from "@expo/vector-icons";
-import { formularioExperienciaStyle as s } from "../styles/mapanicaragua/Formularioexperienciastyle.js";
+import {
+  formularioExperienciaStyle as s,
+  COLOR_VERDE_FORMULARIO as VERDE,
+} from "../styles/mapanicaragua/Formularioexperienciastyle.js";
 import { CATEGORIAS_EXPERIENCIA } from "../services/Categoriasexperiencias.js";
 
 // Límites para evitar superar el tamaño máximo de documento en Firestore (1MB)
@@ -74,7 +77,7 @@ export default function FormularioExperiencia({
     if (imagenes.length >= MAX_IMAGENES) {
       Alert.alert(
         "Máximo alcanzado",
-        `Solo puedes agregar hasta ${MAX_IMAGENES} imágenes por experiencia.`,
+        `Solo puedes agregar hasta ${MAX_IMAGENES} imágenes por ubicación.`,
       );
       return;
     }
@@ -155,17 +158,20 @@ export default function FormularioExperiencia({
   return (
     <Modal
       visible={visible}
-      animationType="slide"
+      animationType="fade"
       transparent
       onRequestClose={limpiarYCerrar}
     >
       <View style={s.fondoOscuro}>
         <View style={s.hoja}>
-          <ScrollView keyboardShouldPersistTaps="handled">
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
             <Text style={s.titulo}>
               {modoEdicion
-                ? "Editar experiencia"
-                : "Nueva experiencia cultural"}
+                ? "Editar ubicación de mi negocio"
+                : "Agregar ubicación de mi negocio"}
             </Text>
 
             <Text style={s.etiqueta}>Título</Text>
@@ -173,8 +179,8 @@ export default function FormularioExperiencia({
               style={s.input}
               value={titulo}
               onChangeText={setTitulo}
-              placeholder="Ej. Taller de cerámica Doña Rosa"
-              placeholderTextColor="#8A99A8"
+              placeholder="Ej. Taller de cerámica, El Cántaro"
+              placeholderTextColor="#8A8A8A"
             />
 
             <Text style={s.etiqueta}>Descripción</Text>
@@ -182,8 +188,8 @@ export default function FormularioExperiencia({
               style={[s.input, s.inputMultilinea]}
               value={descripcion}
               onChangeText={setDescripcion}
-              placeholder="Cuéntale al turista qué va a encontrar aquí"
-              placeholderTextColor="#8A99A8"
+              placeholder="Cuéntale al turista qué va a encontrar aquí…"
+              placeholderTextColor="#8A8A8A"
               multiline
               numberOfLines={4}
             />
@@ -193,73 +199,102 @@ export default function FormularioExperiencia({
               style={s.input}
               value={ubicacionExacta}
               onChangeText={setUbicacionExacta}
-              placeholder="Ej. Frente al parque central, 2 cuadras al lago"
-              placeholderTextColor="#8A99A8"
+              placeholder="Ej. Frente al parque central, 2 cuadras al sur"
+              placeholderTextColor="#8A8A8A"
             />
 
             {/* Selector de categorías */}
             <Text style={s.etiqueta}>Categoría</Text>
-            <View style={s.filaCategorias}>
-              {CATEGORIAS_EXPERIENCIA.map((cat) => {
-                const activa = categoria.id === cat.id;
-                return (
-                  <TouchableOpacity
-                    key={cat.id}
-                    style={[s.chipCategoria, activa && s.chipCategoriaActiva]}
-                    onPress={() => setCategoria(cat)}
-                  >
-                    <View style={s.chipCategoriaContenido}>
+            <View style={s.categoriasContenedor}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={s.filaCategorias}
+                keyboardShouldPersistTaps="handled"
+                style={{ flex: 1 }}
+              >
+                {CATEGORIAS_EXPERIENCIA.map((cat) => {
+                  const activa = categoria.id === cat.id;
+                  return (
+                    <TouchableOpacity
+                      key={cat.id}
+                      style={[s.chipCategoria, activa && s.chipCategoriaActiva]}
+                      onPress={() => setCategoria(cat)}
+                      activeOpacity={0.8}
+                    >
                       <Ionicons
                         name={cat.icono}
-                        size={16}
-                        color={activa ? "#FFFFFF" : cat.color}
+                        size={15}
+                        color={activa ? "#FFFFFF" : VERDE}
                         style={s.chipCategoriaIcono}
                       />
                       <Text
-                        style={
-                          activa
-                            ? s.chipCategoriaTextoActivo
-                            : s.chipCategoriaTexto
-                        }
+                        style={[
+                          s.chipCategoriaTexto,
+                          activa && s.chipCategoriaTextoActivo,
+                        ]}
                       >
                         {cat.label}
                       </Text>
-                    </View>
-                  </TouchableOpacity>
-                );
-              })}
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+              <Ionicons
+                name="chevron-forward"
+                size={20}
+                color="#111111"
+                style={s.flechaCategorias}
+              />
             </View>
 
             {/* Galería e inserción de imágenes */}
             <Text style={s.etiqueta}>
               Fotos ({imagenes.length}/{MAX_IMAGENES})
             </Text>
-            <View style={s.filaImagenes}>
-              {imagenes.map((uri, index) => (
-                <View key={index} style={s.miniaturaContenedor}>
-                  <Image source={{ uri }} style={s.miniatura} />
-                  <TouchableOpacity
-                    style={s.botonQuitarImagen}
-                    onPress={() => quitarImagen(index)}
-                  >
-                    <Text style={s.botonQuitarImagenTexto}>✕</Text>
-                  </TouchableOpacity>
-                </View>
-              ))}
-              {imagenes.length < MAX_IMAGENES && (
-                <TouchableOpacity
-                  style={s.botonAgregarImagen}
-                  onPress={handleAgregarImagen}
-                  disabled={procesandoImagen}
-                >
-                  {procesandoImagen ? (
-                    <ActivityIndicator color="#123B63" />
-                  ) : (
-                    <Text style={s.botonAgregarImagenTexto}>+ Foto</Text>
+            {imagenes.length === 0 ? (
+              <TouchableOpacity
+                style={s.cajaMultimedia}
+                onPress={handleAgregarImagen}
+                disabled={procesandoImagen}
+                activeOpacity={0.75}
+              >
+                {procesandoImagen ? (
+                  <ActivityIndicator color={VERDE} />
+                ) : (
+                  <Text style={s.textoMultimedia}>+ Agregar multimedia</Text>
+                )}
+              </TouchableOpacity>
+            ) : (
+              <View style={[s.cajaMultimedia, { alignItems: "flex-start" }]}>
+                <View style={s.filaImagenes}>
+                  {imagenes.map((uri, index) => (
+                    <View key={index} style={s.miniaturaContenedor}>
+                      <Image source={{ uri }} style={s.miniatura} />
+                      <TouchableOpacity
+                        style={s.botonQuitarImagen}
+                        onPress={() => quitarImagen(index)}
+                      >
+                        <Ionicons name="close" size={12} color="#FFFFFF" />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                  {imagenes.length < MAX_IMAGENES && (
+                    <TouchableOpacity
+                      style={s.botonAgregarMas}
+                      onPress={handleAgregarImagen}
+                      disabled={procesandoImagen}
+                    >
+                      {procesandoImagen ? (
+                        <ActivityIndicator color={VERDE} />
+                      ) : (
+                        <Ionicons name="add" size={26} color={VERDE} />
+                      )}
+                    </TouchableOpacity>
                   )}
-                </TouchableOpacity>
-              )}
-            </View>
+                </View>
+              </View>
+            )}
 
             {/* Selector de coordenadas en mapa */}
             <Text style={s.etiqueta}>Ubicación en el mapa</Text>
@@ -272,8 +307,8 @@ export default function FormularioExperiencia({
               <View style={s.tarjetaUbicacionIcono}>
                 <Ionicons
                   name={ubicacionActual ? "location-sharp" : "locate-outline"}
-                  size={22}
-                  color={ubicacionActual ? "#1D7A46" : "#123B63"}
+                  size={20}
+                  color={VERDE}
                 />
               </View>
 
@@ -294,13 +329,13 @@ export default function FormularioExperiencia({
                       Elegir ubicación en el mapa
                     </Text>
                     <Text style={s.tarjetaUbicacionHint}>
-                      Necesaria para publicar
+                      Necesaria para guardar
                     </Text>
                   </>
                 )}
               </View>
 
-              <Ionicons name="chevron-forward" size={18} color="#8A99A8" />
+              <Ionicons name="chevron-forward" size={16} color="#1F2A24" />
             </TouchableOpacity>
 
             {/* Acciones de cancelación y guardado */}
@@ -309,6 +344,7 @@ export default function FormularioExperiencia({
                 style={s.botonCancelar}
                 onPress={limpiarYCerrar}
                 disabled={guardando}
+                activeOpacity={0.8}
               >
                 <Text style={s.botonCancelarTexto}>Cancelar</Text>
               </TouchableOpacity>
@@ -320,6 +356,7 @@ export default function FormularioExperiencia({
                 ]}
                 onPress={handleGuardar}
                 disabled={!titulo.trim() || !ubicacionActual || guardando}
+                activeOpacity={0.85}
               >
                 {guardando ? (
                   <ActivityIndicator color="#fff" />
