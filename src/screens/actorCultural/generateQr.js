@@ -8,7 +8,7 @@ export default function GenerateQr() {
     <View style={generateQrStyle.container}>
       <Text style={generateQrStyle.title}>Generar QR</Text>
       <Text style={generateQrStyle.subtitle}>
-        Aquí podrás generar un código QR para compartir tu perfil o experiencia cultural.
+        Genera el código QR de tus experiencias para que los turistas lo escaneen y sellen su pasaporte.
       </Text>
     </View>
   );
