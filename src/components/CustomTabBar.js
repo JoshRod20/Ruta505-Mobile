@@ -65,16 +65,16 @@ function getBarPath(width, height, cx, m) {
     Math.min(maxHalf, cx - edgeInset, width - cx - edgeInset)
   );
 
-  let left = cx - notchWidth;
-  let right = cx + notchWidth;
+  const left = cx - half;
+  const right = cx + half;
 
   // La esquina se encoge si no hay espacio para ella
   const cl = Math.min(corner, Math.max(left, 0));
   const cr = Math.min(corner, Math.max(width - right, 0));
 
   return `
-    M0,${CORNER_RADIUS}
-    Q0,0 ${CORNER_RADIUS},0
+    M0,${cl}
+    Q0,0 ${cl},0
     L${left},0
     C${left + half * 0.55},0 ${cx - half * 0.45},${notchDepth} ${cx},${notchDepth}
     C${cx + half * 0.45},${notchDepth} ${right - half * 0.55},0 ${right},0
@@ -158,12 +158,6 @@ export default function CustomTabBar({ state, descriptors, navigation }) {
         const { options } = descriptors[route.key];
 
         const onPress = () => {
-          // El "+" no cambia de pestaña. TODO: abrir aquí las opciones de
-          // registro cuando estén definidas.
-          if (route.name === "Agregar") {
-            return;
-          }
-
           const event = navigation.emit({
             type: "tabPress",
             target: route.key,
