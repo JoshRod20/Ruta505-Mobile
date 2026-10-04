@@ -1,46 +1,130 @@
 import { StyleSheet } from "react-native";
-import { heightPercentageToDP as hp } from "react-native-responsive-screen";
 
 const COLOR_HEADER = "#086338";
 const COLOR_TINTA = "#065F33";
 const COLOR_PELIGRO = "#d9534f";
 
 const ActivarDobleFactorStyle = StyleSheet.create({
+  // Pantalla completa con fondo propio: así el contenido nunca queda
+  // pegado arriba ni tapado por la barra de estado.
+  raiz: {
+    flex: 1,
+    backgroundColor: "#FAFAFA",
+  },
+
+  // ---- Encabezado (igual que Configuración, Estadísticas, etc.) ----
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 24,
+    paddingBottom: 12,
+  },
+  botonAtras: {
+    width: 32,
+    height: 32,
+    alignItems: "flex-start",
+    justifyContent: "center",
+  },
+  tituloPantalla: {
+    flex: 1,
+    textAlign: "center",
+    fontFamily: "Poppins-Bold",
+    fontSize: 18,
+    color: COLOR_HEADER,
+  },
+
   contenedor: {
     flexGrow: 1,
-    backgroundColor: "#ffffff",
-    paddingHorizontal: 28,
-    paddingTop: 70,
-    paddingBottom: 40,
+    paddingHorizontal: 20,
+    paddingTop: 8,
+  },
+
+  // ---- Encabezado de estado ----
+  iconoCirculo: {
+    width: 84,
+    height: 84,
+    borderRadius: 42,
+    backgroundColor: "#E4F1E9",
+    alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "center",
+    marginTop: 8,
+    marginBottom: 12,
+  },
+  estadoChip: {
+    alignSelf: "center",
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 5,
+    marginBottom: 16,
+  },
+  estadoChipActivo: {
+    backgroundColor: COLOR_TINTA,
+  },
+  estadoChipInactivo: {
+    backgroundColor: "#E0E0E0",
+  },
+  estadoChipTexto: {
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 12,
+  },
+
+  // ---- Tarjeta de contenido ----
+  tarjeta: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#E6E6E6",
+    padding: 18,
+    marginBottom: 16,
+    shadowColor: "#000000",
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
 
   titulo: {
     color: COLOR_HEADER,
-    fontSize: 24,
+    fontSize: 20,
     fontFamily: "Poppins-Bold",
-    marginBottom: 14,
+    marginBottom: 8,
   },
 
   subtitulo: {
-    color: "#161515",
+    color: "#333333",
+    fontSize: 14,
+    fontFamily: "Inter-Regular",
+    lineHeight: 21,
+  },
+
+  paso: {
+    color: COLOR_HEADER,
     fontSize: 14,
     fontFamily: "Poppins-SemiBold",
-    marginBottom: 20,
-    lineHeight: 20,
+    marginBottom: 6,
   },
 
   qrWrap: {
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 20,
+    alignSelf: "center",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#E6E6E6",
+    padding: 14,
+    marginTop: 10,
+    marginBottom: 12,
   },
 
   claveManual: {
     color: "#4a4a4a",
     fontSize: 12,
+    lineHeight: 18,
     fontFamily: "Inter-Regular",
     textAlign: "center",
-    marginBottom: 20,
   },
 
   claveManualTexto: {
@@ -51,16 +135,16 @@ const ActivarDobleFactorStyle = StyleSheet.create({
 
   input: {
     width: "100%",
-    height: 60,
-    borderRadius: hp("1.5%"),
+    height: 56,
+    borderRadius: 14,
     backgroundColor: "#ffffff",
     borderWidth: 1.8,
     borderColor: COLOR_TINTA,
     color: COLOR_TINTA,
-    fontSize: 22,
+    fontSize: 20,
     textAlign: "center",
-    letterSpacing: 6,
-    marginBottom: 10,
+    letterSpacing: 4,
+    marginTop: 10,
   },
 
   error: {
@@ -68,18 +152,25 @@ const ActivarDobleFactorStyle = StyleSheet.create({
     fontSize: 13,
     fontFamily: "Inter-Regular",
     textAlign: "center",
-    marginBottom: 8,
+    marginTop: 12,
+  },
+
+  aviso: {
+    color: COLOR_TINTA,
+    fontSize: 13,
+    fontFamily: "Inter-Regular",
+    lineHeight: 19,
+    marginTop: 12,
   },
 
   boton: {
     width: "100%",
-    height: hp("6%"),
+    height: 52,
     backgroundColor: COLOR_TINTA,
-    borderRadius: hp("5%"),
+    borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 16,
-    elevation: 3,
+    marginTop: 14,
   },
 
   botonPeligro: {
@@ -88,19 +179,20 @@ const ActivarDobleFactorStyle = StyleSheet.create({
 
   botonTexto: {
     color: "#ffffff",
-    fontFamily: "Poppins-Bold",
+    fontFamily: "Poppins-SemiBold",
     fontSize: 16,
   },
 
   enlaceWrap: {
     alignItems: "center",
-    marginTop: 20,
+    paddingVertical: 8,
+    marginTop: 4,
   },
 
   enlace: {
     color: COLOR_HEADER,
     fontSize: 14,
-    fontFamily: "Inter-Regular",
+    fontFamily: "Poppins-SemiBold",
   },
 });
 

@@ -10,6 +10,9 @@ import ActivarDobleFactorScreen from "../screens/perfil/ActivarDobleFactorScreen
 import AcercaDe from "../screens/acercaDe";
 import NavigationTabs from "./navigationTabs";
 import ExperienciasCulturales from "../screens/comunidad/experienciasCulturales";
+import EditCulturalProfile from "../screens/actorCultural/editCulturalProfile";
+import Resenas from "../screens/comunidad/resenas";
+import Estadisticas from "../screens/actorCultural/estadisticas";
 import { useAuth } from "../context/AuthContext";
 import { drawerStyle } from "../styles/navigation/navigationDrawerStyle";
 
@@ -63,6 +66,10 @@ export default function NavigationDrawer() {
   return (
     <Drawer.Navigator
       initialRouteName={MAIN_ROUTE}
+      // Por defecto el Drawer regresa siempre a la primera pantalla (los tabs).
+      // Con "history" la flecha de atrás vuelve a la pantalla de donde venías
+      // (por ejemplo, de Verificación en dos pasos a Configuración).
+      backBehavior="history"
       screenOptions={{
         headerShown: false,
         drawerActiveTintColor: "#fff",
@@ -84,15 +91,33 @@ export default function NavigationDrawer() {
         component={ExperienciasCulturales}
         options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
       />
+      {/* Edición de perfil cultural: pantalla independiente (sin barra de tabs) */}
+      <Drawer.Screen
+        name="EditarPerfilCulturalDrawer"
+        component={EditCulturalProfile}
+        options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
+      />
+      {/* Estadísticas del espacio cultural: pantalla independiente (sin barra de tabs). Se abre desde el perfil cultural. */}
+      <Drawer.Screen
+        name="EstadisticasDrawer"
+        component={Estadisticas}
+        options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
+      />
+      {/* Reseñas: pantalla independiente (sin barra de tabs). Se abre desde Estadísticas ("Ver todas las reseñas"). */}
+      <Drawer.Screen
+        name="ResenasDrawer"
+        component={Resenas}
+        options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
+      />
       <Drawer.Screen
         name="MiCuentaDrawer"
         component={PerfilUsuario}
-        options={{ drawerItemStyle: { height: 0 } }}
+        options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
       />
       <Drawer.Screen
         name="ActivarDobleFactorDrawer"
         component={ActivarDobleFactorScreen}
-        options={{ drawerItemStyle: { height: 0 } }}
+        options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
       />
       <Drawer.Screen
         name="AcercaDeDrawer"

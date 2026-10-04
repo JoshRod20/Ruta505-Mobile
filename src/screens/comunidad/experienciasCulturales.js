@@ -16,16 +16,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import {
-  getDownloadURL,
-  ref as storageRef,
-  uploadBytes,
-} from "firebase/storage";
+import * as ImageManipulator from "expo-image-manipulator";
 
 import FloatingNavButton from "../../components/common/FloatingNavButton";
 import SeleccionarUbicacionMapa from "../../components/Seleccionarubicacionmapa";
 
-import { storage } from "../../services/firebase";
 import {
   crearExperiencia,
   TIPO_EXPERIENCIA,
@@ -43,7 +38,12 @@ import {
   VERDE,
 } from "../../styles/experienciascultarales/experienciasCulturalesStyle";
 
-const MAX_IMAGENES = 5;
+// Las fotos se guardan como Base64 dentro del documento (sin Firebase Storage),
+// así que se comprimen y se limitan para no pasar 1 MB por documento.
+const MAX_IMAGENES = 3;
+const ANCHO_REDIMENSIONADO = 700; // px
+const CALIDAD_COMPRESION = 0.5; // 0 a 1
+const MAX_PESO_KB = 250;
 
 const ROL_ETIQUETA = {
   comunidad: "Como Comunidad",
@@ -69,14 +69,17 @@ export default function ExperienciasCulturales() {
   const topOffset = insets.top + 8;
 
   const [form, setForm] = useState(initialForm);
-  const [imagenes, setImagenes] = useState([]); // [{ uri }]
+  const [imagenes, setImagenes] = useState([]); // [{ uri }] con uri = data:image/jpeg;base64,...
+  const [procesandoImagen, setProcesandoImagen] = useState(false);
   const [ubicacion, setUbicacion] = useState(null); // { lat, lon }
   const [selectorVisible, setSelectorVisible] = useState(false);
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
 
   const puedePublicar = puede(PERMISOS.PUBLICAR_EXPERIENCIA);
-  const etiquetaRol = ROL_ETIQUETA[profile?.actorType] ?? null;
+  // El registro móvil guarda el tipo como "tipoActor"; "actorType" es el nombre antiguo.
+  const tipoActor = profile?.tipoActor ?? profile?.actorType ?? null;
+  const etiquetaRol = ROL_ETIQUETA[tipoActor] ?? null;
 
   // Sugiere la ubicación actual del usuario (puede cambiarla tocando la tarjeta).
   useEffect(() => {
@@ -126,36 +129,54 @@ export default function ExperienciasCulturales() {
       mediaTypes: ["images"],
       allowsMultipleSelection: true,
       selectionLimit: MAX_IMAGENES - imagenes.length,
-      quality: 0.7,
+      quality: 1,
     });
 
     if (resultado.canceled) return;
 
-    const nuevas = resultado.assets
-      .slice(0, MAX_IMAGENES - imagenes.length)
-      .map((asset) => ({ uri: asset.uri }));
+    setProcesandoImagen(true);
+    try {
+      const nuevas = [];
+      let muyPesadas = 0;
 
-    setImagenes((prev) => [...prev, ...nuevas]);
-  };
+      for (const asset of resultado.assets.slice(
+        0,
+        MAX_IMAGENES - imagenes.length
+      )) {
+        // Compresión en el dispositivo antes de convertir a Base64
+        const manipulado = await ImageManipulator.manipulateAsync(
+          asset.uri,
+          [{ resize: { width: ANCHO_REDIMENSIONADO } }],
+          {
+            compress: CALIDAD_COMPRESION,
+            format: ImageManipulator.SaveFormat.JPEG,
+            base64: true,
+          }
+        );
+        const pesoKB = Math.round((manipulado.base64.length * 0.75) / 1024);
+        if (pesoKB > MAX_PESO_KB) {
+          muyPesadas += 1;
+          continue;
+        }
+        nuevas.push({ uri: `data:image/jpeg;base64,${manipulado.base64}` });
+      }
 
-  const quitarImagen = (uri) => {
-    setImagenes((prev) => prev.filter((imagen) => imagen.uri !== uri));
-  };
-
-  const subirImagenes = async () => {
-    const uid = user?.uid ?? "anonimo";
-    const urls = [];
-
-    for (let i = 0; i < imagenes.length; i += 1) {
-      const { uri } = imagenes[i];
-      const respuesta = await fetch(uri);
-      const blob = await respuesta.blob();
-      const nombreArchivo = `experiencias/${uid}/${Date.now()}_${i}.jpg`;
-      const referencia = storageRef(storage, nombreArchivo);
-      await uploadBytes(referencia, blob);
-      urls.push(await getDownloadURL(referencia));
+      if (nuevas.length > 0) setImagenes((prev) => [...prev, ...nuevas]);
+      if (muyPesadas > 0) {
+        Alert.alert(
+          "Imagen muy pesada",
+          `${muyPesadas === 1 ? "Una foto superó" : "Algunas fotos superaron"} el tamaño permitido y no se agregó.`
+        );
+      }
+    } catch (err) {
+      Alert.alert("No se pudo procesar la imagen", err.message);
+    } finally {
+      setProcesandoImagen(false);
     }
-    return urls;
+  };
+
+  const quitarImagen = (indice) => {
+    setImagenes((prev) => prev.filter((_, i) => i !== indice));
   };
 
   const handleSubmit = async () => {
@@ -178,7 +199,6 @@ export default function ExperienciasCulturales() {
 
     try {
       setCargando(true);
-      const imagenUrls = await subirImagenes();
       // Nombre corto del lugar ("Catarina, Masaya") para mostrarlo en el Home.
       const lugar = await obtenerNombreLugar(ubicacion.lat, ubicacion.lon);
 
@@ -191,11 +211,10 @@ export default function ExperienciasCulturales() {
         lng: ubicacion.lon,
         lugar,
         verificado: estadoVerificacion === ESTADOS_VERIFICACION.APROBADO,
-        imagenUrls,
+        imagenes: imagenes.map((imagen) => imagen.uri),
         role: profile?.role ?? null,
-        actorType: profile?.actorType ?? null,
+        actorType: tipoActor,
         creadoPor: user?.uid ?? null,
-        email: profile?.email ?? user?.email ?? null,
       });
 
       setForm(initialForm);
@@ -360,12 +379,12 @@ export default function ExperienciasCulturales() {
         ) : (
           <View style={[s.cajaMultimedia, { alignItems: "flex-start" }]}>
             <View style={s.filaImagenes}>
-              {imagenes.map((imagen) => (
-                <View key={imagen.uri} style={s.miniaturaContenedor}>
+              {imagenes.map((imagen, indice) => (
+                <View key={`imagen-${indice}`} style={s.miniaturaContenedor}>
                   <Image source={{ uri: imagen.uri }} style={s.miniatura} />
                   <TouchableOpacity
                     style={s.botonQuitarImagen}
-                    onPress={() => quitarImagen(imagen.uri)}
+                    onPress={() => quitarImagen(indice)}
                   >
                     <Ionicons name="close" size={12} color="#FFFFFF" />
                   </TouchableOpacity>
@@ -375,8 +394,13 @@ export default function ExperienciasCulturales() {
                 <TouchableOpacity
                   style={s.botonAgregarMas}
                   onPress={handleAgregarImagen}
+                  disabled={procesandoImagen}
                 >
-                  <Ionicons name="add" size={26} color={VERDE} />
+                  {procesandoImagen ? (
+                    <ActivityIndicator color={VERDE} />
+                  ) : (
+                    <Ionicons name="add" size={26} color={VERDE} />
+                  )}
                 </TouchableOpacity>
               )}
             </View>

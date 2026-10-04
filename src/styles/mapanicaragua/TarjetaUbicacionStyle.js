@@ -9,7 +9,7 @@ export const tarjetaUbicacionStyle = StyleSheet.create({
     position: "absolute",
     left: 0,
     right: 0,
-    bottom: 68,
+    bottom: 100,
     backgroundColor: "#FFFFFF",
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,

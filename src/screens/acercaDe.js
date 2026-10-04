@@ -9,7 +9,11 @@ export default function AcercaDe({ navigation }) {
     <View style={homeStyle.container}>
       <FloatingNavButton
         icon="arrow-back-outline"
-        onPress={() => navigation.navigate("MainDrawer")}
+        onPress={() =>
+          navigation.canGoBack()
+            ? navigation.goBack()
+            : navigation.navigate("MainDrawer")
+        }
         accessibilityLabel="Volver"
       />
       <Text style={homeStyle.title}>Acerca de</Text>
