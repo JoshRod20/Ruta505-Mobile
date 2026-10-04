@@ -1,47 +1,85 @@
-import React, { useRef, useState, useEffect } from "react";
-import { View, TouchableOpacity, Animated, Dimensions } from "react-native";
+import React, { useRef, useState, useEffect, useMemo } from "react";
+import {
+  View,
+  TouchableOpacity,
+  Animated,
+  useWindowDimensions,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Svg, { Path } from "react-native-svg";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { navigationTabsStyle as styles } from "../styles/navigation/navigationTabsStyle";
 
 const ICONS = {
   Inicio: "home",
   Mapa: "location",
-  Agregar: "add-circle",
   Rutas: "return-up-back",
-  Agenda: "calendar",
+  Pasaporte: "book",
   Perfil: "person",
+  "Publicar experiencias": "add-circle",
+  "Generar QR": "qr-code",
+  "Perfil cultural": "person-circle",
+  Agenda: "calendar",
 };
 
-const BAR_HEIGHT = 68;      // altura total de la barra
-const NOTCH_RADIUS = 50;    // profundidad del hueco (más alto = más profundo)
-const CORNER_RADIUS = 17;   // radio de las esquinas superiores de la barra
+// Medidas base pensadas para un ancho de 360 dp.
+// Todo escala con el ancho de pantalla, entre MIN_SCALE y MAX_SCALE.
+const BASE_WIDTH = 360;
+const MIN_SCALE = 0.85;
+const MAX_SCALE = 1.25;
 
-function getBarPath(width, height, cx, tabWidth) {
-  const notchWidth = NOTCH_RADIUS * 1.4;
-  const margin = -25;
-  const minGap = NOTCH_RADIUS * 0.1; // distancia mínima entre cx y cada borde
+const BASE = {
+  barHeight: 68,     // altura total de la barra
+  notchDepth: 50,    // profundidad del hueco (más alto = más profundo)
+  corner: 17,        // radio de las esquinas superiores
+  edgeInset: -30,    // espacio entre el hueco y el borde (negativo = el hueco se sale de la pantalla)
+  circle: 52,        // diámetro del círculo activo
+  lift: -18,         // cuánto sube el ícono activo (más negativo = sube más)
+  iconActive: 26,
+  iconInactive: 26,  // más alto = íconos inactivos más grandes
+};
+
+const INACTIVE_SCALE = 0.8; // escala del ícono inactivo (más alto = más grande)
+
+function getMetrics(width) {
+  const s = Math.min(Math.max(width / BASE_WIDTH, MIN_SCALE), MAX_SCALE);
+  return {
+    barHeight: Math.round(BASE.barHeight * s),
+    notchDepth: BASE.notchDepth * s,
+    corner: BASE.corner * s,
+    edgeInset: BASE.edgeInset * s,
+    circle: Math.round(BASE.circle * s),
+    lift: BASE.lift * s,
+    iconActive: Math.round(BASE.iconActive * s),
+    iconInactive: Math.round(BASE.iconInactive * s),
+  };
+}
+
+function getBarPath(width, height, cx, m) {
+  const { notchDepth, corner, edgeInset } = m;
+  const maxHalf = notchDepth * 1.4;
+
+  // Medio ancho simétrico: se reduce solo cerca de los bordes
+  const half = Math.max(
+    notchDepth * 0.3,
+    Math.min(maxHalf, cx - edgeInset, width - cx - edgeInset)
+  );
 
   let left = cx - notchWidth;
   let right = cx + notchWidth;
 
-  // Recorta los bordes si chocan con la esquina
-  left = Math.max(left, CORNER_RADIUS + margin);
-  right = Math.min(right, width - CORNER_RADIUS - margin);
-
-  // GUARDA CLAVE: si el recorte invirtió la relación con cx, corrige left/right
-  // para que nunca crucen ni se acerquen demasiado a cx (evita el espejo)
-  if (cx - left < minGap) left = cx - minGap;
-  if (right - cx < minGap) right = cx + minGap;
+  // La esquina se encoge si no hay espacio para ella
+  const cl = Math.min(corner, Math.max(left, 0));
+  const cr = Math.min(corner, Math.max(width - right, 0));
 
   return `
     M0,${CORNER_RADIUS}
     Q0,0 ${CORNER_RADIUS},0
     L${left},0
-    C${left + (cx - left) * 0.55},0 ${cx - (cx - left) * 0.45},${NOTCH_RADIUS} ${cx},${NOTCH_RADIUS}
-    C${cx + (right - cx) * 0.45},${NOTCH_RADIUS} ${right - (right - cx) * 0.55},0 ${right},0
-    L${width - CORNER_RADIUS},0
-    Q${width},0 ${width},${CORNER_RADIUS}
+    C${left + half * 0.55},0 ${cx - half * 0.45},${notchDepth} ${cx},${notchDepth}
+    C${cx + half * 0.45},${notchDepth} ${right - half * 0.55},0 ${right},0
+    L${width - cr},0
+    Q${width},0 ${width},${cr}
     L${width},${height}
     L0,${height}
     Z
@@ -49,67 +87,75 @@ function getBarPath(width, height, cx, tabWidth) {
 }
 
 export default function CustomTabBar({ state, descriptors, navigation }) {
-  const [barWidth, setBarWidth] = useState(Dimensions.get("window").width);
+  const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const m = useMemo(() => getMetrics(width), [width]);
+
   const numTabs = state.routes.length;
-  const tabWidth = barWidth / numTabs;
+  const tabWidth = width / numTabs;
+  const totalHeight = m.barHeight + insets.bottom;
+  const centerOf = (index) => tabWidth * (index + 0.5);
 
-  const notchX = useRef(
-    new Animated.Value(tabWidth * (state.index + 0.5))
-  ).current;
-
-  // Estado plano que guarda el path actual, recalculado en cada frame
-  const [pathD, setPathD] = useState(
-    getBarPath(barWidth, BAR_HEIGHT, tabWidth * (state.index + 0.5), tabWidth)
+  const notchX = useRef(new Animated.Value(centerOf(state.index))).current;
+  const [pathD, setPathD] = useState(() =>
+    getBarPath(width, totalHeight, centerOf(state.index), m)
   );
 
-  const liftAnims = useRef(
-    state.routes.map((_, i) => new Animated.Value(i === state.index ? 1 : 0))
-  ).current;
+  // Una animación por ruta (por key), así soporta que las pestañas cambien
+  const liftAnims = useRef({});
+  state.routes.forEach((r, i) => {
+    if (!liftAnims.current[r.key]) {
+      liftAnims.current[r.key] = new Animated.Value(i === state.index ? 1 : 0);
+    }
+  });
 
-  // Escucha cada cambio del valor animado y recalcula el path como JS puro
+  // 1) Cada cambio del valor animado recalcula el path
   useEffect(() => {
     const id = notchX.addListener(({ value }) => {
-      setPathD(getBarPath(barWidth, BAR_HEIGHT, value, tabWidth));
+      setPathD(getBarPath(width, totalHeight, value, m));
     });
     return () => notchX.removeListener(id);
-  }, [barWidth, tabWidth]);
+  }, [notchX, width, totalHeight, m]);
 
-  const animateTo = (index) => {
+  // 2) Si cambia el ancho, el inset o el número de pestañas, recoloca sin animar
+  useEffect(() => {
+    notchX.setValue(centerOf(state.index));
+  }, [width, totalHeight, numTabs]);
+
+  // 3) Anima cuando cambia la pestaña activa, sin importar quién la cambió
+  useEffect(() => {
     Animated.spring(notchX, {
-      toValue: tabWidth * (index + 0.5),
+      toValue: centerOf(state.index),
       useNativeDriver: false,
       friction: 6,   // más alto = menos rebote, más "seco"
       tension: 70,   // más alto = más rápido
     }).start();
 
-    liftAnims.forEach((anim, i) => {
-      Animated.spring(anim, {
-        toValue: i === index ? 1 : 0,
+    state.routes.forEach((route, i) => {
+      Animated.spring(liftAnims.current[route.key], {
+        toValue: i === state.index ? 1 : 0,
         useNativeDriver: true,
         friction: 6,
         tension: 90,
       }).start();
     });
-  };
-
-  const onLayout = (e) => {
-    const w = e.nativeEvent.layout.width;
-    const newTabWidth = w / numTabs;
-    setBarWidth(w);
-    const cx = newTabWidth * (state.index + 0.5);
-    notchX.setValue(cx);
-    setPathD(getBarPath(w, BAR_HEIGHT, cx, newTabWidth));
-  };
+  }, [state.index]);
 
   return (
-    <View style={styles.tabBar} onLayout={onLayout}>
-      <Svg width={barWidth} height={BAR_HEIGHT} style={styles.svgBackground}>
+    <View
+      style={[
+        styles.tabBar,
+        { height: totalHeight, paddingBottom: insets.bottom },
+      ]}
+    >
+      <Svg width={width} height={totalHeight} style={styles.svgBackground}>
         <Path fill={styles.barColor} d={pathD} />
       </Svg>
 
       {state.routes.map((route, index) => {
         const isFocused = state.index === index;
-        const lift = liftAnims[index];
+        const lift = liftAnims.current[route.key];
+        const { options } = descriptors[route.key];
 
         const onPress = () => {
           // El "+" no cambia de pestaña. TODO: abrir aquí las opciones de
@@ -124,18 +170,17 @@ export default function CustomTabBar({ state, descriptors, navigation }) {
             canPreventDefault: true,
           });
           if (!isFocused && !event.defaultPrevented) {
-            animateTo(index);
             navigation.navigate(route.name);
           }
         };
 
         const translateY = lift.interpolate({
           inputRange: [0, 1],
-          outputRange: [0, -18], // translateY: qué tanto sube el ícono (más negativo = sube más)
+          outputRange: [0, m.lift],
         });
         const scale = lift.interpolate({
           inputRange: [0, 1],
-          outputRange: [0.7, 1], // scale: de qué tamaño parte al aparecer
+          outputRange: [INACTIVE_SCALE, 1],
         });
 
         const iconName = ICONS[route.name] || "ellipse";
@@ -145,18 +190,29 @@ export default function CustomTabBar({ state, descriptors, navigation }) {
             key={route.key}
             onPress={onPress}
             activeOpacity={0.8}
-            style={[styles.tabButton, { width: tabWidth }]}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: isFocused }}
+            accessibilityLabel={options.tabBarAccessibilityLabel ?? route.name}
+            testID={options.tabBarButtonTestID ?? `tab-${route.name}`}
+            style={[styles.tabButton, { width: tabWidth, height: m.barHeight }]}
           >
             <Animated.View
               style={[
                 styles.iconWrapper,
-                { transform: [{ translateY }, { scale }] },
+                {
+                  width: m.circle,
+                  height: m.circle,
+                  transform: [{ translateY }, { scale }],
+                },
               ]}
             >
               <Animated.View
                 style={[
                   styles.iconCircle,
                   {
+                    width: m.circle,
+                    height: m.circle,
+                    borderRadius: m.circle / 2,
                     opacity: lift,
                     backgroundColor: styles.activeCircleColor,
                   },
@@ -164,7 +220,7 @@ export default function CustomTabBar({ state, descriptors, navigation }) {
               />
               <Ionicons
                 name={isFocused ? iconName : `${iconName}-outline`}
-                size={24}
+                size={isFocused ? m.iconActive : m.iconInactive}
                 color={
                   isFocused ? styles.activeTintColor : styles.inactiveTintColor
                 }

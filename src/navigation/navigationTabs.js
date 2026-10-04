@@ -4,6 +4,13 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Home from "../components/Home";
 import MapaNicaragua from "../components/MapaNicaragua";
 import CustomTabBar from "../components/CustomTabBar";
+import FloatingNavButton from "../components/common/FloatingNavButton";
+import ExperienciasCulturales from "../screens/comunidad/experienciasCulturales";
+import GenerateQr from "../screens/actorCultural/generateQr";
+import CulturalProfile from "../screens/actorCultural/culturalProfile";
+import CulturalRoutes from "../screens/usuario/culturalRoutes";
+import CulturalPassport from "../screens/usuario/culturalPassport";
+import UserProfile from "../screens/usuario/userProfile";
 import { useAuth } from "../context/AuthContext";
 import { PERMISOS, tienePermiso } from "../constants/permissions";
 
@@ -17,14 +24,17 @@ const BotonAgregar = () => null;
 
 export default function NavigationTabs({ route }) {
   const { role } = useAuth();
-  const mostrarBotonAgregar = tienePermiso(
+  const puedePublicarExperiencia = tienePermiso(
     role,
     PERMISOS.PUBLICAR_EXPERIENCIA
   );
 
-  const initialTab = ["Inicio", "Mapa"].includes(route?.params?.initialTab)
-    ? route.params.initialTab
-    : "Inicio";
+  const initialTab =
+    route?.params?.initialTab &&
+    (route.params.initialTab !== "Publicar experiencias" ||
+      puedePublicarExperiencia)
+      ? route.params.initialTab
+      : "Inicio";
 
   return (
     <>
@@ -35,9 +45,14 @@ export default function NavigationTabs({ route }) {
       >
         <Tab.Screen name="Inicio" component={Home} />
         <Tab.Screen name="Mapa" component={MapaNicaragua} />
-        {mostrarBotonAgregar && (
-          <Tab.Screen name="Agregar" component={BotonAgregar} />
+        {puedePublicarExperiencia && (
+          <Tab.Screen
+            name="Publicar experiencias"
+            component={ExperienciasCulturales}
+          />
         )}
+        <Tab.Screen name="Generar QR" component={GenerateQr} />
+        <Tab.Screen name="Perfil cultural" component={CulturalProfile} />
       </Tab.Navigator>
     </>
   );
