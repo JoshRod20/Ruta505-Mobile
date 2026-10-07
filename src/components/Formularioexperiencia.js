@@ -181,6 +181,7 @@ export default function FormularioExperiencia({
               onChangeText={setTitulo}
               placeholder="Ej. Taller de cerámica, El Cántaro"
               placeholderTextColor="#8A8A8A"
+              maxLength={120}
             />
 
             <Text style={s.etiqueta}>Descripción</Text>
@@ -190,6 +191,7 @@ export default function FormularioExperiencia({
               onChangeText={setDescripcion}
               placeholder="Cuéntale al turista qué va a encontrar aquí…"
               placeholderTextColor="#8A8A8A"
+              maxLength={1500}
               multiline
               numberOfLines={4}
             />
@@ -201,6 +203,7 @@ export default function FormularioExperiencia({
               onChangeText={setUbicacionExacta}
               placeholder="Ej. Frente al parque central, 2 cuadras al sur"
               placeholderTextColor="#8A8A8A"
+              maxLength={200}
             />
 
             {/* Selector de categorías */}

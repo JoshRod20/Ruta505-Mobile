@@ -12,6 +12,8 @@ import NavigationTabs from "./navigationTabs";
 import ExperienciasCulturales from "../screens/comunidad/experienciasCulturales";
 import EditCulturalProfile from "../screens/actorCultural/editCulturalProfile";
 import Resenas from "../screens/comunidad/resenas";
+import CrearRutaCreativa from "../screens/rutas/crearRutaCreativa";
+import InvitacionesRuta from "../screens/rutas/invitacionesRuta";
 import Estadisticas from "../screens/actorCultural/estadisticas";
 import { useAuth } from "../context/AuthContext";
 import { drawerStyle } from "../styles/navigation/navigationDrawerStyle";
@@ -95,6 +97,17 @@ export default function NavigationDrawer() {
       <Drawer.Screen
         name="EditarPerfilCulturalDrawer"
         component={EditCulturalProfile}
+        options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
+      />
+      {/* Ruta Creativa: asistente (pasos 2 a 6) e invitaciones recibidas. Pantallas independientes, sin barra de tabs. */}
+      <Drawer.Screen
+        name="CrearRutaDrawer"
+        component={CrearRutaCreativa}
+        options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
+      />
+      <Drawer.Screen
+        name="InvitacionesRutaDrawer"
+        component={InvitacionesRuta}
         options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
       />
       {/* Estadísticas del espacio cultural: pantalla independiente (sin barra de tabs). Se abre desde el perfil cultural. */}

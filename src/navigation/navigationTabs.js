@@ -5,7 +5,7 @@ import Home from "../components/Home";
 import MapaNicaragua from "../components/MapaNicaragua";
 import CustomTabBar from "../components/CustomTabBar";
 import FloatingNavButton from "../components/common/FloatingNavButton";
-import ExperienciasCulturales from "../screens/comunidad/experienciasCulturales";
+import CrearRutaInicio from "../screens/rutas/crearRutaInicio";
 import GenerateQr from "../screens/actorCultural/generateQr";
 import CulturalProfile from "../screens/actorCultural/culturalProfile";
 import CulturalRoutes from "../screens/usuario/culturalRoutes";
@@ -24,17 +24,38 @@ const BotonAgregar = () => null;
 
 export default function NavigationTabs({ route }) {
   const { role } = useAuth();
+
+  // Las pestañas dependen del rol (la cuarta ocupa el mismo lugar para todos):
+  //  - Actor cultural: Inicio, Mapa, +, Generar QR, Perfil cultural.
+  //  - Turista: Inicio, Mapa, Pasaporte, Perfil.
   const puedePublicarExperiencia = tienePermiso(
     role,
     PERMISOS.PUBLICAR_EXPERIENCIA
   );
+  const puedeGenerarQr = tienePermiso(role, PERMISOS.GENERAR_QR_EXPERIENCIA);
+  const puedeVerPerfilCultural = tienePermiso(
+    role,
+    PERMISOS.VER_PERFIL_CULTURAL
+  );
+  const puedeVerPasaporte = tienePermiso(role, PERMISOS.VER_PASAPORTE);
+  const puedeVerPerfilUsuario = tienePermiso(
+    role,
+    PERMISOS.VER_PERFIL_USUARIO
+  );
 
-  const initialTab =
-    route?.params?.initialTab &&
-    (route.params.initialTab !== "Publicar experiencias" ||
-      puedePublicarExperiencia)
-      ? route.params.initialTab
-      : "Inicio";
+  const pestanasDisponibles = [
+    "Inicio",
+    "Mapa",
+    puedePublicarExperiencia && "Publicar experiencias",
+    puedeGenerarQr && "Generar QR",
+    puedeVerPerfilCultural && "Perfil cultural",
+    puedeVerPasaporte && "Pasaporte",
+    puedeVerPerfilUsuario && "Perfil",
+  ].filter(Boolean);
+
+  const initialTab = pestanasDisponibles.includes(route?.params?.initialTab)
+    ? route.params.initialTab
+    : "Inicio";
 
   return (
     <>
@@ -48,11 +69,21 @@ export default function NavigationTabs({ route }) {
         {puedePublicarExperiencia && (
           <Tab.Screen
             name="Publicar experiencias"
-            component={ExperienciasCulturales}
+            component={CrearRutaInicio}
           />
         )}
-        <Tab.Screen name="Generar QR" component={GenerateQr} />
-        <Tab.Screen name="Perfil cultural" component={CulturalProfile} />
+        {puedeGenerarQr && (
+          <Tab.Screen name="Generar QR" component={GenerateQr} />
+        )}
+        {puedeVerPerfilCultural && (
+          <Tab.Screen name="Perfil cultural" component={CulturalProfile} />
+        )}
+        {puedeVerPasaporte && (
+          <Tab.Screen name="Pasaporte" component={CulturalPassport} />
+        )}
+        {puedeVerPerfilUsuario && (
+          <Tab.Screen name="Perfil" component={UserProfile} />
+        )}
       </Tab.Navigator>
     </>
   );

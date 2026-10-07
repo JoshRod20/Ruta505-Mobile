@@ -16,21 +16,24 @@ import { useAuth } from "../context/AuthContext";
 import { usePermisos } from "../hooks/usePermisos";
 import { PERMISOS } from "../constants/permissions";
 import { ROLES, ESTADOS_VERIFICACION } from "../constants/roles";
+import { escucharExperiencias } from "../services/Experienciasservice";
 import {
-  escucharExperiencias,
-  esUbicacionDeMapa,
-} from "../services/Experienciasservice";
+  escucharInvitaciones,
+  ESTADO_PARADA,
+} from "../services/rutasService";
 import { homeStyle, VERDE } from "../styles/home/homeStyle";
 
 export default function Home() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
-  const { role, estadoVerificacion } = useAuth();
+  const { user, role, estadoVerificacion } = useAuth();
   const { puede } = usePermisos();
 
   const [experiencias, setExperiencias] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(false);
+  // Invitaciones a rutas creativas sin responder (número en la campana).
+  const [invitacionesPendientes, setInvitacionesPendientes] = useState(0);
 
   // Actor cultural que entró por "Explorar" desde PendienteAprobacionScreen:
   // puede ver Home, pero no publicar hasta que se apruebe su perfil.
@@ -42,10 +45,18 @@ export default function Home() {
   const esActor = role === ROLES.ACTOR_CULTURAL;
 
   useEffect(() => {
+    if (!esActor || !user?.uid) return undefined;
+    return escucharInvitaciones(user.uid, (lista) =>
+      setInvitacionesPendientes(
+        lista.filter((i) => i.estado === ESTADO_PARADA.INVITADO).length
+      )
+    );
+  }, [esActor, user?.uid]);
+
+  useEffect(() => {
     const unsubscribe = escucharExperiencias(
       (datos) => {
-        // Las ubicaciones de negocios viven solo en el mapa interactivo.
-        setExperiencias(datos.filter((pub) => !esUbicacionDeMapa(pub)));
+        setExperiencias(datos);
         setCargando(false);
         setError(false);
       },
@@ -79,13 +90,44 @@ export default function Home() {
           />
         </View>
 
-        {/* TODO: conectar con la pantalla de notificaciones cuando exista */}
+        {/* La campana abre las invitaciones a rutas creativas (solo actores). */}
         <TouchableOpacity
           style={homeStyle.botonCampana}
           activeOpacity={0.7}
           accessibilityLabel="Notificaciones"
+          onPress={() =>
+            esActor
+              ? navigation.navigate("InvitacionesRutaDrawer")
+              : undefined
+          }
         >
           <Ionicons name="notifications-outline" size={26} color={VERDE} />
+          {invitacionesPendientes > 0 && (
+            <View
+              style={{
+                position: "absolute",
+                top: -2,
+                right: -2,
+                minWidth: 18,
+                height: 18,
+                borderRadius: 9,
+                paddingHorizontal: 4,
+                backgroundColor: "#C1443C",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Text
+                style={{
+                  color: "#FFFFFF",
+                  fontSize: 11,
+                  fontFamily: "Inter-SemiBold",
+                }}
+              >
+                {invitacionesPendientes}
+              </Text>
+            </View>
+          )}
         </TouchableOpacity>
       </View>
 

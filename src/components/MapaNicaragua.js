@@ -26,12 +26,11 @@ import FloatingNavButton from "./common/FloatingNavButton.js";
 import { mapaNicaraguaStyle } from "../styles/mapanicaragua/mapaNicaraguaStyle.js";
 import { obtenerRuta } from "../services/osrmservice.js";
 import {
-  crearExperiencia,
-  escucharExperiencias,
-  actualizarExperiencia,
-  esUbicacionDeMapa,
-  TIPO_UBICACION,
-} from "../services/Experienciasservice.js";
+  crearNegocio,
+  actualizarNegocio,
+  escucharNegocios,
+} from "../services/Negociosservice.js";
+import { obtenerNombreLugar } from "../services/geocodingservice.js";
 import {
   iconoDeCategoria,
   colorDeCategoria,
@@ -84,7 +83,7 @@ export default function MapaNicaragua() {
   const insets = useSafeAreaInsets();
   const mapRef = useRef(null);
   const cameraRef = useRef(null);
-  const { user, role, sancionVigente } = useAuth();
+  const { user, profile, role, sancionVigente } = useAuth();
   const { puede } = usePermisos();
 
   // Permiso para publicar si el rol lo permite y no hay sanción
@@ -94,7 +93,7 @@ export default function MapaNicaragua() {
   const [formularioVisible, setFormularioVisible] = useState(false);
   const [ubicacionParaGuardar, setUbicacionParaGuardar] = useState(null);
   const [selectorMapaVisible, setSelectorMapaVisible] = useState(false);
-  const [experienciaEnEdicion, setExperienciaEnEdicion] = useState(null);
+  const [negocioEnEdicion, setNegocioEnEdicion] = useState(null);
   const [formularioSesionId, setFormularioSesionId] = useState(0); // Forzar reset del formulario
   const [puntoSeleccionado, setPuntoSeleccionado] = useState(null);
   const [epocaMarcadores, setEpocaMarcadores] = useState(0); // Forzar remount de ViewAnnotation
@@ -129,65 +128,77 @@ export default function MapaNicaragua() {
     })();
   }, []);
 
-  // Escucha cambios en tiempo real desde Firestore
+  // Escucha los negocios en tiempo real desde Firestore
   useEffect(() => {
-    const cancelarSuscripcion = escucharExperiencias(
-      (experiencias) => {
-        // El mapa solo muestra ubicaciones de negocios (las experiencias
-        // del Home no aparecen aquí) y descarta las que no tengan
-        // coordenadas válidas para evitar crashes.
-        const ubicaciones = experiencias.filter(esUbicacionDeMapa);
-        const conCoordenadasValidas = ubicaciones.filter(
-          (e) =>
-            typeof e.lat === "number" &&
-            typeof e.lng === "number" &&
-            !Number.isNaN(e.lat) &&
-            !Number.isNaN(e.lng),
+    const cancelarSuscripcion = escucharNegocios(
+      (negocios) => {
+        // Descarta los que no tengan coordenadas válidas para evitar crashes
+        const conCoordenadasValidas = negocios.filter(
+          (n) =>
+            typeof n.lat === "number" &&
+            typeof n.lng === "number" &&
+            !Number.isNaN(n.lat) &&
+            !Number.isNaN(n.lng),
         );
 
-        const descartados = ubicaciones.length - conCoordenadasValidas.length;
+        const descartados = negocios.length - conCoordenadasValidas.length;
         if (descartados > 0) {
           console.warn(
-            `${descartados} ubicación(es) sin lat/lng válidos — omitidas.`,
+            `${descartados} negocio(s) sin lat/lng válidos — omitidos.`,
           );
         }
 
         setPuntos(conCoordenadasValidas);
       },
       (error) =>
-        Alert.alert("No se pudieron cargar las experiencias", error.message),
+        Alert.alert("No se pudieron cargar los negocios", error.message),
     );
 
     return () => cancelarSuscripcion();
   }, []);
 
-  async function handleGuardarExperiencia(datosFormulario) {
+  // "Catarina, Masaya": primero el del perfil del actor; si falta, se calcula
+  // con las coordenadas del negocio.
+  async function calcularLugar(lat, lon) {
+    const delPerfil = [profile?.municipio, profile?.departamento]
+      .filter(Boolean)
+      .join(", ");
+    if (delPerfil) return delPerfil;
+    return (await obtenerNombreLugar(lat, lon)) ?? "";
+  }
+
+  async function handleGuardarNegocio(datosFormulario) {
     const ubicacion = ubicacionParaGuardar ?? ubicacionOrigen;
+    if (!user?.uid || !ubicacion) {
+      Alert.alert(
+        "No se pudo guardar",
+        "No se detectó la ubicación de tu negocio. Elige el punto en el mapa e inténtalo de nuevo.",
+      );
+      return;
+    }
+
     try {
-      if (experienciaEnEdicion) {
-        await actualizarExperiencia(experienciaEnEdicion.id, {
-          ...datosFormulario,
-          tipo: TIPO_UBICACION,
-          lat: ubicacion.lat,
-          lng: ubicacion.lon,
-        });
+      const lugar = await calcularLugar(ubicacion.lat, ubicacion.lon);
+      const datos = {
+        ...datosFormulario,
+        lat: ubicacion.lat,
+        lng: ubicacion.lon,
+        lugar,
+      };
+
+      if (negocioEnEdicion) {
+        await actualizarNegocio(user.uid, datos);
         Alert.alert("Listo", "Tus cambios ya están guardados.");
       } else {
-        await crearExperiencia({
-          ...datosFormulario,
-          tipo: TIPO_UBICACION,
-          lat: ubicacion.lat,
-          lng: ubicacion.lon,
-          creadoPor: user?.uid ?? null,
-        });
+        await crearNegocio(user.uid, datos);
         Alert.alert(
           "Listo",
-          "Tu ubicación ya está visible en el mapa para todos.",
+          "Tu negocio ya está visible en el mapa para todos.",
         );
       }
       setFormularioVisible(false);
       setUbicacionParaGuardar(null);
-      setExperienciaEnEdicion(null);
+      setNegocioEnEdicion(null);
       cerrarTarjeta();
     } catch (error) {
       Alert.alert("No se pudo guardar", error.message);
@@ -195,13 +206,25 @@ export default function MapaNicaragua() {
   }
 
   function abrirFormularioParaCrear() {
-    setExperienciaEnEdicion(null);
+    // Cada cuenta registra un solo negocio: si ya tiene uno, solo se edita.
+    // (el id del documento del negocio es el uid del actor)
+    const yaTieneNegocio = puntos.some(
+      (p) => !!user?.uid && p.id === user.uid
+    );
+    if (yaTieneNegocio) {
+      Alert.alert(
+        "Ya registraste tu negocio",
+        "Cada cuenta puede registrar un solo negocio. Toca tu ubicación en el mapa para editarla."
+      );
+      return;
+    }
+    setNegocioEnEdicion(null);
     setFormularioSesionId((n) => n + 1);
     setFormularioVisible(true);
   }
 
   function abrirFormularioParaEditar(punto) {
-    setExperienciaEnEdicion(punto);
+    setNegocioEnEdicion(punto);
     setUbicacionParaGuardar({ lat: punto.lat, lon: punto.lng });
     setFormularioSesionId((n) => n + 1);
     setFormularioVisible(true);
@@ -497,7 +520,7 @@ export default function MapaNicaragua() {
               ruta={ruta}
               cargandoRuta={cargandoRuta}
               puedeEditar={
-                !!user?.uid && puntoSeleccionado.creadoPor === user.uid
+                !!user?.uid && puntoSeleccionado.id === user.uid
               }
               onCerrar={cerrarTarjeta}
               onEditar={() => abrirFormularioParaEditar(puntoSeleccionado)}
@@ -515,12 +538,12 @@ export default function MapaNicaragua() {
         onCancelar={() => {
           setFormularioVisible(false);
           setUbicacionParaGuardar(null);
-          setExperienciaEnEdicion(null);
+          setNegocioEnEdicion(null);
         }}
-        onGuardar={handleGuardarExperiencia}
+        onGuardar={handleGuardarNegocio}
         onElegirEnMapa={abrirSelectorDeMapa}
-        modoEdicion={!!experienciaEnEdicion}
-        valoresIniciales={experienciaEnEdicion}
+        modoEdicion={!!negocioEnEdicion}
+        valoresIniciales={negocioEnEdicion}
         sesionId={formularioSesionId}
       />
     </>

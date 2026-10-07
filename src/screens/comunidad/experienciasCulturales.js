@@ -21,10 +21,7 @@ import * as ImageManipulator from "expo-image-manipulator";
 import FloatingNavButton from "../../components/common/FloatingNavButton";
 import SeleccionarUbicacionMapa from "../../components/Seleccionarubicacionmapa";
 
-import {
-  crearExperiencia,
-  TIPO_EXPERIENCIA,
-} from "../../services/Experienciasservice";
+import { crearExperiencia } from "../../services/Experienciasservice";
 import { useAuth } from "../../context/AuthContext";
 import { usePermisos } from "../../hooks/usePermisos";
 import { PERMISOS } from "../../constants/permissions";
@@ -203,7 +200,6 @@ export default function ExperienciasCulturales() {
       const lugar = await obtenerNombreLugar(ubicacion.lat, ubicacion.lon);
 
       await crearExperiencia({
-        tipo: TIPO_EXPERIENCIA,
         titulo: form.titulo.trim(),
         categoria: form.categoria,
         descripcion: form.descripcion.trim(),
