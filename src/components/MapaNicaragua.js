@@ -12,6 +12,7 @@ import {
   ScrollView,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import {
   Map,
   Camera,
@@ -24,7 +25,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 import FloatingNavButton from "./common/FloatingNavButton.js";
 import { mapaNicaraguaStyle } from "../styles/mapanicaragua/mapaNicaraguaStyle.js";
-import { obtenerRuta } from "../services/osrmservice.js";
+import { obtenerRuta, obtenerRutaConParadas } from "../services/osrmservice.js";
 import {
   crearNegocio,
   actualizarNegocio,
@@ -43,6 +44,7 @@ import TarjetaUbicacion from "../components/TarjetaUbicacion.js";
 import { useAuth } from "../context/AuthContext";
 import { usePermisos } from "../hooks/usePermisos";
 import { PERMISOS } from "../constants/permissions";
+import { formatearPrecio } from "../services/rutasService.js";
 
 // Estilo libre de OpenFreeMap (sin API key)
 const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
@@ -83,6 +85,8 @@ export default function MapaNicaragua() {
   const insets = useSafeAreaInsets();
   const mapRef = useRef(null);
   const cameraRef = useRef(null);
+  const navigation = useNavigation();
+  const route = useRoute();
   const { user, profile, role, sancionVigente } = useAuth();
   const { puede } = usePermisos();
 
@@ -104,9 +108,16 @@ export default function MapaNicaragua() {
     setEpocaMarcadores((e) => e + 1);
   }, []);
 
+  // Ruta creativa que se está mostrando en el mapa (viene del paso 6 de crear ruta)
+  const [rutaCreativaPendiente, setRutaCreativaPendiente] = useState(null);
+  const [rutaCreativaMapa, setRutaCreativaMapa] = useState(null);
+  const rutaCreativaActivaRef = useRef(false);
+
   const [ruta, setRuta] = useState(null);
   const [cargandoRuta, setCargandoRuta] = useState(false);
   const [navegando, setNavegando] = useState(false);
+  // Si se navega una ruta creativa: índice de la parada a la que vamos (null = navegación normal)
+  const [tramoActual, setTramoActual] = useState(null);
   const [ubicacionOrigen, setUbicacionOrigen] = useState(null);
   const [permisoConcedido, setPermisoConcedido] = useState(false);
 
@@ -155,6 +166,94 @@ export default function MapaNicaragua() {
     );
 
     return () => cancelarSuscripcion();
+  }, []);
+
+  // ---------- Ruta creativa en el mapa ----------
+  // 1) Recibe la ruta desde el paso 6 ("Ver ruta en el mapa") por parámetros.
+  const rutaCreativaParam = route.params?.rutaCreativa;
+  useEffect(() => {
+    if (!rutaCreativaParam) return;
+    setRutaCreativaPendiente(rutaCreativaParam);
+    navigation.setParams({ rutaCreativa: undefined });
+  }, [rutaCreativaParam, navigation]);
+
+  // 2) Cuando ya están cargados los negocios, busca las coordenadas de cada
+  //    parada, calcula la línea por carretera y encuadra la cámara.
+  useEffect(() => {
+    if (!rutaCreativaPendiente || puntos.length === 0) return;
+
+    const pendiente = rutaCreativaPendiente;
+    setRutaCreativaPendiente(null);
+
+    const paradas = pendiente.paradas
+      .map((parada, indice) => {
+        const negocio = puntos.find((p) => p.id === parada.ubicacionId);
+        return negocio
+          ? { ...parada, lat: negocio.lat, lng: negocio.lng, orden: indice + 1 }
+          : null;
+      })
+      .filter(Boolean)
+      .map((parada, indice) => ({ ...parada, orden: indice + 1 }));
+
+    if (paradas.length < 2) {
+      Alert.alert(
+        "No se pudo mostrar la ruta",
+        "No se encontraron en el mapa las ubicaciones de las paradas.",
+      );
+      return;
+    }
+
+    (async () => {
+      let coordenadas;
+      let duracionMin = null;
+      let distanciaKm = null;
+      let aproximada = false;
+
+      try {
+        const resultado = await obtenerRutaConParadas(
+          paradas.map((p) => ({ lat: p.lat, lon: p.lng })),
+        );
+        coordenadas = resultado.coordenadas;
+        duracionMin = resultado.duracionMin;
+        distanciaKm = resultado.distanciaKm;
+      } catch (error) {
+        // Sin servicio de rutas: se unen las paradas con líneas rectas
+        console.warn("No se pudo calcular la ruta por carretera:", error);
+        coordenadas = paradas.map((p) => [p.lat, p.lng]);
+        aproximada = true;
+      }
+
+      rutaCreativaActivaRef.current = true;
+      setPuntoSeleccionado(null);
+      setRuta(null);
+      setRutaCreativaMapa({
+        id: pendiente.id,
+        nombre: pendiente.nombre,
+        total: pendiente.total,
+        paradas,
+        coordenadas,
+        duracionMin,
+        distanciaKm,
+        aproximada,
+      });
+
+      // Encuadra todas las paradas (espera un momento a que el mapa esté listo)
+      setTimeout(() => {
+        const lats = coordenadas.map((c) => c[0]);
+        const lons = coordenadas.map((c) => c[1]);
+        cameraRef.current?.fitBounds(
+          [Math.max(...lons), Math.max(...lats)],
+          [Math.min(...lons), Math.min(...lats)],
+          90,
+          1200,
+        );
+      }, 500);
+    })();
+  }, [rutaCreativaPendiente, puntos]);
+
+  const cerrarRutaCreativa = useCallback(() => {
+    rutaCreativaActivaRef.current = false;
+    setRutaCreativaMapa(null);
   }, []);
 
   // "Catarina, Masaya": primero el del perfil del actor; si falta, se calcula
@@ -270,7 +369,8 @@ export default function MapaNicaragua() {
 
   function moverCamaraA(lat, lon) {
     setUbicacionOrigen({ lat, lon });
-    if (cameraRef.current) {
+    // Si hay una ruta creativa en pantalla, la cámara se queda encuadrada en ella.
+    if (cameraRef.current && !rutaCreativaActivaRef.current) {
       cameraRef.current.setStop({
         center: [lon, lat],
         zoom: 15,
@@ -343,6 +443,82 @@ export default function MapaNicaragua() {
     [ubicacionOrigen],
   );
 
+  // ---------- Iniciar la ruta creativa (navegación parada por parada) ----------
+  async function iniciarTramo(indice, origen) {
+    const parada = rutaCreativaMapa?.paradas[indice];
+    if (!parada) return;
+
+    setCargandoRuta(true);
+    try {
+      const resultado = await obtenerRuta(origen, {
+        lat: parada.lat,
+        lon: parada.lng,
+      });
+      setTramoActual(indice);
+      setRuta({
+        ...resultado,
+        destino: {
+          id: parada.ubicacionId,
+          titulo: parada.titulo,
+          categoria: parada.categoria,
+          lat: parada.lat,
+          lng: parada.lng,
+        },
+      });
+      setNavegando(true);
+    } catch (error) {
+      Alert.alert("No se pudo calcular la ruta", error.message);
+    } finally {
+      setCargandoRuta(false);
+    }
+  }
+
+  function iniciarRutaCreativa() {
+    if (!ubicacionOrigen) {
+      Alert.alert(
+        "Ubicación no disponible todavía",
+        "Espera un momento a que se detecte tu posición antes de iniciar la ruta.",
+      );
+      return;
+    }
+    iniciarTramo(0, ubicacionOrigen);
+  }
+
+  // Al llegar a una parada: sigue a la siguiente o termina la ruta.
+  function manejarLlegadaTramo() {
+    if (tramoActual == null || !rutaCreativaMapa) {
+      setNavegando(false);
+      setRuta(null);
+      return;
+    }
+
+    const siguiente = tramoActual + 1;
+    const paradaActual = rutaCreativaMapa.paradas[tramoActual];
+
+    if (siguiente < rutaCreativaMapa.paradas.length) {
+      iniciarTramo(siguiente, { lat: paradaActual.lat, lon: paradaActual.lng });
+    } else {
+      setNavegando(false);
+      setRuta(null);
+      setTramoActual(null);
+      Alert.alert(
+        "¡Ruta completada!",
+        `Recorriste las ${rutaCreativaMapa.paradas.length} paradas de "${rutaCreativaMapa.nombre}".`,
+      );
+    }
+  }
+
+  function salirDeLaNavegacion() {
+    setNavegando(false);
+    setRuta(null);
+    setTramoActual(null);
+  }
+
+  const hayMasParadas =
+    tramoActual != null &&
+    !!rutaCreativaMapa &&
+    tramoActual + 1 < rutaCreativaMapa.paradas.length;
+
   // Prepara GeoJSON para dibujar la línea de ruta
   const rutaGeoJSON = ruta
     ? {
@@ -354,15 +530,49 @@ export default function MapaNicaragua() {
       }
     : null;
 
+  const rutaCreativaGeoJSON = rutaCreativaMapa
+    ? {
+        type: "Feature",
+        geometry: {
+          type: "LineString",
+          coordinates: rutaCreativaMapa.coordenadas.map(([lat, lon]) => [
+            lon,
+            lat,
+          ]),
+        },
+      }
+    : null;
+
+  // Los negocios que son parada de la ruta se dibujan numerados, no como punto normal.
+  const idsParadasRuta = new Set(
+    rutaCreativaMapa ? rutaCreativaMapa.paradas.map((p) => p.ubicacionId) : [],
+  );
+
   return (
     <>
       {navegando && ruta ? (
         <NavegacionRuta
+          key={tramoActual != null ? `tramo-${tramoActual}` : "ruta-simple"}
           ruta={ruta}
-          onFinalizar={() => {
-            setNavegando(false);
-            setRuta(null);
-          }}
+          tituloLlegada={
+            tramoActual != null
+              ? `¡Llegaste a ${ruta.destino.titulo}!`
+              : undefined
+          }
+          textoBotonLlegada={
+            tramoActual != null
+              ? hayMasParadas
+                ? "Ir a la siguiente parada"
+                : "Finalizar ruta"
+              : undefined
+          }
+          onFinalizar={manejarLlegadaTramo}
+          onSalir={salirDeLaNavegacion}
+          paradas={tramoActual != null ? rutaCreativaMapa?.paradas : null}
+          tramoActual={tramoActual}
+          rutaCompleta={
+            tramoActual != null ? rutaCreativaMapa?.coordenadas : null
+          }
         />
       ) : selectorMapaVisible ? (
         <SeleccionarUbicacionMapa
@@ -400,6 +610,59 @@ export default function MapaNicaragua() {
               </GeoJSONSource>
             )}
 
+            {/* Ruta creativa: línea naranja y paradas numeradas */}
+            {rutaCreativaGeoJSON && (
+              <GeoJSONSource id="rutaCreativaSource" data={rutaCreativaGeoJSON}>
+                <Layer
+                  id="rutaCreativaLayer"
+                  type="line"
+                  layout={{ "line-cap": "round", "line-join": "round" }}
+                  paint={{
+                    "line-color": "#F29100",
+                    "line-width": 5,
+                    "line-opacity": 0.95,
+                  }}
+                />
+              </GeoJSONSource>
+            )}
+
+            {rutaCreativaMapa &&
+              rutaCreativaMapa.paradas.map((parada) => (
+                <ViewAnnotation
+                  key={`parada-${parada.id}-${epocaMarcadores}`}
+                  id={`parada-${parada.id}`}
+                  lngLat={[parada.lng, parada.lat]}
+                  onSelect={() => {
+                    const negocio = puntos.find((p) => p.id === parada.ubicacionId);
+                    if (negocio) setPuntoSeleccionado(negocio);
+                  }}
+                >
+                  <View style={mapaNicaraguaStyle.paradaRutaContenedor}>
+                    <View
+                      style={[
+                        mapaNicaraguaStyle.paradaRutaEtiqueta,
+                        { height: 20, justifyContent: "center" },
+                      ]}
+                    >
+                      <Text
+                        style={mapaNicaraguaStyle.paradaRutaTexto}
+                        numberOfLines={1}
+                      >
+                        {parada.titulo}
+                      </Text>
+                    </View>
+                    <View style={mapaNicaraguaStyle.paradaRutaNumero}>
+                      <Text style={mapaNicaraguaStyle.paradaRutaNumeroTexto}>
+                        {parada.orden}
+                      </Text>
+                    </View>
+                    {/* Espaciador (alto de la etiqueta + margen): el centro del
+                        círculo queda exactamente sobre la coordenada. */}
+                    <View style={{ height: 23 }} />
+                  </View>
+                </ViewAnnotation>
+              ))}
+
             {/* Marcador de ubicación actual */}
             {ubicacionOrigen && (
               <ViewAnnotation
@@ -411,7 +674,9 @@ export default function MapaNicaragua() {
             )}
 
             {/* Marcadores de puntos de interés */}
-            {puntos.map((punto) => (
+            {puntos
+              .filter((punto) => !idsParadasRuta.has(punto.id))
+              .map((punto) => (
               <ViewAnnotation
                 key={`${punto.id}-${epocaMarcadores}`}
                 id={punto.id}
@@ -489,6 +754,64 @@ export default function MapaNicaragua() {
           </Map>
 
           <FloatingNavButton />
+
+          {rutaCreativaMapa && (
+            <View
+              style={[mapaNicaraguaStyle.bannerRuta, { top: insets.top + 100 }]}
+            >
+              <View style={mapaNicaraguaStyle.bannerRutaTextos}>
+                <Text style={mapaNicaraguaStyle.bannerRutaTitulo} numberOfLines={1}>
+                  {rutaCreativaMapa.nombre}
+                </Text>
+                <Text style={mapaNicaraguaStyle.bannerRutaDetalle} numberOfLines={1}>
+                  {rutaCreativaMapa.paradas.length} paradas
+                  {rutaCreativaMapa.duracionMin != null
+                    ? ` · ${rutaCreativaMapa.distanciaKm} km · ${rutaCreativaMapa.duracionMin} min`
+                    : ""}
+                  {rutaCreativaMapa.total != null
+                    ? ` · ${formatearPrecio(rutaCreativaMapa.total)}`
+                    : ""}
+                </Text>
+                {rutaCreativaMapa.aproximada && (
+                  <Text style={mapaNicaraguaStyle.bannerRutaAviso}>
+                    Ruta aproximada: no se pudo calcular el camino por carretera.
+                  </Text>
+                )}
+              </View>
+              <TouchableOpacity
+                style={mapaNicaraguaStyle.bannerRutaCerrar}
+                onPress={cerrarRutaCreativa}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                accessibilityLabel="Cerrar ruta"
+              >
+                <Ionicons name="close" size={16} color="#4A4A4A" />
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {rutaCreativaMapa && !puntoSeleccionado && (
+            <TouchableOpacity
+              style={[
+                mapaNicaraguaStyle.botonIniciarRutaCreativa,
+                { bottom: 140 + insets.bottom + 16 },
+              ]}
+              onPress={iniciarRutaCreativa}
+              disabled={cargandoRuta}
+              activeOpacity={0.85}
+            >
+              {cargandoRuta ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <>
+                  <Ionicons name="navigate" size={20} color="#FFFFFF" />
+                  <Text style={mapaNicaraguaStyle.botonIniciarRutaCreativaTexto}>
+                    Iniciar ruta
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+          )}
+
           <BarraBusquedaMapa
             puntos={puntos}
             onSeleccionarPunto={handleSeleccionarPuntoBuscado}
