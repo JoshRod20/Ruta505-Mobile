@@ -1,3 +1,4 @@
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 import { StyleSheet } from "react-native";
 
 export const VERDE = "#0E5A34";
@@ -28,8 +29,9 @@ export const homeStyle = StyleSheet.create({
     marginRight: 8,
   },
   logo: {
-    width: 62,
-    height: 40,
+    width: "93%",
+    height: 30,
+    right: 80,
   },
   botonCampana: {
     width: 36,

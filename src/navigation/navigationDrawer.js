@@ -13,6 +13,7 @@ import ExperienciasCulturales from "../screens/comunidad/experienciasCulturales"
 import EditCulturalProfile from "../screens/actorCultural/editCulturalProfile";
 import Resenas from "../screens/comunidad/resenas";
 import CrearRutaCreativa from "../screens/rutas/crearRutaCreativa";
+import MisRutasCreativas from "../screens/rutas/misRutasCreativas";
 import InvitacionesRuta from "../screens/rutas/invitacionesRuta";
 import Estadisticas from "../screens/actorCultural/estadisticas";
 import { useAuth } from "../context/AuthContext";
@@ -103,6 +104,12 @@ export default function NavigationDrawer() {
       <Drawer.Screen
         name="CrearRutaDrawer"
         component={CrearRutaCreativa}
+        options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
+      />
+      {/* Mis Rutas Creativas: rutas activas del actor (hasta que las cancela). Pantalla independiente, sin barra de tabs. */}
+      <Drawer.Screen
+        name="MisRutasCreativasDrawer"
+        component={MisRutasCreativas}
         options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
       />
       <Drawer.Screen

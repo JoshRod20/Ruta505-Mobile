@@ -73,18 +73,8 @@ export default function Home() {
     <View>
       <View style={homeStyle.encabezado}>
         <View style={homeStyle.encabezadoIzquierda}>
-          {/* Menú lateral (Mi cuenta, Acerca de, Cerrar sesión) */}
-          <TouchableOpacity
-            style={homeStyle.botonMenu}
-            onPress={() => navigation.openDrawer?.()}
-            activeOpacity={0.7}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            accessibilityLabel="Abrir menú"
-          >
-            <Ionicons name="menu-outline" size={30} color={VERDE} />
-          </TouchableOpacity>
           <Image
-            source={require("../assets/images/LogoRuta505.png")}
+            source={require("../assets/images/Logo Horizontal.png")}
             style={homeStyle.logo}
             resizeMode="contain"
           />
