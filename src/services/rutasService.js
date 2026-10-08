@@ -315,13 +315,28 @@ export async function publicarRuta({ rutaId, paradas }) {
 // Cancela una ruta (en cualquier estado). La ruta queda como "cancelada" y se
 // borran sus paradas: las invitaciones pendientes dejan de aparecerles a los
 // aliados y la ruta desaparece de las listas públicas.
+// Se hace en dos pasos para saber exactamente cuál falla (error.paso):
+// 1) "ruta": marca la ruta como cancelada; 2) "paradas": retira sus paradas.
 export async function cancelarRuta({ rutaId, paradas = [] }) {
-  const batch = writeBatch(db);
-  batch.update(doc(db, RUTAS, rutaId), {
-    estado: ESTADO_RUTA.CANCELADA,
-    canceladaAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
-  paradas.forEach((p) => batch.delete(doc(db, PARADAS, p.id)));
-  return batch.commit();
+  try {
+    await updateDoc(doc(db, RUTAS, rutaId), {
+      estado: ESTADO_RUTA.CANCELADA,
+      canceladaAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+  } catch (error) {
+    error.paso = "ruta";
+    throw error;
+  }
+
+  if (paradas.length === 0) return;
+
+  try {
+    const batch = writeBatch(db);
+    paradas.forEach((p) => batch.delete(doc(db, PARADAS, p.id)));
+    await batch.commit();
+  } catch (error) {
+    error.paso = "paradas";
+    throw error;
+  }
 }
