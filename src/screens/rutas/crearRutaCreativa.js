@@ -131,7 +131,7 @@ function TarjetaParada({ parada, mostrarPrecio = false }) {
 }
 
 // Asistente de la Ruta Creativa: pasos 2 a 6 (el paso 1 es la pestaña "+").
-export default function CrearRutaCreativa() {
+function AsistenteRutaCreativa() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const { params } = useRoute();
@@ -226,11 +226,32 @@ export default function CrearRutaCreativa() {
     if (error) setError("");
   };
 
+  const salirDelAsistente = () =>
+    navigation.canGoBack()
+      ? navigation.goBack()
+      : navigation.navigate("MainDrawer");
+
+  // Una vez enviada la primera invitación, los datos del paso 2 (nombre de la
+  // ruta, servicio, precio, dirección, horario y fotos) quedan fijos: los
+  // aliados aceptan según esas condiciones y no deben cambiar a sus espaldas.
+  // Desde ese momento solo se puede invitar a más actores (pasos 3 y 4).
+  const tieneInvitaciones = paradas.some(
+    (p) => p.estado !== ESTADO_PARADA.CREADOR
+  );
+
   const volver = () => {
     if (paso === 2) {
-      navigation.canGoBack()
-        ? navigation.goBack()
-        : navigation.navigate("MainDrawer");
+      salirDelAsistente();
+    } else if (paso === 3) {
+      if (!tieneInvitaciones) {
+        setPaso(2); // aún se pueden editar los datos
+      } else if (ruta?.estado === ESTADO_RUTA.EN_ESPERA) {
+        setPaso(4); // venías de "Invitar a más actores"
+      } else {
+        salirDelAsistente();
+      }
+    } else if (paso === 4) {
+      salirDelAsistente();
     } else if (paso === 6) {
       navigation.navigate("MainDrawer", { screen: "Inicio" });
     } else {
@@ -366,6 +387,32 @@ export default function CrearRutaCreativa() {
     } finally {
       setGuardando(false);
     }
+  };
+
+  // ---------- Paso 6: ver la ruta publicada en el mapa ----------
+  const verRutaEnElMapa = () => {
+    const paradasRuta = paradas.filter(
+      (p) =>
+        p.estado === ESTADO_PARADA.CREADOR ||
+        p.estado === ESTADO_PARADA.ACEPTADA
+    );
+    navigation.navigate("MainDrawer", {
+      screen: "Mapa",
+      params: {
+        rutaCreativa: {
+          id: rutaId,
+          nombre: ruta?.nombre ?? form.nombre,
+          total: calcularTotal(paradas),
+          paradas: paradasRuta.map((p) => ({
+            id: p.id,
+            ubicacionId: p.ubicacionId,
+            titulo: p.titulo,
+            categoria: p.categoria,
+            precio: p.precio,
+          })),
+        },
+      },
+    });
   };
 
   const titulos = TITULOS[paso];
@@ -663,11 +710,11 @@ export default function CrearRutaCreativa() {
         <Text style={s.totalValor}>{formatearPrecio(calcularTotal(paradas))}</Text>
       </View>
       <TouchableOpacity
-        style={s.botonVerde}
-        onPress={() => navigation.navigate("MainDrawer", { screen: "Inicio" })}
+        style={s.botonNaranja}
+        onPress={verRutaEnElMapa}
         activeOpacity={0.85}
       >
-        <Text style={s.botonVerdeTexto}>Listo</Text>
+        <Text style={s.botonNaranjaTexto}>Ver ruta en el mapa</Text>
       </TouchableOpacity>
     </>
   );
@@ -714,4 +761,14 @@ export default function CrearRutaCreativa() {
       </KeyboardAvoidingView>
     </View>
   );
+}
+
+// El Drawer mantiene esta pantalla montada aunque salgas de ella, así que el
+// estado del asistente (paso, ruta y formulario) sobreviviría a la siguiente
+// visita y "Ver mis rutas activas" o "Nueva ruta" abrirían la ruta anterior.
+// Cada navegación trae una "clave" nueva: al cambiar, el asistente se vuelve a
+// montar desde cero con los parámetros recibidos.
+export default function CrearRutaCreativa() {
+  const { params } = useRoute();
+  return <AsistenteRutaCreativa key={params?.clave ?? "sin-clave"} />;
 }

@@ -71,22 +71,22 @@ export default function CrearRutaInicio() {
     );
   }
 
-  const rutaActiva = rutas.find((r) => r.estado !== ESTADO_RUTA.PUBLICADA);
+  // Una ruta sigue activa hasta que su creador la cancela.
+  const rutasVigentes = rutas.filter((r) => r.estado !== ESTADO_RUTA.CANCELADA);
 
-  const nuevaRuta = () => navigation.navigate("CrearRutaDrawer", { paso: 2 });
+  // "clave" distinta en cada visita: reinicia el asistente (ver CrearRutaCreativa).
+  const nuevaRuta = () =>
+    navigation.navigate("CrearRutaDrawer", { paso: 2, clave: Date.now() });
 
   const verRutasActivas = () => {
-    if (!rutaActiva) {
+    if (rutasVigentes.length === 0) {
       Alert.alert(
         "Sin rutas activas",
-        "No tienes rutas en proceso. Crea una nueva para empezar."
+        "No tienes rutas activas. Crea una nueva para empezar."
       );
       return;
     }
-    navigation.navigate("CrearRutaDrawer", {
-      rutaId: rutaActiva.id,
-      paso: rutaActiva.estado === ESTADO_RUTA.BORRADOR ? 3 : 4,
-    });
+    navigation.navigate("MisRutasCreativasDrawer");
   };
 
   const imagen = negocio?.imagenes?.[0] ?? negocio?.imagenUrls?.[0];

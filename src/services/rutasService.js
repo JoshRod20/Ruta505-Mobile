@@ -17,7 +17,10 @@ import { db } from "./firebase";
 // RUTAS CREATIVAS
 //
 // rutas_creativas/{rutaId}
-//   creadoPor, creadoPorNombre, nombre, estado, createdAt, updatedAt, publicadaAt
+//   creadoPor, creadoPorNombre, nombre, estado, createdAt, updatedAt, publicadaAt,
+//   canceladaAt
+//   estado: "borrador" | "en_espera" | "publicada" | "cancelada"
+//   Una ruta sigue activa hasta que su creador la cancela.
 //
 // paradas_ruta/{rutaId}_{actorId}   (una por actor que participa en la ruta)
 //   rutaId, rutaNombre, creadorId, creadorNombre,
@@ -36,6 +39,7 @@ export const ESTADO_RUTA = {
   BORRADOR: "borrador",
   EN_ESPERA: "en_espera",
   PUBLICADA: "publicada",
+  CANCELADA: "cancelada",
 };
 
 export const ESTADO_PARADA = {
@@ -95,6 +99,31 @@ export function escucharMisRutas(uid, callback, onError) {
       ),
     (error) => {
       console.warn("Error escuchando rutas:", error);
+      if (onError) onError(error);
+    }
+  );
+}
+
+// Todas las paradas de las rutas de un creador (para la lista "Mis rutas").
+export function escucharParadasDeCreador(creadorId, callback, onError) {
+  const q = query(
+    collection(db, PARADAS),
+    where("creadorId", "==", creadorId)
+  );
+  return onSnapshot(
+    q,
+    (snapshot) =>
+      callback(
+        snapshot.docs
+          .map((d) => ({ id: d.id, ...d.data() }))
+          .sort((a, b) => {
+            if (a.estado === ESTADO_PARADA.CREADOR) return -1;
+            if (b.estado === ESTADO_PARADA.CREADOR) return 1;
+            return milisegundos(a) - milisegundos(b);
+          })
+      ),
+    (error) => {
+      console.warn("Error escuchando paradas del creador:", error);
       if (onError) onError(error);
     }
   );
@@ -280,5 +309,19 @@ export async function publicarRuta({ rutaId, paradas }) {
       batch.delete(ref);
     }
   });
+  return batch.commit();
+}
+
+// Cancela una ruta (en cualquier estado). La ruta queda como "cancelada" y se
+// borran sus paradas: las invitaciones pendientes dejan de aparecerles a los
+// aliados y la ruta desaparece de las listas públicas.
+export async function cancelarRuta({ rutaId, paradas = [] }) {
+  const batch = writeBatch(db);
+  batch.update(doc(db, RUTAS, rutaId), {
+    estado: ESTADO_RUTA.CANCELADA,
+    canceladaAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  paradas.forEach((p) => batch.delete(doc(db, PARADAS, p.id)));
   return batch.commit();
 }

@@ -38,6 +38,36 @@ export async function obtenerRuta(origen, destino) {
   };
 }
 
+// Ruta en carro que pasa por varias paradas, en el orden recibido.
+// puntos: [{ lat, lon }, ...] (mínimo 2). Devuelve la línea completa, la
+// duración y la distancia totales.
+export async function obtenerRutaConParadas(puntos) {
+  if (!Array.isArray(puntos) || puntos.length < 2) {
+    throw new Error("Se necesitan al menos 2 paradas para trazar la ruta.");
+  }
+
+  const coordenadas = puntos.map((p) => `${p.lon},${p.lat}`).join(";");
+  const url = `${OSRM_BASE_URL}/${coordenadas}?overview=full&geometries=geojson&steps=false&annotations=false`;
+
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`Error al pedir ruta a OSRM: ${res.status}`);
+  }
+
+  const data = await res.json();
+  if (data.code !== "Ok" || !data.routes?.length) {
+    throw new Error("OSRM no encontró una ruta entre esas paradas.");
+  }
+
+  const ruta = data.routes[0];
+  return {
+    // [lon, lat][] -> [lat, lon][] (igual que obtenerRuta)
+    coordenadas: ruta.geometry.coordinates.map(([lon, lat]) => [lat, lon]),
+    duracionMin: Math.round(ruta.duration / 60),
+    distanciaKm: (ruta.distance / 1000).toFixed(1),
+  };
+}
+
 export function describirManiobra(tipoManiobra, modificador) {
   const modificadores = {
     left: "izquierda",
