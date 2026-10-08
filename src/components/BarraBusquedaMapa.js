@@ -123,7 +123,7 @@ export default function BarraBusquedaMapa({
         </TouchableWithoutFeedback>
       )}
 
-      <View style={[s.contenedor, { top: insets.top + 70 }]}>
+      <View style={[s.contenedor, { top: insets.top + 40 }]}>
         <View style={s.barra}>
           <Ionicons name="search" size={18} color={VERDE} />
           <TextInput
