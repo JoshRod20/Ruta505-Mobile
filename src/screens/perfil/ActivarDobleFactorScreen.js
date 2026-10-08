@@ -3,12 +3,17 @@ import { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 
 import QRCode from "react-native-qrcode-svg";
 
@@ -27,10 +32,10 @@ import {
 import { enviarCorreoVerificacion } from "../../services/emailVerification";
 import { mapFirebaseError } from "../../utils/firebaseErrors";
 
-import FloatingNavButton from "../../components/common/FloatingNavButton";
 import ActivarDobleFactorStyle from "../../styles/perfilusuario/ActivarDobleFactorStyle";
 
 const ActivarDobleFactorScreen = ({ navigation }) => {
+  const insets = useSafeAreaInsets();
   const [activado, setActivado] = useState(() =>
     totpYaActivado(auth.currentUser)
   );
@@ -195,221 +200,299 @@ const ActivarDobleFactorScreen = ({ navigation }) => {
   // RENDER
   // ==================================================
 
+  const volver = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      navigation.navigate("MainDrawer");
+    }
+  };
+
+  const Cargando = () => <ActivityIndicator color="#ffffff" />;
+
   return (
-    <ScrollView contentContainerStyle={ActivarDobleFactorStyle.contenedor}>
-      <FloatingNavButton
-        icon="arrow-back-outline"
-        onPress={() => navigation.goBack()}
-        accessibilityLabel="Volver"
-      />
+    <View style={[ActivarDobleFactorStyle.raiz, { paddingTop: insets.top + 8 }]}>
+      <View style={ActivarDobleFactorStyle.header}>
+        <TouchableOpacity
+          style={ActivarDobleFactorStyle.botonAtras}
+          onPress={volver}
+          accessibilityLabel="Volver"
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Ionicons name="arrow-back" size={24} color="#111111" />
+        </TouchableOpacity>
+        <Text style={ActivarDobleFactorStyle.tituloPantalla}>
+          Verificación en dos pasos
+        </Text>
+        <View style={ActivarDobleFactorStyle.botonAtras} />
+      </View>
 
-      <Text style={ActivarDobleFactorStyle.titulo}>
-        Verificación en dos pasos
-      </Text>
-
-      {activado ? (
-        <>
-          <Text style={ActivarDobleFactorStyle.subtitulo}>
-            Ya está activada en tu cuenta con una app autenticadora. Al
-            iniciar sesión te pediremos también el código de 6 dígitos.
-          </Text>
-
-          {error ? (
-            <Text style={ActivarDobleFactorStyle.error}>{error}</Text>
-          ) : null}
-
-          <TouchableOpacity
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <ScrollView
+          contentContainerStyle={[
+            ActivarDobleFactorStyle.contenedor,
+            { paddingBottom: insets.bottom + 32 },
+          ]}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={ActivarDobleFactorStyle.iconoCirculo}>
+            <Ionicons
+              name={activado ? "shield-checkmark" : "shield-outline"}
+              size={44}
+              color="#065F33"
+            />
+          </View>
+          <View
             style={[
-              ActivarDobleFactorStyle.boton,
-              ActivarDobleFactorStyle.botonPeligro,
+              ActivarDobleFactorStyle.estadoChip,
+              activado
+                ? ActivarDobleFactorStyle.estadoChipActivo
+                : ActivarDobleFactorStyle.estadoChipInactivo,
             ]}
-            onPress={handleDesactivar}
-            disabled={cargando}
           >
-            {cargando ? (
-              <ActivityIndicator color="#ffffff" />
-            ) : (
-              <Text style={ActivarDobleFactorStyle.botonTexto}>
-                Desactivar
-              </Text>
-            )}
-          </TouchableOpacity>
-        </>
-      ) : paso === "inicio" ? (
-        <>
-          <Text style={ActivarDobleFactorStyle.subtitulo}>
-            Agrega una capa extra de seguridad: además de tu contraseña, te
-            pediremos un código de 6 dígitos generado por una app
-            autenticadora (Google Authenticator, Authy, Microsoft
-            Authenticator, etc.).
-          </Text>
-
-          {error ? (
-            <Text style={ActivarDobleFactorStyle.error}>{error}</Text>
-          ) : null}
-
-          <TouchableOpacity
-            style={ActivarDobleFactorStyle.boton}
-            onPress={intentarEnrolar}
-            disabled={cargando}
-          >
-            {cargando ? (
-              <ActivityIndicator color="#ffffff" />
-            ) : (
-              <Text style={ActivarDobleFactorStyle.botonTexto}>Activar</Text>
-            )}
-          </TouchableOpacity>
-        </>
-      ) : paso === "correo_no_verificado" ? (
-        <>
-          <Text style={ActivarDobleFactorStyle.subtitulo}>
-            Antes de activar esto necesitas verificar tu correo. Te
-            enviamos (o puedes reenviar) un link de confirmación a tu
-            bandeja de entrada.
-          </Text>
-
-          {correoReenviado ? (
-            <Text style={ActivarDobleFactorStyle.subtitulo}>
-              Listo, te reenviamos el correo. Revisa tu bandeja (y spam).
+            <Text
+              style={[
+                ActivarDobleFactorStyle.estadoChipTexto,
+                { color: activado ? "#ffffff" : "#444444" },
+              ]}
+            >
+              {activado ? "Activada" : "Desactivada"}
             </Text>
-          ) : null}
-
-          {error ? (
-            <Text style={ActivarDobleFactorStyle.error}>{error}</Text>
-          ) : null}
-
-          <TouchableOpacity
-            style={ActivarDobleFactorStyle.boton}
-            onPress={handleReenviarCorreo}
-            disabled={cargando}
-          >
-            {cargando ? (
-              <ActivityIndicator color="#ffffff" />
-            ) : (
-              <Text style={ActivarDobleFactorStyle.botonTexto}>
-                Reenviar correo de verificación
-              </Text>
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={ActivarDobleFactorStyle.boton}
-            onPress={intentarEnrolar}
-            disabled={cargando}
-          >
-            {cargando ? (
-              <ActivityIndicator color="#ffffff" />
-            ) : (
-              <Text style={ActivarDobleFactorStyle.botonTexto}>
-                Ya verifiqué mi correo
-              </Text>
-            )}
-          </TouchableOpacity>
-        </>
-      ) : paso === "reautenticar" ? (
-        <>
-          <Text style={ActivarDobleFactorStyle.subtitulo}>
-            Por seguridad, confirma tu contraseña para continuar (esto no
-            cierra tu sesión, solo confirma que sigues siendo tú).
-          </Text>
-
-          <TextInput
-            style={ActivarDobleFactorStyle.input}
-            placeholder="Contraseña"
-            placeholderTextColor="#a8a8a8"
-            secureTextEntry
-            value={passwordReauth}
-            onChangeText={(texto) => {
-              setPasswordReauth(texto);
-              if (error) setError("");
-            }}
-          />
-
-          {error ? (
-            <Text style={ActivarDobleFactorStyle.error}>{error}</Text>
-          ) : null}
-
-          <TouchableOpacity
-            style={ActivarDobleFactorStyle.boton}
-            onPress={handleConfirmarReautenticacion}
-            disabled={cargando}
-          >
-            {cargando ? (
-              <ActivityIndicator color="#ffffff" />
-            ) : (
-              <Text style={ActivarDobleFactorStyle.botonTexto}>
-                Confirmar contraseña
-              </Text>
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={ActivarDobleFactorStyle.enlaceWrap}
-            onPress={reiniciarFlujo}
-            disabled={cargando}
-          >
-            <Text style={ActivarDobleFactorStyle.enlace}>Cancelar</Text>
-          </TouchableOpacity>
-        </>
-      ) : (
-        <>
-          <Text style={ActivarDobleFactorStyle.subtitulo}>
-            1. Escanea este código con tu app autenticadora.
-          </Text>
-
-          <View style={ActivarDobleFactorStyle.qrWrap}>
-            <QRCode value={secretInfo.qrCodeUrl} size={200} />
           </View>
 
-          <Text style={ActivarDobleFactorStyle.claveManual}>
-            ¿No puedes escanear? Ingresa esta clave manualmente:{"\n"}
-            <Text style={ActivarDobleFactorStyle.claveManualTexto}>
-              {secretInfo.secretKey}
-            </Text>
-          </Text>
+          <View style={ActivarDobleFactorStyle.tarjeta}>
+            {activado ? (
+              <>
+                <Text style={ActivarDobleFactorStyle.titulo}>
+                  Tu cuenta está protegida
+                </Text>
+                <Text style={ActivarDobleFactorStyle.subtitulo}>
+                  Ya está activada en tu cuenta con una app autenticadora. Al
+                  iniciar sesión te pediremos también el código de 6 dígitos.
+                </Text>
 
-          <Text style={ActivarDobleFactorStyle.subtitulo}>
-            2. Escribe el código de 6 dígitos que te muestra la app.
-          </Text>
+                {error ? (
+                  <Text style={ActivarDobleFactorStyle.error}>{error}</Text>
+                ) : null}
 
-          <TextInput
-            style={ActivarDobleFactorStyle.input}
-            placeholder="000000"
-            placeholderTextColor="#a8a8a8"
-            keyboardType="number-pad"
-            maxLength={6}
-            value={codigo}
-            onChangeText={handleChangeCodigo}
-          />
+                <TouchableOpacity
+                  style={[
+                    ActivarDobleFactorStyle.boton,
+                    ActivarDobleFactorStyle.botonPeligro,
+                  ]}
+                  onPress={handleDesactivar}
+                  disabled={cargando}
+                >
+                  {cargando ? (
+                    <Cargando />
+                  ) : (
+                    <Text style={ActivarDobleFactorStyle.botonTexto}>
+                      Desactivar
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </>
+            ) : paso === "inicio" ? (
+              <>
+                <Text style={ActivarDobleFactorStyle.titulo}>
+                  Una capa extra de seguridad
+                </Text>
+                <Text style={ActivarDobleFactorStyle.subtitulo}>
+                  Además de tu contraseña, te pediremos un código de 6 dígitos
+                  generado por una app autenticadora (Google Authenticator,
+                  Authy, Microsoft Authenticator, etc.).
+                </Text>
 
-          {error ? (
-            <Text style={ActivarDobleFactorStyle.error}>{error}</Text>
-          ) : null}
+                {error ? (
+                  <Text style={ActivarDobleFactorStyle.error}>{error}</Text>
+                ) : null}
 
-          <TouchableOpacity
-            style={ActivarDobleFactorStyle.boton}
-            onPress={handleConfirmar}
-            disabled={cargando}
-          >
-            {cargando ? (
-              <ActivityIndicator color="#ffffff" />
+                <TouchableOpacity
+                  style={ActivarDobleFactorStyle.boton}
+                  onPress={intentarEnrolar}
+                  disabled={cargando}
+                >
+                  {cargando ? (
+                    <Cargando />
+                  ) : (
+                    <Text style={ActivarDobleFactorStyle.botonTexto}>
+                      Activar
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </>
+            ) : paso === "correo_no_verificado" ? (
+              <>
+                <Text style={ActivarDobleFactorStyle.titulo}>
+                  Verifica tu correo
+                </Text>
+                <Text style={ActivarDobleFactorStyle.subtitulo}>
+                  Antes de activar esto necesitas verificar tu correo. Te
+                  enviamos (o puedes reenviar) un link de confirmación a tu
+                  bandeja de entrada.
+                </Text>
+
+                {correoReenviado ? (
+                  <Text style={ActivarDobleFactorStyle.aviso}>
+                    Listo, te reenviamos el correo. Revisa tu bandeja (y spam).
+                  </Text>
+                ) : null}
+
+                {error ? (
+                  <Text style={ActivarDobleFactorStyle.error}>{error}</Text>
+                ) : null}
+
+                <TouchableOpacity
+                  style={ActivarDobleFactorStyle.boton}
+                  onPress={handleReenviarCorreo}
+                  disabled={cargando}
+                >
+                  {cargando ? (
+                    <Cargando />
+                  ) : (
+                    <Text style={ActivarDobleFactorStyle.botonTexto}>
+                      Reenviar correo de verificación
+                    </Text>
+                  )}
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={ActivarDobleFactorStyle.boton}
+                  onPress={intentarEnrolar}
+                  disabled={cargando}
+                >
+                  {cargando ? (
+                    <Cargando />
+                  ) : (
+                    <Text style={ActivarDobleFactorStyle.botonTexto}>
+                      Ya verifiqué mi correo
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </>
+            ) : paso === "reautenticar" ? (
+              <>
+                <Text style={ActivarDobleFactorStyle.titulo}>
+                  Confirma tu contraseña
+                </Text>
+                <Text style={ActivarDobleFactorStyle.subtitulo}>
+                  Por seguridad, confirma tu contraseña para continuar (esto no
+                  cierra tu sesión, solo confirma que sigues siendo tú).
+                </Text>
+
+                <TextInput
+                  style={[
+                    ActivarDobleFactorStyle.input,
+                    { fontSize: 16, letterSpacing: 0 },
+                  ]}
+                  placeholder="Contraseña"
+                  placeholderTextColor="#a8a8a8"
+                  secureTextEntry
+                  value={passwordReauth}
+                  onChangeText={(texto) => {
+                    setPasswordReauth(texto);
+                    if (error) setError("");
+                  }}
+                />
+
+                {error ? (
+                  <Text style={ActivarDobleFactorStyle.error}>{error}</Text>
+                ) : null}
+
+                <TouchableOpacity
+                  style={ActivarDobleFactorStyle.boton}
+                  onPress={handleConfirmarReautenticacion}
+                  disabled={cargando}
+                >
+                  {cargando ? (
+                    <Cargando />
+                  ) : (
+                    <Text style={ActivarDobleFactorStyle.botonTexto}>
+                      Confirmar contraseña
+                    </Text>
+                  )}
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={ActivarDobleFactorStyle.enlaceWrap}
+                  onPress={reiniciarFlujo}
+                  disabled={cargando}
+                >
+                  <Text style={ActivarDobleFactorStyle.enlace}>Cancelar</Text>
+                </TouchableOpacity>
+              </>
             ) : (
-              <Text style={ActivarDobleFactorStyle.botonTexto}>
-                Confirmar
-              </Text>
-            )}
-          </TouchableOpacity>
+              <>
+                <Text style={ActivarDobleFactorStyle.paso}>Paso 1</Text>
+                <Text style={ActivarDobleFactorStyle.subtitulo}>
+                  Escanea este código con tu app autenticadora.
+                </Text>
 
-          <TouchableOpacity
-            style={ActivarDobleFactorStyle.enlaceWrap}
-            onPress={reiniciarFlujo}
-            disabled={cargando}
-          >
-            <Text style={ActivarDobleFactorStyle.enlace}>Cancelar</Text>
-          </TouchableOpacity>
-        </>
-      )}
-    </ScrollView>
+                <View style={ActivarDobleFactorStyle.qrWrap}>
+                  <QRCode value={secretInfo.qrCodeUrl} size={180} />
+                </View>
+
+                <Text style={ActivarDobleFactorStyle.claveManual}>
+                  ¿No puedes escanear? Ingresa esta clave manualmente:{"\n"}
+                  <Text style={ActivarDobleFactorStyle.claveManualTexto}>
+                    {secretInfo.secretKey}
+                  </Text>
+                </Text>
+
+                <Text
+                  style={[ActivarDobleFactorStyle.paso, { marginTop: 20 }]}
+                >
+                  Paso 2
+                </Text>
+                <Text style={ActivarDobleFactorStyle.subtitulo}>
+                  Escribe el código de 6 dígitos que te muestra la app.
+                </Text>
+
+                <TextInput
+                  style={ActivarDobleFactorStyle.input}
+                  placeholder="000000"
+                  placeholderTextColor="#a8a8a8"
+                  keyboardType="number-pad"
+                  maxLength={6}
+                  value={codigo}
+                  onChangeText={handleChangeCodigo}
+                />
+
+                {error ? (
+                  <Text style={ActivarDobleFactorStyle.error}>{error}</Text>
+                ) : null}
+
+                <TouchableOpacity
+                  style={ActivarDobleFactorStyle.boton}
+                  onPress={handleConfirmar}
+                  disabled={cargando}
+                >
+                  {cargando ? (
+                    <Cargando />
+                  ) : (
+                    <Text style={ActivarDobleFactorStyle.botonTexto}>
+                      Confirmar
+                    </Text>
+                  )}
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={ActivarDobleFactorStyle.enlaceWrap}
+                  onPress={reiniciarFlujo}
+                  disabled={cargando}
+                >
+                  <Text style={ActivarDobleFactorStyle.enlace}>Cancelar</Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </View>
   );
 };
 

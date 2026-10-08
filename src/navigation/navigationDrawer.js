@@ -9,6 +9,13 @@ import PerfilUsuario from "../components/PerfilUsuario";
 import ActivarDobleFactorScreen from "../screens/perfil/ActivarDobleFactorScreen";
 import AcercaDe from "../screens/acercaDe";
 import NavigationTabs from "./navigationTabs";
+import ExperienciasCulturales from "../screens/comunidad/experienciasCulturales";
+import EditCulturalProfile from "../screens/actorCultural/editCulturalProfile";
+import Resenas from "../screens/comunidad/resenas";
+import CrearRutaCreativa from "../screens/rutas/crearRutaCreativa";
+import MisRutasCreativas from "../screens/rutas/misRutasCreativas";
+import InvitacionesRuta from "../screens/rutas/invitacionesRuta";
+import Estadisticas from "../screens/actorCultural/estadisticas";
 import { useAuth } from "../context/AuthContext";
 import { drawerStyle } from "../styles/navigation/navigationDrawerStyle";
 
@@ -62,6 +69,10 @@ export default function NavigationDrawer() {
   return (
     <Drawer.Navigator
       initialRouteName={MAIN_ROUTE}
+      // Por defecto el Drawer regresa siempre a la primera pantalla (los tabs).
+      // Con "history" la flecha de atrás vuelve a la pantalla de donde venías
+      // (por ejemplo, de Verificación en dos pasos a Configuración).
+      backBehavior="history"
       screenOptions={{
         headerShown: false,
         drawerActiveTintColor: "#fff",
@@ -77,15 +88,56 @@ export default function NavigationDrawer() {
         component={NavigationTabs}
         options={{ drawerItemStyle: { height: 0 } }} // Oculto del drawer por defecto; se maneja en el menú custom.
       />
+      {/* Publicar Experiencia: pantalla independiente, sin barra de tabs. Se abre desde el botón "Nueva publicación" del Home. */}
+      <Drawer.Screen
+        name="PublicarExperienciaDrawer"
+        component={ExperienciasCulturales}
+        options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
+      />
+      {/* Edición de perfil cultural: pantalla independiente (sin barra de tabs) */}
+      <Drawer.Screen
+        name="EditarPerfilCulturalDrawer"
+        component={EditCulturalProfile}
+        options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
+      />
+      {/* Ruta Creativa: asistente (pasos 2 a 6) e invitaciones recibidas. Pantallas independientes, sin barra de tabs. */}
+      <Drawer.Screen
+        name="CrearRutaDrawer"
+        component={CrearRutaCreativa}
+        options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
+      />
+      {/* Mis Rutas Creativas: rutas activas del actor (hasta que las cancela). Pantalla independiente, sin barra de tabs. */}
+      <Drawer.Screen
+        name="MisRutasCreativasDrawer"
+        component={MisRutasCreativas}
+        options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
+      />
+      <Drawer.Screen
+        name="InvitacionesRutaDrawer"
+        component={InvitacionesRuta}
+        options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
+      />
+      {/* Estadísticas del espacio cultural: pantalla independiente (sin barra de tabs). Se abre desde el perfil cultural. */}
+      <Drawer.Screen
+        name="EstadisticasDrawer"
+        component={Estadisticas}
+        options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
+      />
+      {/* Reseñas: pantalla independiente (sin barra de tabs). Se abre desde Estadísticas ("Ver todas las reseñas"). */}
+      <Drawer.Screen
+        name="ResenasDrawer"
+        component={Resenas}
+        options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
+      />
       <Drawer.Screen
         name="MiCuentaDrawer"
         component={PerfilUsuario}
-        options={{ drawerItemStyle: { height: 0 } }}
+        options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
       />
       <Drawer.Screen
         name="ActivarDobleFactorDrawer"
         component={ActivarDobleFactorScreen}
-        options={{ drawerItemStyle: { height: 0 } }}
+        options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
       />
       <Drawer.Screen
         name="AcercaDeDrawer"

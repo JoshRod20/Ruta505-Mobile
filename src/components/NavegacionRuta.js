@@ -23,6 +23,7 @@ import {
   colorDeCategoria,
 } from "../services/Categoriasexperiencias.js";
 import { navegacionStyle } from "../styles/mapanicaragua/Navegacionstyle.js";
+import { mapaNicaraguaStyle } from "../styles/mapanicaragua/mapaNicaraguaStyle.js";
 
 const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
 
@@ -34,7 +35,16 @@ const SEGUNDOS_MINIMOS_PARA_ETA_REAL = 15;
 const METROS_MINIMOS_PARA_ETA_REAL = 30;
 
 // Componente de navegación GPS Turn-by-Turn basado en OSRM y MapLibre.
-export default function NavegacionRuta({ ruta: rutaInicial, onFinalizar }) {
+export default function NavegacionRuta({
+  ruta: rutaInicial,
+  onFinalizar, // al llegar al destino
+  onSalir, // al tocar "Salir" a mitad del camino (por defecto igual a onFinalizar)
+  tituloLlegada,
+  textoBotonLlegada,
+  paradas, // paradas de la ruta creativa (null en una navegación normal)
+  tramoActual, // índice de la parada a la que vamos ahora
+  rutaCompleta, // línea de toda la ruta creativa: [[lat, lon], ...] (opcional)
+}) {
   const [ruta, setRuta] = useState(rutaInicial);
   const [pasoActualIndex, setPasoActualIndex] = useState(0);
   const [tiempoRestanteMin, setTiempoRestanteMin] = useState(
@@ -272,13 +282,15 @@ export default function NavegacionRuta({ ruta: rutaInicial, onFinalizar }) {
       <View style={navegacionStyle.llegadaContainer}>
         <Text style={navegacionStyle.llegadaIcono}>🎉</Text>
         <Text style={navegacionStyle.llegadaTitulo}>
-          ¡Has llegado a tu destino!
+          {tituloLlegada ?? "¡Has llegado a tu destino!"}
         </Text>
         <TouchableOpacity
           style={navegacionStyle.botonSalir}
           onPress={onFinalizar}
         >
-          <Text style={navegacionStyle.botonSalirTexto}>Finalizar</Text>
+          <Text style={navegacionStyle.botonSalirTexto}>
+            {textoBotonLlegada ?? "Finalizar"}
+          </Text>
         </TouchableOpacity>
       </View>
     );
@@ -286,8 +298,35 @@ export default function NavegacionRuta({ ruta: rutaInicial, onFinalizar }) {
 
   return (
     <View style={navegacionStyle.container}>
-      <Map style={{ flex: 1 }} mapStyle={MAP_STYLE_URL} logoEnabled={false}>
+      <Map style={{ flex: 1 }} mapStyle={MAP_STYLE_URL} logo={false}>
         <Camera ref={cameraRef} zoom={16} />
+
+        {/* Ruta creativa: recorrido completo entre todas las paradas, en naranja
+            claro. Queda debajo de la línea naranja fuerte del tramo actual. */}
+        {rutaCompleta && rutaCompleta.length > 1 && (
+          <GeoJSONSource
+            id="rutaCompletaNavSource"
+            data={{
+              type: "Feature",
+              geometry: {
+                type: "LineString",
+                coordinates: rutaCompleta.map(([lat, lon]) => [lon, lat]),
+              },
+            }}
+          >
+            <Layer
+              id="rutaCompletaNavLayer"
+              type="line"
+              layout={{ "line-cap": "round", "line-join": "round" }}
+              paint={{
+                "line-color": "#F7B96B",
+                "line-width": 5,
+                "line-opacity": 0.8,
+              }}
+            />
+          </GeoJSONSource>
+        )}
+
         <GeoJSONSource
           id="rutaNavSource"
           data={{
@@ -298,17 +337,87 @@ export default function NavegacionRuta({ ruta: rutaInicial, onFinalizar }) {
             },
           }}
         >
+          {/* Tramo por el que navegas ahora: naranja en una ruta creativa (como en
+              el diseño) y verde en una navegación normal. Con borde blanco para
+              que se vea sobre cualquier fondo. */}
+          <Layer
+            id="rutaNavBordeLayer"
+            type="line"
+            layout={{ "line-cap": "round", "line-join": "round" }}
+            paint={{ "line-color": "#FFFFFF", "line-width": 9 }}
+          />
           <Layer
             id="rutaNavLayer"
             type="line"
-            style={{ lineColor: "#1D7A46", lineWidth: 5 }}
+            layout={{ "line-cap": "round", "line-join": "round" }}
+            paint={{
+              "line-color": paradas ? "#F29100" : "#1D7A46",
+              "line-width": 5,
+            }}
           />
         </GeoJSONSource>
 
-        {ruta.destino && (
+        {/* Ruta creativa: todas las paradas numeradas. Verde = a donde vas ahora,
+            gris = ya visitadas, naranja = las que siguen. */}
+        {paradas &&
+          paradas.map((parada, indice) => {
+            const esActual = indice === tramoActual;
+            const visitada = tramoActual != null && indice < tramoActual;
+            return (
+              <ViewAnnotation
+                key={`parada-nav-${parada.id}-${tramoActual}`}
+                id={`parada-nav-${parada.id}`}
+                lngLat={[parada.lng, parada.lat]}
+              >
+                <View style={mapaNicaraguaStyle.paradaRutaContenedor}>
+                  <View
+                    style={[
+                      mapaNicaraguaStyle.paradaRutaEtiqueta,
+                      { height: 20, justifyContent: "center" },
+                      visitada && { backgroundColor: "#D5D9DD" },
+                    ]}
+                  >
+                    <Text
+                      style={mapaNicaraguaStyle.paradaRutaTexto}
+                      numberOfLines={1}
+                    >
+                      {parada.titulo}
+                    </Text>
+                  </View>
+                  <View
+                    style={[
+                      mapaNicaraguaStyle.paradaRutaNumero,
+                      esActual && {
+                        backgroundColor: "#1D7A46",
+                        width: 36,
+                        height: 36,
+                        borderRadius: 18,
+                      },
+                      !esActual && !visitada && { backgroundColor: "#F29100" },
+                      visitada && { backgroundColor: "#8A949E" },
+                    ]}
+                  >
+                    {visitada ? (
+                      <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                    ) : (
+                      <Text style={mapaNicaraguaStyle.paradaRutaNumeroTexto}>
+                        {indice + 1}
+                      </Text>
+                    )}
+                  </View>
+                  {/* Espaciador (alto de la etiqueta + margen): así el centro del
+                      círculo queda exactamente sobre la coordenada de la parada. */}
+                  <View style={{ height: 23 }} />
+                </View>
+              </ViewAnnotation>
+            );
+          })}
+
+        {/* Navegación normal: marcador del destino */}
+        {!paradas && ruta.destino && (
           <ViewAnnotation
             id="destino-nav"
-            coordinate={[ruta.destino.lng, ruta.destino.lat]}
+            lngLat={[ruta.destino.lng, ruta.destino.lat]}
           >
             <View style={navegacionStyle.marcadorDestino}>
               <Ionicons
@@ -358,10 +467,18 @@ export default function NavegacionRuta({ ruta: rutaInicial, onFinalizar }) {
           <Text style={navegacionStyle.etaDistancia}>
             {ruta.distanciaKm} km · llegada estimada
           </Text>
+          {paradas && tramoActual != null && (
+            <Text style={navegacionStyle.etaDistancia} numberOfLines={1}>
+              Parada {tramoActual + 1} de {paradas.length}
+              {paradas[tramoActual + 1]
+                ? ` · Luego: ${paradas[tramoActual + 1].titulo}`
+                : " · Última parada"}
+            </Text>
+          )}
         </View>
         <TouchableOpacity
           style={navegacionStyle.botonSalir}
-          onPress={onFinalizar}
+          onPress={onSalir ?? onFinalizar}
         >
           <Text style={navegacionStyle.botonSalirTexto}>Salir</Text>
         </TouchableOpacity>

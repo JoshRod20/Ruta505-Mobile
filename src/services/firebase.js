@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { initializeAuth, getReactNativePersistence } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Mismo proyecto de Firebase que la PWA — misma colección "users",
@@ -50,4 +51,8 @@ const auth = initializeAuth(appfirebase, {
 // específica para navegadores web con IndexedDB).
 const db = getFirestore(appfirebase);
 
-export { appfirebase, auth, db };
+// Storage para las fotos que se suben desde el formulario de
+// "Publicar experiencias" (ver src/screens/comunidad/experienciasCulturales.js)
+const storage = getStorage(appfirebase);
+
+export { appfirebase, auth, db, storage };

@@ -1,138 +1,116 @@
 import { StyleSheet } from "react-native";
 
+// Modal "Agregar ubicación de mi negocio" (mapa interactivo).
+const VERDE = "#0E5A34";
+const VERDE_CLARO = "#8CC219";
+
 export const formularioExperienciaStyle = StyleSheet.create({
   fondoOscuro: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "flex-end",
+    justifyContent: "center",
+    paddingHorizontal: 16,
   },
   hoja: {
     backgroundColor: "#FFFFFF",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
-    maxHeight: "85%",
+    borderRadius: 24,
+    paddingHorizontal: 18,
+    paddingTop: 20,
+    paddingBottom: 16,
+    maxHeight: "90%",
   },
   titulo: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#123B63",
-    marginBottom: 16,
+    fontFamily: "Poppins-Bold",
+    fontSize: 17,
+    color: VERDE,
+    textAlign: "center",
+    marginBottom: 6,
   },
   etiqueta: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: "#4E6780",
+    fontFamily: "Inter-Regular",
+    fontSize: 11,
+    color: "#2D2D2D",
+    textTransform: "uppercase",
+    marginTop: 14,
     marginBottom: 6,
-    marginTop: 12,
   },
   input: {
-    borderWidth: 1,
-    borderColor: "#D9DEE4",
+    borderWidth: 1.5,
+    borderColor: VERDE,
     borderRadius: 10,
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     paddingVertical: 10,
-    fontSize: 15,
-    color: "#2D3748",
-    backgroundColor: "#FAFBFC",
+    fontFamily: "Inter-Regular",
+    fontSize: 13,
+    color: "#1F2A24",
+    backgroundColor: "#FFFFFF",
   },
   inputMultilinea: {
-    minHeight: 90,
+    minHeight: 86,
     textAlignVertical: "top",
   },
-filaCategorias: {
-  flexDirection: "row",
-  flexWrap: "wrap",
-  justifyContent: "space-between",
-},
-chipCategoria: {
-  width: "48%",
-  borderWidth: 1.5,
-  borderColor: "#D9DEE4",
-  borderRadius: 12,
-  paddingHorizontal: 12,
-  paddingVertical: 10,
-  marginBottom: 10,
-  backgroundColor: "#FFFFFF",
-  alignItems: "center",
-  justifyContent: "center",
-},
-chipCategoriaActiva: {
-  backgroundColor: "#123B63",
-  borderColor: "#123B63",
-},
-chipCategoriaTexto: {
-  fontSize: 13,
-  fontWeight: "600",
-  color: "#2D3748",
-  textAlign: "center",
-},
-chipCategoriaTextoActivo: {
-  fontSize: 13,
-  fontWeight: "600",
-  color: "#FFFFFF",
-  textAlign: "center",
-},
-chipCategoriaContenido: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "center",
-},
-chipCategoriaIcono: {
-  marginRight: 6,
-},
 
-  // Tarjeta única de ubicación (tocable → abre el mapa)
-  tarjetaUbicacion: {
+  // ---- Categorías (chips con scroll horizontal + flecha) ----
+  categoriasContenedor: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F0F6FC",
-    borderWidth: 1.5,
-    borderColor: "#C5D6E8",
-    borderRadius: 14,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    marginTop: 4,
   },
-  tarjetaUbicacionIcono: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
-    backgroundColor: "#FFFFFF",
+  filaCategorias: {
+    paddingRight: 8,
+  },
+  chipCategoria: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-    borderWidth: 1,
-    borderColor: "#D6E4F0",
+    borderWidth: 1.5,
+    borderColor: VERDE,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    marginRight: 8,
+    backgroundColor: "#FFFFFF",
   },
-  tarjetaUbicacionTexto: {
-    flex: 1,
+  chipCategoriaActiva: {
+    backgroundColor: VERDE,
   },
-  tarjetaUbicacionCoords: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: "#1D7A46",
-    marginBottom: 2,
+  chipCategoriaIcono: {
+    marginRight: 6,
   },
-  tarjetaUbicacionTitulo: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: "#123B63",
-    marginBottom: 2,
-  },
-  tarjetaUbicacionHint: {
+  chipCategoriaTexto: {
+    fontFamily: "Poppins-Bold",
     fontSize: 12,
-    color: "#8A99A8",
+    color: VERDE,
+  },
+  chipCategoriaTextoActivo: {
+    color: "#FFFFFF",
+  },
+  flechaCategorias: {
+    marginLeft: 2,
   },
 
+  // ---- Fotos ----
+  cajaMultimedia: {
+    borderWidth: 1.5,
+    borderColor: VERDE,
+    borderRadius: 10,
+    minHeight: 70,
+    padding: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  textoMultimedia: {
+    fontFamily: "Inter-Regular",
+    fontSize: 12,
+    color: "#7A7A7A",
+  },
   filaImagenes: {
     flexDirection: "row",
     flexWrap: "wrap",
+    alignSelf: "stretch",
     gap: 10,
   },
   miniaturaContenedor: {
-    width: 80,
-    height: 80,
+    width: 64,
+    height: 64,
     borderRadius: 10,
     overflow: "hidden",
   },
@@ -151,56 +129,92 @@ chipCategoriaIcono: {
     alignItems: "center",
     justifyContent: "center",
   },
-  botonQuitarImagenTexto: {
-    color: "#FFFFFF",
-    fontSize: 12,
-    fontWeight: "700",
-  },
-  botonAgregarImagen: {
-    width: 80,
-    height: 80,
+  botonAgregarMas: {
+    width: 64,
+    height: 64,
     borderRadius: 10,
     borderWidth: 1.5,
-    borderColor: "#D9DEE4",
+    borderColor: VERDE,
     borderStyle: "dashed",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#FAFBFC",
   },
-  botonAgregarImagenTexto: {
-    fontSize: 12,
-    color: "#123B63",
-    fontWeight: "600",
+
+  // ---- Ubicación en el mapa (tocable → abre el selector) ----
+  tarjetaUbicacion: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1.5,
+    borderColor: VERDE,
+    borderRadius: 10,
+    paddingVertical: 7,
+    paddingHorizontal: 8,
+    backgroundColor: "#FFFFFF",
   },
+  tarjetaUbicacionIcono: {
+    width: 34,
+    height: 34,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: VERDE_CLARO,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 10,
+  },
+  tarjetaUbicacionTexto: {
+    flex: 1,
+  },
+  tarjetaUbicacionCoords: {
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 11,
+    color: VERDE,
+  },
+  tarjetaUbicacionTitulo: {
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 11,
+    color: VERDE,
+  },
+  tarjetaUbicacionHint: {
+    fontFamily: "Inter-Regular",
+    fontSize: 11,
+    color: "#6B6B6B",
+  },
+
+  // ---- Botones ----
   filaBotones: {
     flexDirection: "row",
-    justifyContent: "flex-end",
-    marginTop: 24,
-    marginBottom: 8,
-    gap: 10,
+    marginTop: 18,
+    gap: 12,
   },
   botonCancelar: {
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderRadius: 10,
+    flex: 1,
+    height: 44,
+    borderRadius: 999,
+    backgroundColor: "#D2D2D2",
+    alignItems: "center",
+    justifyContent: "center",
   },
   botonCancelarTexto: {
-    color: "#8A99A8",
-    fontWeight: "600",
+    fontFamily: "Poppins-Bold",
+    fontSize: 15,
+    color: "#7A7A7A",
   },
   botonGuardar: {
-    backgroundColor: "#123B63",
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 10,
-    minWidth: 100,
+    flex: 1,
+    height: 44,
+    borderRadius: 999,
+    backgroundColor: VERDE_CLARO,
     alignItems: "center",
+    justifyContent: "center",
   },
   botonGuardarDeshabilitado: {
-    backgroundColor: "#B7C3CE",
+    opacity: 0.5,
   },
   botonGuardarTexto: {
+    fontFamily: "Poppins-Bold",
+    fontSize: 15,
     color: "#FFFFFF",
-    fontWeight: "700",
   },
 });
+
+export const COLOR_VERDE_FORMULARIO = VERDE;
