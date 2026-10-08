@@ -161,6 +161,19 @@ export const crearRutaStyle = StyleSheet.create({
     fontSize: 15,
     color: "#FFFFFF",
   },
+  botonNaranja: {
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: NARANJA,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 20,
+  },
+  botonNaranjaTexto: {
+    fontFamily: "Poppins-Bold",
+    fontSize: 15,
+    color: "#1A1A1A",
+  },
   botonContorno: {
     height: 50,
     borderRadius: 12,
