@@ -1,3 +1,7 @@
+/**
+ * CrearRutaCreativa: componente/pantalla de la aplicación Ruta505.
+ */
+
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -768,6 +772,9 @@ function AsistenteRutaCreativa() {
 // visita y "Ver mis rutas activas" o "Nueva ruta" abrirían la ruta anterior.
 // Cada navegación trae una "clave" nueva: al cambiar, el asistente se vuelve a
 // montar desde cero con los parámetros recibidos.
+/**
+ * CrearRutaCreativa.
+ */
 export default function CrearRutaCreativa() {
   const { params } = useRoute();
   return <AsistenteRutaCreativa key={params?.clave ?? "sin-clave"} />;

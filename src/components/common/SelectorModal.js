@@ -1,3 +1,7 @@
+/**
+ * SelectorModal: componente/pantalla de la aplicación Ruta505.
+ */
+
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   FlatList,
@@ -22,6 +26,9 @@ const normalizar = (texto) =>
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
 
+/**
+ * SelectorModal.
+ */
 export default function SelectorModal({
   visible,
   titulo,

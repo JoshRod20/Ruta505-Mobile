@@ -1,5 +1,8 @@
-import { db } from "../services/firebase";
+/**
+ * Negociosservice: componente/pantalla de la aplicación Ruta505.
+ */
 
+import { db } from "../services/firebase";
 import {
   collection,
   doc,
@@ -9,20 +12,21 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 
-// ==================================================
-// NEGOCIOS
-// Colección "negocios": el negocio de cada actor cultural, que se ve como un
-// punto en el mapa interactivo. El id del documento ES el uid del actor, así
-// que cada cuenta tiene como máximo un negocio (las reglas de Firestore lo
-// garantizan) y encontrar el de alguien es una lectura directa.
-//
-// Las publicaciones del Home son otra cosa: viven en "experiencias"
-// (ver Experienciasservice.js).
-// ==================================================
-
+/**
+ * Servicio de negocios de actores culturales.
+ * Colección "negocios": un documento por actor (id = uid).
+ * Representa el punto visible en el mapa interactivo.
+ * Las publicaciones del Home viven en "experiencias".
+ */
 const COLECCION = "negocios";
 
-// Registra el negocio de un actor. El id del documento es su uid.
+/**
+ * Crea el documento de negocio de un actor cultural.
+ * El id del documento es el uid del usuario.
+ * @param {string} uid - Identificador del actor.
+ * @param {Object} datos - Datos del negocio a persistir.
+ * @returns {Promise<void>}
+ */
 export async function crearNegocio(uid, datos) {
   return setDoc(doc(db, COLECCION, uid), {
     ...datos,
@@ -31,6 +35,12 @@ export async function crearNegocio(uid, datos) {
   });
 }
 
+/**
+ * Actualiza el negocio de un actor cultural.
+ * @param {string} uid - Identificador del actor.
+ * @param {Object} datos - Campos a actualizar.
+ * @returns {Promise<void>}
+ */
 export async function actualizarNegocio(uid, datos) {
   return updateDoc(doc(db, COLECCION, uid), {
     ...datos,
@@ -38,7 +48,12 @@ export async function actualizarNegocio(uid, datos) {
   });
 }
 
-// Todos los negocios en vivo (para el mapa y para buscar aliados).
+/**
+ * Escucha en tiempo real todos los negocios (mapa y búsqueda de aliados).
+ * @param {function} callback - Recibe el arreglo de negocios.
+ * @param {function} [onError] - Callback opcional de error.
+ * @returns {function} Función de desuscripción.
+ */
 export function escucharNegocios(callback, onError) {
   return onSnapshot(
     collection(db, COLECCION),
@@ -52,7 +67,13 @@ export function escucharNegocios(callback, onError) {
   );
 }
 
-// El negocio de un actor en vivo (callback recibe el negocio o null).
+/**
+ * Escucha en tiempo real el negocio de un actor concreto.
+ * @param {string} uid - Identificador del actor.
+ * @param {function} callback - Recibe el negocio o null.
+ * @param {function} [onError] - Callback opcional de error.
+ * @returns {function} Función de desuscripción.
+ */
 export function escucharNegocio(uid, callback, onError) {
   return onSnapshot(
     doc(db, COLECCION, uid),

@@ -1,7 +1,15 @@
+/**
+ * ubicacion: componente/pantalla de la aplicación Ruta505.
+ */
+
 import { PermissionsAndroid, Platform } from "react-native";
 import Geolocation from "@react-native-community/geolocation";
 
-// Solicita permiso de ubicación (solo Android lo pide en runtime aquí).
+/**
+ * Solicita permiso de ubicación en tiempo de ejecución (solo Android).
+ * En iOS se asume gestionado por Info.plist.
+ * @returns {Promise<boolean>} true si el permiso fue concedido.
+ */
 export async function pedirPermisoUbicacion() {
   if (Platform.OS !== "android") return true;
 
@@ -23,6 +31,11 @@ export async function pedirPermisoUbicacion() {
   }
 }
 
+/**
+ * Envuelve Geolocation.getCurrentPosition en una Promise.
+ * @param {Object} opciones - Opciones de precisión y timeout.
+ * @returns {Promise<Object>} Posición GPS.
+ */
 function leerPosicion(opciones) {
   return new Promise((resolve, reject) => {
     Geolocation.getCurrentPosition(resolve, reject, opciones);
@@ -30,9 +43,10 @@ function leerPosicion(opciones) {
 }
 
 /**
- * Devuelve { lat, lon } con la posición actual, o null si no hay permiso
- * o no se pudo obtener (no lanza ni muestra alertas: quien la llame decide).
+ * Obtiene la posición actual del dispositivo.
  * Intenta GPS de alta precisión y, si falla, precisión por red.
+ * No lanza ni muestra alertas; el llamador decide el manejo.
+ * @returns {Promise<{lat: number, lon: number}|null>} Coordenadas o null.
  */
 export async function obtenerUbicacionActual() {
   const permitido = await pedirPermisoUbicacion();

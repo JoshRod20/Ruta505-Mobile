@@ -1,3 +1,7 @@
+/**
+ * Estilos de editCulturalProfileStyle.
+ */
+
 import { StyleSheet } from "react-native";
 
 const VERDE = "#086338";

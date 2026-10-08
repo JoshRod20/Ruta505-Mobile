@@ -1,3 +1,7 @@
+/**
+ * SeleccionarInteresesScreen: componente/pantalla de la aplicación Ruta505.
+ */
+
 import { useState } from "react";
 import { View, Text, TouchableOpacity, FlatList } from "react-native";
 import { Ionicons } from "@expo/vector-icons";

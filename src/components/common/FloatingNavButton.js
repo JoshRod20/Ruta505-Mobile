@@ -1,9 +1,16 @@
+/**
+ * FloatingNavButton: componente/pantalla de la aplicación Ruta505.
+ */
+
 import React from "react";
 import { TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+/**
+ * FloatingNavButton.
+ */
 export default function FloatingNavButton({
   icon = "menu-outline",
   onPress,

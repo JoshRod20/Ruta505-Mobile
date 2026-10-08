@@ -1,16 +1,17 @@
+/**
+ * firebase: componente/pantalla de la aplicación Ruta505.
+ */
+
 import { initializeApp } from "firebase/app";
 import { initializeAuth, getReactNativePersistence } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// Mismo proyecto de Firebase que la PWA — misma colección "users",
-// mismas reglas de Firestore, mismas cuentas de Authentication.
-//
-// Los valores vienen de variables de entorno (ver .env / .env.example)
-// en vez de estar hardcodeados, para poder usar distintos valores por
-// entorno (preview/producción) sin tocar código, y no dejarlos fijos
-// en el historial de git.
+/**
+ * Configuración de Firebase leída desde variables de entorno.
+ * Mismo proyecto que la PWA (colección users, reglas y Authentication).
+ */
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -21,8 +22,7 @@ const firebaseConfig = {
   measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-// Aviso en desarrollo si falta alguna variable (evita errores confusos
-// de "Firebase: Error (auth/invalid-api-key)" sin saber por qué)
+/** Aviso en desarrollo si faltan variables de entorno críticas. */
 if (__DEV__) {
   const faltantes = Object.entries(firebaseConfig)
     .filter(([key, value]) => key !== "measurementId" && !value)
@@ -36,23 +36,21 @@ if (__DEV__) {
   }
 }
 
+/** Instancia de la aplicación Firebase. */
 const appfirebase = initializeApp(firebaseConfig);
 
-// En React Native, Auth necesita que le digamos explícitamente dónde
-// guardar la sesión (AsyncStorage) — a diferencia del navegador, que
-// usa localStorage automáticamente. Sin esto, el usuario tendría que
-// volver a iniciar sesión cada vez que cierra la app.
+/**
+ * Auth con persistencia en AsyncStorage para conservar la sesión
+ * entre cierres de la app en React Native.
+ */
 const auth = initializeAuth(appfirebase, {
   persistence: getReactNativePersistence(AsyncStorage),
 });
 
-// Firestore en React Native ya maneja su propia persistencia offline
-// de forma automática (no usa persistentLocalCache, que es una API
-// específica para navegadores web con IndexedDB).
+/** Cliente de Firestore (persistencia offline nativa en React Native). */
 const db = getFirestore(appfirebase);
 
-// Storage para las fotos que se suben desde el formulario de
-// "Publicar experiencias" (ver src/screens/comunidad/experienciasCulturales.js)
+/** Cliente de Storage para subida de fotos de experiencias. */
 const storage = getStorage(appfirebase);
 
 export { appfirebase, auth, db, storage };

@@ -1,3 +1,7 @@
+/**
+ * SolicitarUbicacionScreen: componente/pantalla de la aplicación Ruta505.
+ */
+
 import { useState } from "react";
 import { View, Text, Image, TouchableOpacity, ActivityIndicator } from "react-native";
 import * as Location from "expo-location";

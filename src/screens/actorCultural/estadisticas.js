@@ -1,3 +1,7 @@
+/**
+ * Estadisticas: componente/pantalla de la aplicación Ruta505.
+ */
+
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -69,6 +73,9 @@ function EstrellasEnteras({ valor, size = 26 }) {
   );
 }
 
+/**
+ * Estadisticas.
+ */
 export default function Estadisticas() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();

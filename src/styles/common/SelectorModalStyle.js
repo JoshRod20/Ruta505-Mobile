@@ -1,3 +1,7 @@
+/**
+ * Estilos de SelectorModalStyle.
+ */
+
 import { StyleSheet } from "react-native";
 
 const COLOR_HEADER = "#086338";

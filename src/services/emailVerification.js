@@ -1,13 +1,15 @@
-// services/emailVerification.js
-//
-// Envío del correo real de verificación (link que Firebase manda al
-// usuario). Firebase exige emailVerified=true antes de poder enrolar
-// un segundo factor, para evitar que alguien active 2FA usando el
-// correo de otra persona.
+/**
+ * emailVerification: componente/pantalla de la aplicación Ruta505.
+ */
 
 import { sendEmailVerification } from "firebase/auth";
 import { auth } from "./firebase";
 
+/**
+ * Envía el correo de verificación de Firebase al usuario autenticado.
+ * Requerido antes de enrolar un segundo factor (MFA).
+ * @throws {Error} Si no hay sesión activa.
+ */
 export const enviarCorreoVerificacion = async () => {
   const user = auth.currentUser;
 

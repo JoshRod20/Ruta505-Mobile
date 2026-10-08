@@ -1,10 +1,13 @@
-// utils/validators.js
-//
-// Fuente única de verdad para los patrones de validación usados
-// en toda la app (Login, RegistroTurista, RegistroActor, etc.).
-// Antes EMAIL_REGEX/CEDULA_REGEX/TELEFONO_REGEX vivían duplicados
-// dentro de useRegistroForm.js; ahora se importan desde aquí.
+/**
+ * Patrones de validación compartidos en formularios de autenticación y registro.
+ * Fuente única de verdad para EMAIL_REGEX, CEDULA_REGEX y TELEFONO_REGEX.
+ */
 
+/** Valida formato básico de correo electrónico. */
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** Valida cédula nicaragüense (formato 000-000000-0000X). */
 export const CEDULA_REGEX = /^\d{3}-\d{6}-\d{4}[A-Za-z]$/;
+
+/** Valida número telefónico (7-20 caracteres, dígitos, +, espacios o guiones). */
 export const TELEFONO_REGEX = /^[\d+\s-]{7,20}$/;

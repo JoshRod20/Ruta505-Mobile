@@ -1,3 +1,7 @@
+/**
+ * Estilos de navigationDrawerStyle.
+ */
+
 import { StyleSheet } from "react-native";
 
 // Estilos simples para el Drawer. Ajusta colores/tamaños cuando definas

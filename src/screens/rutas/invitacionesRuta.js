@@ -1,3 +1,7 @@
+/**
+ * InvitacionesRuta: componente/pantalla de la aplicación Ruta505.
+ */
+
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -45,6 +49,9 @@ function insigniaDe(estado) {
 }
 
 // Invitaciones a rutas creativas que recibió el actor (se abre desde la campana).
+/**
+ * InvitacionesRuta.
+ */
 export default function InvitacionesRuta() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();

@@ -1,3 +1,7 @@
+/**
+ * PublicacionCard: componente/pantalla de la aplicación Ruta505.
+ */
+
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -86,6 +90,9 @@ const ETIQUETAS_ACTOR = {
   emprendedor: "Emprendedor/a",
 };
 
+/**
+ * PublicacionCard.
+ */
 export default function PublicacionCard({ experiencia }) {
   const insets = useSafeAreaInsets();
   const { user, profile } = useAuth();

@@ -1,3 +1,7 @@
+/**
+ * LogoutButton: componente/pantalla de la aplicación Ruta505.
+ */
+
 import { TouchableOpacity, Text } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 import LogoutButtonStyle from "../../styles/common/LogoutButtonStyle";

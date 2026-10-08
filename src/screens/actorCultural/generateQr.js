@@ -1,3 +1,7 @@
+/**
+ * GenerateQr: componente/pantalla de la aplicación Ruta505.
+ */
+
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -29,8 +33,14 @@ import {
 // ==================================================
 export const PREFIJO_SELLO = "ruta505://sello/";
 
+/**
+ * construirCodigoSello.
+ */
 export const construirCodigoSello = (actorId) => `${PREFIJO_SELLO}${actorId}`;
 
+/**
+ * leerCodigoSello.
+ */
 export function leerCodigoSello(texto) {
   if (typeof texto !== "string" || !texto.startsWith(PREFIJO_SELLO)) {
     return null;
@@ -42,6 +52,9 @@ export function leerCodigoSello(texto) {
 // Alto de la barra de tabs (68) más un margen: la barra flota sobre la pantalla.
 const ALTO_BARRA_TABS = 68;
 
+/**
+ * GenerateQr.
+ */
 export default function GenerateQr() {
   const insets = useSafeAreaInsets();
   const { user, profile, role } = useAuth();

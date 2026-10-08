@@ -1,3 +1,7 @@
+/**
+ * VerificarCodigoScreen: componente/pantalla de la aplicación Ruta505.
+ */
+
 import { useState } from "react";
 
 import {

@@ -1,3 +1,8 @@
+/**
+ * Traduce códigos de error de Firebase Auth a mensajes legibles en español.
+ * @param {string} code - Código de error devuelto por Firebase.
+ * @returns {string} Mensaje orientado al usuario.
+ */
 export const mapFirebaseError = (code) => {
   switch (code) {
     case "auth/invalid-email":

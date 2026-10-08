@@ -1,3 +1,7 @@
+/**
+ * RegistroTuristaScreen: componente/pantalla de la aplicación Ruta505.
+ */
+
 import {
   useMemo,
   useState,

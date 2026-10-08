@@ -1,3 +1,7 @@
+/**
+ * LoginScreen: componente/pantalla de la aplicación Ruta505.
+ */
+
 // screens/auth/LoginScreen.js
 
 import {

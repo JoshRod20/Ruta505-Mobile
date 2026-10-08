@@ -1,3 +1,8 @@
+/**
+ * Contexto de autenticación y sesión de usuario.
+ * Expone user, profile, role, estado de verificación y control de inactividad.
+ */
+
 import React, {
   createContext,
   useContext,
@@ -12,12 +17,15 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { auth, db } from "../services/firebase";
 import { ESTADOS_VERIFICACION } from "../constants/roles";
 
+/** Contexto React para el estado de autenticación. */
 const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
 // Configuración de inactividad
-const SESSION_TIMEOUT_MS = 24 * 60 * 60 * 1000; // 24 horas
+/** Tiempo máximo de inactividad antes de cerrar sesión (24 horas). */
+const SESSION_TIMEOUT_MS = 24 * 60 * 60 * 1000;
+/** Clave de AsyncStorage para la última actividad del usuario. */
 const CLAVE_ULTIMA_ACTIVIDAD = "@ruta505:ultimaActividad";
 
 /**
@@ -42,6 +50,11 @@ const calcularEstadoEfectivo = (profileData) => {
   };
 };
 
+/**
+ * Proveedor de autenticación: sincroniza Auth y perfil Firestore,
+ * gestiona timeout de sesión y expone helpers de login/logout.
+ * @param {{children: React.ReactNode}} props
+ */
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);

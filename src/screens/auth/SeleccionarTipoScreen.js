@@ -1,3 +1,7 @@
+/**
+ * SeleccionarTipoScreen: componente/pantalla de la aplicación Ruta505.
+ */
+
 import { useRef } from "react";
 import {
   View,

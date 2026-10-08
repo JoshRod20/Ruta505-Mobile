@@ -1,3 +1,7 @@
+/**
+ * Estilos de estadisticasStyle.
+ */
+
 import { StyleSheet } from "react-native";
 
 // Pantalla "Estadísticas" del espacio cultural (calificación, balance de

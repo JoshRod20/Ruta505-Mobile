@@ -1,5 +1,13 @@
+/**
+ * permissions: componente/pantalla de la aplicación Ruta505.
+ */
+
 import { ROLES } from "./roles";
 
+/**
+ * Identificadores de permisos de la aplicación.
+ * Agrupados por contexto de uso (turista, actor cultural, institución).
+ */
 export const PERMISOS = {
   // Turista
   VER_MAPA: "ver_mapa",
@@ -27,6 +35,10 @@ export const PERMISOS = {
   EXPORTAR_REPORTES: "exportar_reportes",
 };
 
+/**
+ * Mapa de permisos concedidos a cada rol.
+ * Fuente única de verdad para el control de acceso en cliente.
+ */
 const PERMISOS_POR_ROL = {
   [ROLES.TURISTA]: [
     PERMISOS.VER_MAPA,
@@ -60,6 +72,12 @@ const PERMISOS_POR_ROL = {
   ],
 };
 
+/**
+ * Indica si un rol posee un permiso concreto.
+ * @param {string|null|undefined} role - Rol del usuario.
+ * @param {string} permiso - Identificador del permiso a verificar.
+ * @returns {boolean} true si el rol incluye el permiso.
+ */
 export function tienePermiso(role, permiso) {
   if (!role) return false;
   return (PERMISOS_POR_ROL[role] || []).includes(permiso);

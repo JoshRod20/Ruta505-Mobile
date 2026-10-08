@@ -1,3 +1,7 @@
+/**
+ * ExperienciasCulturales: componente/pantalla de la aplicación Ruta505.
+ */
+
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -58,6 +62,9 @@ const initialForm = {
 // Formulario del botón + de la barra de navegación.
 // Publica una EXPERIENCIA que aparece en el Home. Las ubicaciones de negocio
 // se publican desde el mapa interactivo (ver Formularioexperiencia.js).
+/**
+ * ExperienciasCulturales.
+ */
 export default function ExperienciasCulturales() {
   const { profile, user, estadoVerificacion } = useAuth();
   const { puede } = usePermisos();

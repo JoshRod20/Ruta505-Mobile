@@ -1,3 +1,7 @@
+/**
+ * NavigationDrawer: componente/pantalla de la aplicación Ruta505.
+ */
+
 import * as React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import {
@@ -65,6 +69,9 @@ function CustomDrawerContent(props) {
   );
 }
 
+/**
+ * NavigationDrawer.
+ */
 export default function NavigationDrawer() {
   return (
     <Drawer.Navigator

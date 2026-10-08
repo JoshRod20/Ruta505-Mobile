@@ -1,3 +1,7 @@
+/**
+ * Estilos de OnboardingStyle.
+ */
+
 import {
   Dimensions,
   StyleSheet,

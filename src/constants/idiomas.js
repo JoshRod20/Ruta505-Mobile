@@ -1,3 +1,6 @@
+/**
+ * Idiomas disponibles para selección en perfiles de usuario y actores culturales.
+ */
 export const IDIOMAS = [
   "Español",
   "English",

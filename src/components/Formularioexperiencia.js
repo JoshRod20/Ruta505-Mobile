@@ -1,3 +1,7 @@
+/**
+ * FormularioExperiencia: componente/pantalla de la aplicación Ruta505.
+ */
+
 import React, { useState, useEffect } from "react";
 import {
   Modal,
@@ -24,6 +28,9 @@ const MAX_IMAGENES = 2;
 const ANCHO_REDIMENSIONADO = 700; // px
 const CALIDAD_COMPRESION = 0.5; // 0 a 1
 
+/**
+ * FormularioExperiencia.
+ */
 export default function FormularioExperiencia({
   visible,
   ubicacionActual,

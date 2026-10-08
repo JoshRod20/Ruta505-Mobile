@@ -1,3 +1,7 @@
+/**
+ * Estilos de navigationTabsStyle.
+ */
+
 import { StyleSheet } from "react-native";
 
 export const navigationTabsStyle = StyleSheet.create({

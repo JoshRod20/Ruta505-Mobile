@@ -1,3 +1,7 @@
+/**
+ * Estilos de ActivarDobleFactorStyle.
+ */
+
 import { StyleSheet } from "react-native";
 
 const COLOR_HEADER = "#086338";

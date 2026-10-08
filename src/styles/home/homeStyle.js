@@ -1,3 +1,7 @@
+/**
+ * Estilos de homeStyle.
+ */
+
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 import { StyleSheet } from "react-native";
 

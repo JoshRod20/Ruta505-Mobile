@@ -1,3 +1,7 @@
+/**
+ * Estilos de culturalRoutesStyle.
+ */
+
 import { StyleSheet } from "react-native";
 
 export const culturalRoutesStyle = StyleSheet.create({

@@ -1,3 +1,7 @@
+/**
+ * Estilos de experienciasCulturalesStyle.
+ */
+
 import { StyleSheet } from "react-native";
 
 // Pantalla "Publicar Experiencia" (botón + de la barra de navegación).

@@ -1,3 +1,8 @@
+/**
+ * Servicio de rutas creativas culturales.
+ * Gestiona creación, invitaciones, escucha en tiempo real y estado de rutas.
+ */
+
 import {
   collection,
   doc,
@@ -35,6 +40,7 @@ import { db } from "./firebase";
 const RUTAS = "rutas_creativas";
 const PARADAS = "paradas_ruta";
 
+/** Estados posibles de una ruta creativa. */
 export const ESTADO_RUTA = {
   BORRADOR: "borrador",
   EN_ESPERA: "en_espera",
@@ -42,6 +48,7 @@ export const ESTADO_RUTA = {
   CANCELADA: "cancelada",
 };
 
+/** Estados posibles de una parada/invitación. */
 export const ESTADO_PARADA = {
   CREADOR: "creador",
   INVITADO: "invitado",
@@ -50,6 +57,7 @@ export const ESTADO_PARADA = {
 };
 
 // Aliados (sin contar al creador) que deben aceptar para poder publicar.
+/** Número mínimo de aliados aceptados para publicar una ruta. */
 export const MINIMO_ALIADOS = 3;
 
 export const idParada = (rutaId, actorId) => `${rutaId}_${actorId}`;
@@ -58,10 +66,20 @@ function milisegundos(item) {
   return item.createdAt?.toMillis?.() ?? Date.now();
 }
 
+/**
+ * Filtra las paradas cuyo estado es aceptado.
+ * @param {Array} paradas
+ * @returns {Array}
+ */
 export function aliadosAceptados(paradas) {
   return paradas.filter((p) => p.estado === ESTADO_PARADA.ACEPTADA);
 }
 
+/**
+ * Filtra las paradas cuyo estado es invitado.
+ * @param {Array} paradas
+ * @returns {Array}
+ */
 export function aliadosInvitados(paradas) {
   return paradas.filter(
     (p) =>
@@ -71,6 +89,11 @@ export function aliadosInvitados(paradas) {
 }
 
 // Suma de precios de las paradas que forman parte de la ruta.
+/**
+ * Suma los precios de las paradas aceptadas.
+ * @param {Array} paradas
+ * @returns {number}
+ */
 export function calcularTotal(paradas) {
   return paradas
     .filter(
@@ -81,12 +104,20 @@ export function calcularTotal(paradas) {
     .reduce((acc, p) => acc + (Number(p.precio) || 0), 0);
 }
 
+/** Formatea un valor numérico como precio en córdobas. */
 export const formatearPrecio = (valor) =>
   `C$ ${Number(valor || 0).toLocaleString("en-US")}`;
 
 // ---------------- Lecturas en vivo ----------------
 
 // Rutas que creó un actor (las más nuevas primero).
+/**
+ * Escucha en tiempo real las rutas creadas por el usuario.
+ * @param {string} uid
+ * @param {function} callback
+ * @param {function} [onError]
+ * @returns {function} Desuscripción.
+ */
 export function escucharMisRutas(uid, callback, onError) {
   const q = query(collection(db, RUTAS), where("creadoPor", "==", uid));
   return onSnapshot(
@@ -105,6 +136,13 @@ export function escucharMisRutas(uid, callback, onError) {
 }
 
 // Todas las paradas de las rutas de un creador (para la lista "Mis rutas").
+/**
+ * Escucha las paradas de todas las rutas de un creador.
+ * @param {string} creadorId
+ * @param {function} callback
+ * @param {function} [onError]
+ * @returns {function} Desuscripción.
+ */
 export function escucharParadasDeCreador(creadorId, callback, onError) {
   const q = query(
     collection(db, PARADAS),
@@ -130,6 +168,14 @@ export function escucharParadasDeCreador(creadorId, callback, onError) {
 }
 
 // Paradas de una ruta, vistas por su creador (él primero).
+/**
+ * Escucha las paradas de una ruta concreta.
+ * @param {string} rutaId
+ * @param {string} creadorId
+ * @param {function} callback
+ * @param {function} [onError]
+ * @returns {function} Desuscripción.
+ */
 export function escucharParadasDeRuta(rutaId, creadorId, callback, onError) {
   const q = query(
     collection(db, PARADAS),
@@ -156,6 +202,13 @@ export function escucharParadasDeRuta(rutaId, creadorId, callback, onError) {
 }
 
 // Invitaciones que recibió un actor (de otros creadores).
+/**
+ * Escucha las invitaciones pendientes de un actor.
+ * @param {string} actorId
+ * @param {function} callback
+ * @param {function} [onError]
+ * @returns {function} Desuscripción.
+ */
 export function escucharInvitaciones(actorId, callback, onError) {
   const q = query(collection(db, PARADAS), where("actorId", "==", actorId));
   return onSnapshot(
@@ -177,6 +230,11 @@ export function escucharInvitaciones(actorId, callback, onError) {
 // ---------------- Escrituras ----------------
 
 // Crea la ruta (borrador) y la parada del creador con su servicio.
+/**
+ * Crea una nueva ruta creativa en Firestore.
+ * @param {Object} params - creador, nombre, negocio, datos.
+ * @returns {Promise<string>} ID de la ruta.
+ */
 export async function crearRuta({ creador, nombre, negocio, datos }) {
   const rutaRef = doc(collection(db, RUTAS));
   await setDoc(rutaRef, {
@@ -216,6 +274,11 @@ export async function crearRuta({ creador, nombre, negocio, datos }) {
 }
 
 // Vuelve al paso 2: actualiza nombre de la ruta y datos del servicio del creador.
+/**
+ * Actualiza los datos de un paso/parada de la ruta.
+ * @param {Object} params
+ * @returns {Promise<void>}
+ */
 export async function actualizarPasoDatos({
   rutaId,
   creadorId,
@@ -249,6 +312,11 @@ export async function actualizarPasoDatos({
   return batch.commit();
 }
 
+/**
+ * Invita a un actor cultural a participar en una parada.
+ * @param {Object} params - ruta, creador, destino.
+ * @returns {Promise<void>}
+ */
 export async function invitarActor({ ruta, creador, destino }) {
   return setDoc(doc(db, PARADAS, idParada(ruta.id, destino.actorId)), {
     rutaId: ruta.id,
@@ -266,6 +334,12 @@ export async function invitarActor({ ruta, creador, destino }) {
   });
 }
 
+/**
+ * Cambia el estado de una ruta (borrador, publicada, cancelada, etc.).
+ * @param {string} rutaId
+ * @param {string} estado
+ * @returns {Promise<void>}
+ */
 export async function cambiarEstadoRuta(rutaId, estado) {
   return updateDoc(doc(db, RUTAS, rutaId), {
     estado,
@@ -274,6 +348,13 @@ export async function cambiarEstadoRuta(rutaId, estado) {
 }
 
 // El actor invitado acepta (con su servicio, precio, etc.) o declina.
+/**
+ * Acepta o rechaza una invitación a una parada.
+ * @param {string} paradaId
+ * @param {boolean} aceptar
+ * @param {Object} [datos]
+ * @returns {Promise<void>}
+ */
 export async function responderInvitacion(paradaId, aceptar, datos) {
   const cambios = {
     estado: aceptar ? ESTADO_PARADA.ACEPTADA : ESTADO_PARADA.RECHAZADA,
@@ -291,6 +372,11 @@ export async function responderInvitacion(paradaId, aceptar, datos) {
 
 // Publica la ruta: se quedan el creador y quienes aceptaron; las invitaciones
 // pendientes o rechazadas se eliminan.
+/**
+ * Publica una ruta y notifica a las paradas asociadas.
+ * @param {Object} params - rutaId, paradas.
+ * @returns {Promise<void>}
+ */
 export async function publicarRuta({ rutaId, paradas }) {
   const batch = writeBatch(db);
   batch.update(doc(db, RUTAS, rutaId), {
@@ -317,6 +403,11 @@ export async function publicarRuta({ rutaId, paradas }) {
 // aliados y la ruta desaparece de las listas públicas.
 // Se hace en dos pasos para saber exactamente cuál falla (error.paso):
 // 1) "ruta": marca la ruta como cancelada; 2) "paradas": retira sus paradas.
+/**
+ * Cancela una ruta y actualiza el estado de sus paradas.
+ * @param {Object} params - rutaId, paradas.
+ * @returns {Promise<void>}
+ */
 export async function cancelarRuta({ rutaId, paradas = [] }) {
   try {
     await updateDoc(doc(db, RUTAS, rutaId), {

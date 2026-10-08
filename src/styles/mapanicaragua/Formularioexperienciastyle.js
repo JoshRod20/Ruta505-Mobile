@@ -1,3 +1,7 @@
+/**
+ * Estilos de Formularioexperienciastyle.
+ */
+
 import { StyleSheet } from "react-native";
 
 // Modal "Agregar ubicación de mi negocio" (mapa interactivo).

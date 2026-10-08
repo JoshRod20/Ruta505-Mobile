@@ -1,4 +1,7 @@
-// Mapas de categorías, íconos (Ionicons) y colores para pins y formularios.
+/**
+ * Catálogo de categorías de experiencias culturales.
+ * Incluye id, etiqueta, ícono Ionicons y color para pins y formularios.
+ */
 export const CATEGORIAS_EXPERIENCIA = [
   {
     id: "comunidad",
@@ -32,16 +35,27 @@ export const CATEGORIAS_EXPERIENCIA = [
   },
 ];
 
+/** Ícono Ionicons por defecto cuando la categoría no se encuentra. */
 const ICONO_POR_DEFECTO = "location-outline";
+
+/** Color hexadecimal por defecto cuando la categoría no se encuentra. */
 const COLOR_POR_DEFECTO = "#123B63";
 
-// Retorna el nombre de Ionicons según el ID de categoría
+/**
+ * Devuelve el nombre de ícono Ionicons según el id de categoría.
+ * @param {string} categoriaId - Identificador de la categoría.
+ * @returns {string} Nombre del ícono.
+ */
 export function iconoDeCategoria(categoriaId) {
   const encontrada = CATEGORIAS_EXPERIENCIA.find((c) => c.id === categoriaId);
   return encontrada ? encontrada.icono : ICONO_POR_DEFECTO;
 }
 
-// Retorna el color hexadecimal según el ID de categoría
+/**
+ * Devuelve el color hexadecimal según el id de categoría.
+ * @param {string} categoriaId - Identificador de la categoría.
+ * @returns {string} Color en formato hex.
+ */
 export function colorDeCategoria(categoriaId) {
   const encontrada = CATEGORIAS_EXPERIENCIA.find((c) => c.id === categoriaId);
   return encontrada ? encontrada.color : COLOR_POR_DEFECTO;

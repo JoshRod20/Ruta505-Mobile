@@ -1,3 +1,7 @@
+/**
+ * MisRutasCreativas: componente/pantalla de la aplicación Ruta505.
+ */
+
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -35,6 +39,9 @@ const ETIQUETA_ESTADO = {
 };
 
 // Rutas creativas del actor: siguen activas hasta que las cancela.
+/**
+ * MisRutasCreativas.
+ */
 export default function MisRutasCreativas() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();

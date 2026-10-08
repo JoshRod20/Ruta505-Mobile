@@ -1,12 +1,14 @@
+/**
+ * actoresCulturales: componente/pantalla de la aplicación Ruta505.
+ */
+
 import { ACTOR_TYPES } from "./roles";
 
-// ==================================================
-// CONFIGURACIÓN POR TIPO DE ACTOR CULTURAL
-// Todos comparten el mismo rol (ROLES.ACTOR_CULTURAL);
-// esto solo define qué "tipoActor" se guarda y qué
-// opciones de turismo se muestran en el formulario.
-// ==================================================
-
+/**
+ * Configuración de formularios por tipo de actor cultural.
+ * Todos comparten el rol ROLES.ACTOR_CULTURAL; define el tipoActor
+ * almacenado y las opciones de turismo mostradas en el registro.
+ */
 export const ACTORES_CULTURALES_CONFIG = {
   [ACTOR_TYPES.COMUNIDAD]: {
     tituloEncabezado: "Datos Generales",

@@ -1,3 +1,7 @@
+/**
+ * Municipios agrupados por departamento de Nicaragua.
+ * Fuente de datos para selectores de ubicación en formularios.
+ */
 export const MUNICIPIOS_POR_DEPARTAMENTO = {
   Boaco: [
     "Boaco", "Camoapa", "San José de los Remates", "San Lorenzo",
@@ -75,7 +79,13 @@ export const MUNICIPIOS_POR_DEPARTAMENTO = {
   ],
 };
 
+/** Lista de departamentos derivada de MUNICIPIOS_POR_DEPARTAMENTO. */
 export const DEPARTAMENTOS = Object.keys(MUNICIPIOS_POR_DEPARTAMENTO);
 
+/**
+ * Devuelve los municipios de un departamento.
+ * @param {string} departamento - Nombre del departamento.
+ * @returns {string[]} Lista de municipios o arreglo vacío si no existe.
+ */
 export const getMunicipios = (departamento) =>
   MUNICIPIOS_POR_DEPARTAMENTO[departamento] ?? [];

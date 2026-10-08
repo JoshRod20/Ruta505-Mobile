@@ -1,8 +1,15 @@
+/**
+ * CulturalRoutes: componente/pantalla de la aplicación Ruta505.
+ */
+
 import React from "react";
 import { Text, View } from "react-native";
 
 import { culturalRoutesStyle } from "../../styles/usuario/culturalRoutesStyle";
 
+/**
+ * CulturalRoutes.
+ */
 export default function CulturalRoutes() {
   return (
     <View style={culturalRoutesStyle.container}>

@@ -1,3 +1,6 @@
+/**
+ * Intereses turísticos disponibles para el perfil del turista.
+ */
 export const INTERESES_TURISTA = [
   "Turismo de naturaleza / ecoturismo",
   "Turismo de playa / sol y arena",

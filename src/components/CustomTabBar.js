@@ -1,3 +1,7 @@
+/**
+ * CustomTabBar: componente/pantalla de la aplicación Ruta505.
+ */
+
 import React, { useRef, useState, useEffect, useMemo } from "react";
 import {
   View,
@@ -86,6 +90,9 @@ function getBarPath(width, height, cx, m) {
   `.replace(/\s+/g, " ").trim();
 }
 
+/**
+ * CustomTabBar.
+ */
 export default function CustomTabBar({ state, descriptors, navigation }) {
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();

@@ -1,3 +1,7 @@
+/**
+ * CulturalProfile: componente/pantalla de la aplicación Ruta505.
+ */
+
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -41,6 +45,9 @@ const ETIQUETA_TIPO_ACTOR = {
   emprendedor: "Emprendedor",
 };
 
+/**
+ * CulturalProfile.
+ */
 export default function CulturalProfile() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();

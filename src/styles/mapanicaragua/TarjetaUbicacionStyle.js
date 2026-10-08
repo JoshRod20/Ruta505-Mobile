@@ -1,3 +1,7 @@
+/**
+ * Estilos de TarjetaUbicacionStyle.
+ */
+
 import { StyleSheet } from "react-native";
 
 const VERDE = "#0E5A34";

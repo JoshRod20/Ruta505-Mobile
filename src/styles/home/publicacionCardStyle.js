@@ -1,3 +1,7 @@
+/**
+ * Estilos de publicacionCardStyle.
+ */
+
 import { StyleSheet, Dimensions } from "react-native";
 
 const { width: ANCHO_PANTALLA } = Dimensions.get("window");
