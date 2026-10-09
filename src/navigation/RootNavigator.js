@@ -1,3 +1,7 @@
+/**
+ * RootNavigator: componente/pantalla de la aplicación Ruta505.
+ */
+
 import { useEffect, useState } from "react";
 
 import {

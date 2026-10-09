@@ -1,3 +1,7 @@
+/**
+ * PerfilUsuario: componente/pantalla de la aplicación Ruta505.
+ */
+
 import React, { useState } from "react";
 import {
   Alert,
@@ -68,6 +72,9 @@ function Fila({
   );
 }
 
+/**
+ * PerfilUsuario.
+ */
 export default function PerfilUsuario({ navigation }) {
   const s = perfilUsuarioStyle;
   const insets = useSafeAreaInsets();

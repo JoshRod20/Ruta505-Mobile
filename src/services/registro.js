@@ -1,17 +1,17 @@
+/**
+ * registro: componente/pantalla de la aplicación Ruta505.
+ */
+
 import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "./firebase";
 
-// ==================================================
-// LIMPIAR CAMPOS UNDEFINED
-// ==================================================
-//
-// Firestore rechaza setDoc si algún campo llega undefined
-// (ej. tipoActor undefined si route.params llegó incompleto
-// en algún punto del flujo de registro). Preferimos limpiar
-// el objeto antes de escribirlo en vez de que setDoc truene
-// después de haber creado la cuenta en Auth.
-//
+/**
+ * Elimina campos undefined de un objeto.
+ * Firestore rechaza setDoc con valores undefined.
+ * @param {Object} obj - Objeto a limpiar.
+ * @returns {Object} Copia sin propiedades undefined.
+ */
 const limpiarUndefined = (obj) =>
   Object.fromEntries(
     Object.entries(obj).filter(([, valor]) => valor !== undefined)
@@ -19,19 +19,11 @@ const limpiarUndefined = (obj) =>
 
 /**
  * Crea la cuenta en Firebase Auth y el documento de perfil en Firestore.
- * Misma colección "users" que usa la PWA — una cuenta creada desde
- * el móvil es indistinguible de una creada desde la web.
- *
- * Si el setDoc falla después de haber creado la cuenta en Auth, se
- * revierte esa cuenta (credenciales.user.delete()) antes de relanzar
- * el error. Sin esto, un fallo de setDoc dejaría un usuario huérfano
- * en Auth sin perfil, y además bloquearía cualquier reintento con
- * auth/email-already-in-use.
- *
- * @param {string} email
- * @param {string} password
- * @param {object} datosPerfil - role, actorType, estadoVerificacion y
- *   los campos propios del formulario correspondiente.
+ * Si setDoc falla tras crear Auth, revierte la cuenta para evitar huérfanos.
+ * @param {string} email - Correo del usuario.
+ * @param {string} password - Contraseña.
+ * @param {Object} datosPerfil - role, actorType, estadoVerificacion y campos del formulario.
+ * @returns {Promise<string>} uid del usuario creado.
  */
 export const registrarUsuario = async (email, password, datosPerfil) => {
   const credenciales = await createUserWithEmailAndPassword(
@@ -60,8 +52,6 @@ export const registrarUsuario = async (email, password, datosPerfil) => {
     throw err;
   }
 
-  // No bloqueamos el registro si esto falla (ej. sin internet en ese
-  // instante); el usuario podrá reenviarlo después desde la app.
   try {
     await sendEmailVerification(credenciales.user);
   } catch (err) {

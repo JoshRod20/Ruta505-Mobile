@@ -1,3 +1,7 @@
+/**
+ * Estilos de generateQrStyle.
+ */
+
 import { StyleSheet } from "react-native";
 
 // Pestaña "Generar QR" del actor cultural (Pasaporte Cultural QR).

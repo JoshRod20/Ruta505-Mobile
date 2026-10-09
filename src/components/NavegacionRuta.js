@@ -1,3 +1,7 @@
+/**
+ * NavegacionRuta: componente/pantalla de la aplicación Ruta505.
+ */
+
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   View,
@@ -35,6 +39,9 @@ const SEGUNDOS_MINIMOS_PARA_ETA_REAL = 15;
 const METROS_MINIMOS_PARA_ETA_REAL = 30;
 
 // Componente de navegación GPS Turn-by-Turn basado en OSRM y MapLibre.
+/**
+ * NavegacionRuta.
+ */
 export default function NavegacionRuta({
   ruta: rutaInicial,
   onFinalizar, // al llegar al destino

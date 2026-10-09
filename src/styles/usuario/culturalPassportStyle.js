@@ -1,3 +1,7 @@
+/**
+ * Estilos de culturalPassportStyle.
+ */
+
 import { StyleSheet } from "react-native";
 
 export const culturalPassportStyle = StyleSheet.create({

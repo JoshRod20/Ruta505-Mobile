@@ -1,3 +1,7 @@
+/**
+ * Estilos de perfilUsuarioStyle.
+ */
+
 import { StyleSheet } from "react-native";
 
 // Pantalla "Configuración" (Mi cuenta): secciones con filas, igual que el diseño.

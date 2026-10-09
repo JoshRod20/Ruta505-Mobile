@@ -1,3 +1,7 @@
+/**
+ * PublicacionCard: componente/pantalla de la aplicación Ruta505.
+ */
+
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -24,7 +28,9 @@ import {
 import { formatearTiempoRelativo } from "../../utils/tiempoRelativo";
 import {
   alternarLike,
+  actualizarExperiencia,
   eliminarComentario,
+  eliminarExperiencia,
   escucharComentarios,
   escucharLikes,
   guardarComentario,
@@ -86,6 +92,9 @@ const ETIQUETAS_ACTOR = {
   emprendedor: "Emprendedor/a",
 };
 
+/**
+ * PublicacionCard.
+ */
 export default function PublicacionCard({ experiencia }) {
   const insets = useSafeAreaInsets();
   const { user, profile } = useAuth();
@@ -102,6 +111,11 @@ export default function PublicacionCard({ experiencia }) {
   const [likes, setLikes] = useState([]);
   // "Guardar" sigue siendo solo visual: todavía no se persiste en Firestore.
   const [guardadoActivo, setGuardadoActivo] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [editando, setEditando] = useState(false);
+  const [tituloEditado, setTituloEditado] = useState("");
+  const [descripcionEditada, setDescripcionEditada] = useState("");
+  const [guardandoEdicion, setGuardandoEdicion] = useState(false);
 
   const imagenes = experiencia.imagenUrls?.length
     ? experiencia.imagenUrls
@@ -112,7 +126,10 @@ export default function PublicacionCard({ experiencia }) {
   // El autor ve el contador, pero no puede darse "me gusta" a sí mismo.
   const esAutor = !!user?.uid && experiencia.creadoPor === user.uid;
   const titulo =
-    experiencia.titulo || ETIQUETAS_ACTOR[experiencia.actorType] || "Ruta505";
+    experiencia.titulo ||
+    (experiencia.actorType && experiencia.actorType !== "guia"
+      ? ETIQUETAS_ACTOR[experiencia.actorType]
+      : "Ruta505");
   const ubicacion = experiencia.lugar || experiencia.ubicacionExacta;
 
   useEffect(() => {
@@ -275,37 +292,194 @@ export default function PublicacionCard({ experiencia }) {
     setIndiceImagen(nuevoIndice);
   };
 
+  const abrirEdicion = () => {
+    setTituloEditado(experiencia.titulo || titulo || "");
+    setDescripcionEditada(experiencia.descripcion || "");
+    setEditando(true);
+    setMenuVisible(false);
+  };
+
+  const guardarEdicion = async () => {
+    const tituloFinal = tituloEditado.trim();
+    const descripcionFinal = descripcionEditada.trim();
+
+    if (!tituloFinal) {
+      Alert.alert("Falta el título", "Escribe un título para la publicación.");
+      return;
+    }
+
+    try {
+      setGuardandoEdicion(true);
+      await actualizarExperiencia(experiencia.id, {
+        titulo: tituloFinal,
+        descripcion: descripcionFinal,
+      });
+      setEditando(false);
+      Alert.alert("Publicación actualizada", "Los cambios se guardaron correctamente.");
+    } catch (error) {
+      console.warn("Error al actualizar la experiencia:", error);
+      Alert.alert("No se pudo guardar", "Inténtalo de nuevo en unos minutos.");
+    } finally {
+      setGuardandoEdicion(false);
+    }
+  };
+
+  const eliminarPublicacion = () => {
+    Alert.alert("Eliminar publicación", "¿Seguro que quieres eliminar esta publicación?", [
+      { text: "Cancelar", style: "cancel" },
+      {
+        text: "Eliminar",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await eliminarExperiencia(experiencia.id);
+            setMenuVisible(false);
+          } catch (error) {
+            console.warn("Error al eliminar la experiencia:", error);
+            Alert.alert("No se pudo eliminar", "Inténtalo de nuevo en unos minutos.");
+          }
+        },
+      },
+    ]);
+  };
+
   return (
     <View style={styles.card}>
       {/* Encabezado */}
       <View style={styles.header}>
-        <View style={styles.avatarPlaceholder}>
-          <Ionicons name="person-outline" size={20} color="#8C7B66" />
-        </View>
-        <View style={styles.headerTextos}>
-          <View style={styles.filaTitulo}>
-            <Text style={styles.titulo} numberOfLines={1}>
-              {titulo}
-            </Text>
-            {experiencia.verificado === true && (
-              <Ionicons
-                name="checkmark-circle"
-                size={15}
-                color="#1A1A1A"
-                style={styles.verificado}
-              />
+        <View style={styles.headerContent}>
+          <View style={styles.avatarPlaceholder}>
+            <Ionicons name="person-outline" size={20} color="#8C7B66" />
+          </View>
+          <View style={styles.headerTextos}>
+            <View style={styles.filaTitulo}>
+              <Text style={styles.titulo} numberOfLines={1}>
+                {titulo}
+              </Text>
+              {experiencia.verificado === true && (
+                <Ionicons
+                  name="checkmark-circle"
+                  size={15}
+                  color="#1A1A1A"
+                  style={styles.verificado}
+                />
+              )}
+            </View>
+            {!!ubicacion && (
+              <View style={styles.filaUbicacion}>
+                <Ionicons name="location-sharp" size={13} color={VERDE} />
+                <Text style={styles.ubicacionTexto} numberOfLines={1}>
+                  {ubicacion}
+                </Text>
+              </View>
             )}
           </View>
-          {!!ubicacion && (
-            <View style={styles.filaUbicacion}>
-              <Ionicons name="location-sharp" size={13} color={VERDE} />
-              <Text style={styles.ubicacionTexto} numberOfLines={1}>
-                {ubicacion}
-              </Text>
-            </View>
-          )}
         </View>
+
+        <TouchableOpacity
+          style={styles.menuBoton}
+          onPress={() => setMenuVisible(true)}
+          activeOpacity={0.8}
+          accessibilityLabel="Más opciones"
+        >
+          <Ionicons name="ellipsis-horizontal" size={18} color="#4D4D4D" />
+        </TouchableOpacity>
       </View>
+
+      <Modal
+        visible={menuVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setMenuVisible(false)}
+      >
+        <TouchableOpacity
+          style={styles.menuOverlay}
+          activeOpacity={1}
+          onPress={() => setMenuVisible(false)}
+        >
+          <View style={esAutor ? styles.menuSheetAutor : styles.menuSheetVisitante}>
+            {esAutor ? (
+              <>
+                <TouchableOpacity style={styles.menuOpcion} onPress={abrirEdicion}>
+                  <Ionicons name="create-outline" size={18} color="#1F1F1F" />
+                  <Text style={styles.menuOpcionTexto}>Editar publicación</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.menuOpcion} onPress={eliminarPublicacion}>
+                  <Ionicons name="trash-outline" size={18} color="#C1443C" />
+                  <Text style={[styles.menuOpcionTexto, { color: "#C1443C" }]}>Eliminar publicación</Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <TouchableOpacity
+                  style={styles.menuOpcion}
+                  onPress={() => {
+                    setMenuVisible(false);
+                    Alert.alert(
+                      "Publicación",
+                      "La opción de reportar está lista para ser conectada con tu flujo real de moderación."
+                    );
+                  }}
+                >
+                  <Ionicons name="flag-outline" size={18} color="#1F1F1F" />
+                  <Text style={styles.menuOpcionTexto}>Reportar</Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      <Modal
+        visible={editando}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setEditando(false)}
+      >
+        <View style={styles.modalEditarFondo}>
+          <View style={styles.modalEditarCard}>
+            <View style={styles.modalEditarHeader}>
+              <Text style={styles.modalEditarTitulo}>Editar publicación</Text>
+              <TouchableOpacity
+                onPress={() => setEditando(false)}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Ionicons name="close" size={22} color="#555555" />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.modalEditarLabel}>Título</Text>
+            <TextInput
+              style={styles.modalEditarInput}
+              value={tituloEditado}
+              onChangeText={setTituloEditado}
+              placeholder="Título de la experiencia"
+              maxLength={120}
+            />
+
+            <Text style={styles.modalEditarLabel}>Descripción</Text>
+            <TextInput
+              style={[styles.modalEditarInput, styles.modalEditarInputMultilinea]}
+              value={descripcionEditada}
+              onChangeText={setDescripcionEditada}
+              placeholder="Describe tu experiencia"
+              multiline
+              maxLength={500}
+            />
+
+            <TouchableOpacity
+              style={[styles.modalEditarGuardar, guardandoEdicion && styles.modalEditarGuardarDisabled]}
+              onPress={guardarEdicion}
+              disabled={guardandoEdicion}
+            >
+              <Text style={styles.modalEditarGuardarTexto}>
+                {guardandoEdicion ? "Guardando..." : "Guardar cambios"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       {/* Carrusel de fotos */}
       {imagenes.length > 0 ? (
@@ -376,21 +550,6 @@ export default function PublicacionCard({ experiencia }) {
             color={likeActivo ? "#C1443C" : "#1F1F1F"}
           />
           <Text style={styles.pastillaTexto}>{totalLikes}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.pastilla}
-          onPress={() => setGuardadoActivo((prev) => !prev)}
-          activeOpacity={0.7}
-        >
-          <Ionicons
-            name={guardadoActivo ? "bookmark" : "bookmark-outline"}
-            size={17}
-            color="#1F1F1F"
-          />
-          <Text style={styles.pastillaTexto}>
-            {guardadoActivo ? "Guardado" : "Guardar"}
-          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity

@@ -1,3 +1,7 @@
+/**
+ * BarraBusquedaMapa: componente/pantalla de la aplicación Ruta505.
+ */
+
 import React, { useMemo, useState } from "react";
 import {
   ActivityIndicator,

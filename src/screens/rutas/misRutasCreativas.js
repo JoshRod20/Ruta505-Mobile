@@ -1,3 +1,7 @@
+/**
+ * MisRutasCreativas: componente/pantalla de la aplicación Ruta505.
+ */
+
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -35,6 +39,9 @@ const ETIQUETA_ESTADO = {
 };
 
 // Rutas creativas del actor: siguen activas hasta que las cancela.
+/**
+ * MisRutasCreativas.
+ */
 export default function MisRutasCreativas() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
@@ -125,9 +132,14 @@ export default function MisRutasCreativas() {
               await cancelarRuta({ rutaId: ruta.id, paradas: paradasRuta });
             } catch (error) {
               console.warn("Error al cancelar la ruta:", error);
+              const codigo = error?.code ?? error?.message ?? "desconocido";
               Alert.alert(
-                "No se pudo cancelar",
-                "Revisa tu conexión e inténtalo de nuevo."
+                error?.paso === "paradas"
+                  ? "Ruta cancelada con un aviso"
+                  : "No se pudo cancelar",
+                error?.paso === "paradas"
+                  ? `La ruta se canceló, pero no se pudieron retirar sus paradas (${codigo}).`
+                  : `No se pudo cancelar la ruta (${codigo}). Si es un error de permisos, revisa que las reglas de Firestore más recientes estén publicadas.`
               );
             } finally {
               setCancelando(null);

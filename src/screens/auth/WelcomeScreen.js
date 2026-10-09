@@ -1,3 +1,7 @@
+/**
+ * WelcomeScreen: componente/pantalla de la aplicación Ruta505.
+ */
+
 import React from "react";
 import { View, Image, Text, TouchableOpacity } from "react-native";
 import WelcomeScreenStyle from "../../styles/auth/WelcomeScreenStyle";

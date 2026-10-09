@@ -1,9 +1,17 @@
-// Búsqueda de lugares, calles y negocios en Nicaragua con Nominatim (OpenStreetMap).
-// Política de uso: máx. 1 petición por segundo, sin autocompletar mientras se
-// escribe (por eso la barra solo llama aquí al enviar) y con User-Agent propio.
-// Si la app crece, cambia NOMINATIM_URL por un proveedor propio (MapTiler, Photon, etc.)
+/**
+ * URL base de Nominatim (OpenStreetMap) para búsqueda de lugares.
+ * Política: máx. 1 petición/segundo; no autocompletar mientras se escribe.
+ */
 const NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
 
+/**
+ * Busca lugares, calles y negocios en Nicaragua.
+ * @param {string} texto - Texto de búsqueda.
+ * @param {Object} [opciones]
+ * @param {number} [opciones.limite=6] - Máximo de resultados.
+ * @param {AbortSignal} [opciones.signal] - Señal de cancelación.
+ * @returns {Promise<Array<{id: string, nombre: string, detalle: string, lat: number, lon: number}>>}
+ */
 export async function buscarLugares(texto, { limite = 6, signal } = {}) {
   const q = texto.trim();
   if (q.length < 2) return [];
@@ -41,17 +49,27 @@ export async function buscarLugares(texto, { limite = 6, signal } = {}) {
     .filter((l) => !Number.isNaN(l.lat) && !Number.isNaN(l.lon));
 }
 
+/** URL de geocodificación inversa de Nominatim. */
 const NOMINATIM_REVERSE_URL = "https://nominatim.openstreetmap.org/reverse";
 
+/**
+ * Elimina prefijos administrativos comunes del nombre de lugar.
+ * @param {string} texto - Texto a limpiar.
+ * @returns {string}
+ */
 const quitarPrefijo = (texto) =>
   String(texto || "")
     .replace(/^(Departamento|Municipio|Región Autónoma|Región)\s+(de(l)?\s+)?/i, "")
     .trim();
 
 /**
- * Devuelve un nombre corto del lugar para mostrar en las publicaciones,
- * por ejemplo "Catarina, Masaya". Si falla o tarda demasiado devuelve null
- * (publicar nunca debe depender de este dato).
+ * Obtiene un nombre corto del lugar a partir de coordenadas (ej. "Catarina, Masaya").
+ * Si falla o supera el timeout devuelve null; publicar no debe depender de este dato.
+ * @param {number} lat - Latitud.
+ * @param {number} lon - Longitud.
+ * @param {Object} [opciones]
+ * @param {number} [opciones.timeoutMs=5000] - Tiempo máximo de espera.
+ * @returns {Promise<string|null>}
  */
 export async function obtenerNombreLugar(lat, lon, { timeoutMs = 5000 } = {}) {
   const controlador = new AbortController();

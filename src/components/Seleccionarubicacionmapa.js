@@ -1,3 +1,7 @@
+/**
+ * SeleccionarUbicacionMapa: componente/pantalla de la aplicación Ruta505.
+ */
+
 import React, { useRef, useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { Map, Camera } from "@maplibre/maplibre-react-native";
@@ -7,6 +11,9 @@ import { seleccionarUbicacionStyle as s } from "../styles/mapanicaragua/Seleccio
 
 const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
 
+/**
+ * SeleccionarUbicacionMapa.
+ */
 export default function SeleccionarUbicacionMapa({
   centroInicial,
   onConfirmar,

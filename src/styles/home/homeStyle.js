@@ -1,3 +1,7 @@
+/**
+ * Estilos de homeStyle.
+ */
+
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 import { StyleSheet } from "react-native";
 
@@ -32,6 +36,7 @@ export const homeStyle = StyleSheet.create({
     width: "93%",
     height: 30,
     right: 80,
+    marginLeft: wp("2.5%"),
   },
   botonCampana: {
     width: 36,
@@ -42,9 +47,9 @@ export const homeStyle = StyleSheet.create({
 
   // ---- Introducción ----
   intro: {
-    fontFamily: "Inter-Regular",
+    fontFamily: "Poppins-Reg",
     fontSize: 13,
-    color: "#2D2D2D",
+    color: "#000000",
     lineHeight: 20,
     paddingHorizontal: 24,
     marginTop: 18,
@@ -59,6 +64,7 @@ export const homeStyle = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "flex-start",
+    fontFamily: "Inter-SemiBold",
     backgroundColor: VERDE,
     borderRadius: 999,
     height: 40,
@@ -67,15 +73,15 @@ export const homeStyle = StyleSheet.create({
     marginTop: 18,
   },
   botonNuevaTexto: {
-    fontFamily: "Poppins-SemiBold",
+    fontFamily: "Inter-SemiBold",
     fontSize: 14,
     color: "#FFFFFF",
     marginLeft: 8,
   },
 
   etiquetaNuevos: {
-    fontFamily: "Inter-SemiBold",
-    fontSize: 12,
+    fontFamily: "Poppins-SemiBold",
+    fontSize: wp("3.5%"),
     color: VERDE,
     paddingHorizontal: 24,
     marginTop: 22,
@@ -108,7 +114,7 @@ export const homeStyle = StyleSheet.create({
   feedEstadoTexto: {
     fontFamily: "Inter-Regular",
     fontSize: 14,
-    color: "#5F7261",
+    color: "#2e302f",
     textAlign: "center",
     paddingHorizontal: 24,
   },

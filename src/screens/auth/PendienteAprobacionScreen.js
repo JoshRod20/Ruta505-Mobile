@@ -1,3 +1,7 @@
+/**
+ * PendienteAprobacionScreen: componente/pantalla de la aplicación Ruta505.
+ */
+
 import { View, Text, TouchableOpacity } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 import LogoutButton from "../../components/common/LogoutButton";

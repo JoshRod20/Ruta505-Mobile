@@ -1,3 +1,7 @@
+/**
+ * Onboarding: componente/pantalla de la aplicación Ruta505.
+ */
+
 import React, {
   useEffect,
   useRef,

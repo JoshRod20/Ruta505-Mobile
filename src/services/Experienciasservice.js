@@ -1,3 +1,9 @@
+/**
+ * Servicio de experiencias culturales (publicaciones del Home).
+ * Colección "experiencias". Los negocios del mapa están en "negocios".
+ * Incluye CRUD, likes, comentarios/reseñas y escucha en tiempo real.
+ */
+
 import { db } from "../services/firebase";
 
 import {
@@ -15,12 +21,18 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 
+/** Nombre de la colección de publicaciones en Firestore. */
 const COLECCION = "experiencias";
 
 // "experiencias" son SOLO las publicaciones del Home (botón + / Nueva
 // publicación). Los negocios del mapa viven en su propia colección: "negocios"
 // (ver Negociosservice.js).
 
+/**
+ * Crea una nueva experiencia (publicación).
+ * @param {Object} datos - Datos de la experiencia.
+ * @returns {Promise<DocumentReference>}
+ */
 export async function crearExperiencia(datos) {
   return addDoc(collection(db, COLECCION), {
     ...datos,
@@ -28,6 +40,21 @@ export async function crearExperiencia(datos) {
   });
 }
 
+/**
+ * Elimina una experiencia existente.
+ * @param {string} id - ID del documento.
+ * @returns {Promise<void>}
+ */
+export async function eliminarExperiencia(id) {
+  return deleteDoc(doc(db, COLECCION, id));
+}
+
+/**
+ * Actualiza una experiencia existente.
+ * @param {string} id - ID del documento.
+ * @param {Object} datos - Campos a actualizar.
+ * @returns {Promise<void>}
+ */
 export async function actualizarExperiencia(id, datos) {
   const ref = doc(db, COLECCION, id);
   return updateDoc(ref, {
@@ -36,6 +63,12 @@ export async function actualizarExperiencia(id, datos) {
   });
 }
 
+/**
+ * Escucha en tiempo real todas las experiencias ordenadas por fecha.
+ * @param {function} callback - Recibe el arreglo de experiencias.
+ * @param {function} [onError] - Callback opcional de error.
+ * @returns {function} Función de desuscripción.
+ */
 export function escucharExperiencias(callback, onError) {
   const q = query(collection(db, COLECCION), orderBy("createdAt", "desc"));
 
@@ -62,13 +95,24 @@ export function escucharExperiencias(callback, onError) {
 // ==================================================
 
 // 3 estrellas o más cuenta como reseña "Buena"; 1 o 2 como "Mala".
+/** Calificación mínima (1-5) para considerar una reseña como "buena". */
 export const CALIFICACION_MINIMA_BUENA = 3;
 
+/**
+ * Indica si una reseña se considera buena según CALIFICACION_MINIMA_BUENA.
+ * @param {{calificacion: number}} resena
+ * @returns {boolean}
+ */
 export function esResenaBuena(resena) {
   return Number(resena.calificacion) >= CALIFICACION_MINIMA_BUENA;
 }
 
 // Totales y promedio para mostrar en el perfil y en Estadísticas.
+/**
+ * Calcula totales y promedio de un conjunto de reseñas.
+ * @param {Array<{calificacion: number}>} resenas
+ * @returns {{total: number, buenas: number, malas: number, promedio: number|null}}
+ */
 export function resumirResenas(resenas) {
   const total = resenas.length;
   const buenas = resenas.filter(esResenaBuena).length;
@@ -93,6 +137,13 @@ export function resumirResenas(resenas) {
 // ==================================================
 
 // Escucha en vivo los "me gusta" de una publicación. Devuelve la lista de uids.
+/**
+ * Escucha en vivo los "me gusta" de una publicación.
+ * @param {string} experienciaId
+ * @param {function} callback - Recibe arreglo de uids.
+ * @param {function} [onError]
+ * @returns {function} Desuscripción.
+ */
 export function escucharLikes(experienciaId, callback, onError) {
   return onSnapshot(
     collection(db, COLECCION, experienciaId, "likes"),
@@ -105,6 +156,12 @@ export function escucharLikes(experienciaId, callback, onError) {
 }
 
 // Da o quita el "me gusta" de la persona según su estado actual.
+/**
+ * Alterna el "me gusta" del usuario actual sobre una experiencia.
+ * @param {string} experienciaId
+ * @param {string} uid
+ * @returns {Promise<void>}
+ */
 export async function alternarLike(experienciaId, uid, yaLeDioLike) {
   const ref = doc(db, COLECCION, experienciaId, "likes", uid);
   if (yaLeDioLike) {
@@ -131,6 +188,13 @@ function milisegundosComentario(c) {
 }
 
 // Escucha en vivo los comentarios de una publicación (los más antiguos primero).
+/**
+ * Escucha en tiempo real los comentarios de una experiencia.
+ * @param {string} experienciaId
+ * @param {function} callback
+ * @param {function} [onError]
+ * @returns {function} Desuscripción.
+ */
 export function escucharComentarios(experienciaId, callback, onError) {
   return onSnapshot(
     collection(db, COLECCION, experienciaId, "comentarios"),
@@ -149,6 +213,13 @@ export function escucharComentarios(experienciaId, callback, onError) {
 
 // Crea el comentario o, si la persona ya tenía uno, actualiza solo lo que
 // ella puede editar (calificación, texto y fotos).
+/**
+ * Guarda o actualiza un comentario/reseña sobre una experiencia.
+ * @param {string} experienciaId
+ * @param {string} uid
+ * @param {Object} datos - texto, calificacion, etc.
+ * @returns {Promise<void>}
+ */
 export async function guardarComentario(
   experienciaId,
   { autorId, autorNombre, calificacion, texto, imagenes }
@@ -176,6 +247,13 @@ export async function guardarComentario(
 }
 
 // El dueño de la publicación responde un comentario.
+/**
+ * Añade una respuesta del autor a un comentario existente.
+ * @param {string} experienciaId
+ * @param {string} comentarioId
+ * @param {string} texto
+ * @returns {Promise<void>}
+ */
 export async function responderComentario(experienciaId, comentarioId, texto) {
   return updateDoc(
     doc(db, COLECCION, experienciaId, "comentarios", comentarioId),
@@ -183,6 +261,12 @@ export async function responderComentario(experienciaId, comentarioId, texto) {
   );
 }
 
+/**
+ * Elimina un comentario de una experiencia.
+ * @param {string} experienciaId
+ * @param {string} comentarioId
+ * @returns {Promise<void>}
+ */
 export async function eliminarComentario(experienciaId, comentarioId) {
   return deleteDoc(
     doc(db, COLECCION, experienciaId, "comentarios", comentarioId)
@@ -195,6 +279,13 @@ export async function eliminarComentario(experienciaId, comentarioId) {
 // y los "me gusta" de cada una. Así no hace falta crear índices en Firestore.
 // callback recibe { publicaciones, comentarios (más nuevos primero), likesTotal }.
 // ==================================================
+/**
+ * Escucha reseñas y actividad relacionadas con las experiencias de un actor.
+ * @param {string} uidActor
+ * @param {function} callback
+ * @param {function} [onError]
+ * @returns {function} Desuscripción.
+ */
 export function escucharActividadDeActor(actorId, callback, onError) {
   const datos = new Map(); // idPublicacion -> { comentarios, likes }
   const oyentes = new Map(); // idPublicacion -> [funciones para dejar de escuchar]

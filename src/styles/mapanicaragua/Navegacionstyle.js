@@ -1,3 +1,7 @@
+/**
+ * Estilos de Navegacionstyle.
+ */
+
 import { StyleSheet } from "react-native";
 
 export const navegacionStyle = StyleSheet.create({

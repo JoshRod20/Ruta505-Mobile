@@ -1,3 +1,7 @@
+/**
+ * Estilos de mapaNicaraguaStyle.
+ */
+
 import { StyleSheet } from "react-native";
 
 export const mapaNicaraguaStyle = StyleSheet.create({

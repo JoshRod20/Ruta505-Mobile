@@ -1,3 +1,7 @@
+/**
+ * Estilos de userProfileStyle.
+ */
+
 import { StyleSheet } from "react-native";
 
 export const userProfileStyle = StyleSheet.create({

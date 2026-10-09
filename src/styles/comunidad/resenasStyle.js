@@ -1,3 +1,7 @@
+/**
+ * Estilos de resenasStyle.
+ */
+
 import { StyleSheet } from "react-native";
 
 // Pantalla "Reseñas": lista de reseñas de una experiencia (o de todas las

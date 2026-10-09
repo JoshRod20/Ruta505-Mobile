@@ -1,9 +1,16 @@
+/**
+ * AcercaDe: componente/pantalla de la aplicación Ruta505.
+ */
+
 import React from "react";
 import { Text, View } from "react-native";
 
 import FloatingNavButton from "../components/common/FloatingNavButton";
 import { homeStyle } from "../styles/home/homeStyle";
 
+/**
+ * AcercaDe.
+ */
 export default function AcercaDe({ navigation }) {
   return (
     <View style={homeStyle.container}>

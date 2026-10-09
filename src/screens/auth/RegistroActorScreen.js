@@ -1,3 +1,7 @@
+/**
+ * RegistroActorScreen: componente/pantalla de la aplicación Ruta505.
+ */
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Dimensions,

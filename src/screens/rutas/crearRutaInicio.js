@@ -1,3 +1,7 @@
+/**
+ * CrearRutaInicio: componente/pantalla de la aplicación Ruta505.
+ */
+
 import React, { useEffect, useState } from "react";
 import {
   Alert,
@@ -36,6 +40,9 @@ const nombreDeCategoria = (id) =>
   CATEGORIAS_EXPERIENCIA.find((c) => c.id === id)?.label ?? "";
 
 // Pestaña "+": paso 1 de 5 de la Ruta Creativa ("Mis servicios").
+/**
+ * CrearRutaInicio.
+ */
 export default function CrearRutaInicio() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();

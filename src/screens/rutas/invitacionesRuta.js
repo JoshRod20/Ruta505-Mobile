@@ -1,3 +1,7 @@
+/**
+ * InvitacionesRuta: componente/pantalla de la aplicación Ruta505.
+ */
+
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -14,6 +18,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import { Picker } from "@react-native-picker/picker";
 
 import { useAuth } from "../../context/AuthContext";
 import {
@@ -33,6 +38,14 @@ import {
 
 const MAX_FOTOS = 2;
 
+const HORARIOS_DISPONIBLES = [
+  "Lunes a domingo, 8:00 am - 9:00 pm",
+  "Lunes a sábado, 9:00 am - 7:00 pm",
+  "Lunes a viernes, 8:00 am - 5:00 pm",
+  "Fines de semana, 9:00 am - 8:00 pm",
+  "Horario por confirmar",
+];
+
 function insigniaDe(estado) {
   switch (estado) {
     case ESTADO_PARADA.ACEPTADA:
@@ -45,6 +58,9 @@ function insigniaDe(estado) {
 }
 
 // Invitaciones a rutas creativas que recibió el actor (se abre desde la campana).
+/**
+ * InvitacionesRuta.
+ */
 export default function InvitacionesRuta() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
@@ -262,15 +278,19 @@ export default function InvitacionesRuta() {
       />
 
       <Text style={s.etiqueta}>Horario disponible</Text>
-      <View style={[s.input, s.inputConIcono]}>
-        <TextInput
-          style={s.inputConIconoTexto}
-          placeholder="Sab y Domin, 8:00 am - 9:00 pm"
-          placeholderTextColor="#9A9A9A"
-          value={form.horario}
-          onChangeText={(t) => actualizarForm("horario", t)}
-          maxLength={80}
-        />
+      <View style={[s.input, s.inputConIcono, { paddingRight: 0 }]}>
+        <Picker
+          selectedValue={form.horario || HORARIOS_DISPONIBLES[0]}
+          onValueChange={(value) => actualizarForm("horario", value)}
+          style={{ flex: 1, color: "#1A1A1A" }}
+          itemStyle={{ color: "#1A1A1A" }}
+          dropdownIconColor="#111111"
+        >
+          <Picker.Item label="Selecciona horario disponible" value="" />
+          {HORARIOS_DISPONIBLES.map((horario) => (
+            <Picker.Item key={horario} label={horario} value={horario} />
+          ))}
+        </Picker>
         <Ionicons name="time-outline" size={22} color="#111111" />
       </View>
 

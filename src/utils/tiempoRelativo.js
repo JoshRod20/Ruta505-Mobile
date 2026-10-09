@@ -1,5 +1,9 @@
-// Convierte un Timestamp de Firestore (o Date) en un texto relativo
-// como "Hace un momento", "Hace 22 horas", "Hace 3 días".
+/**
+ * Convierte un Timestamp de Firestore o un Date en texto relativo en español.
+ * Ejemplos: "Hace un momento", "Hace 22 horas", "Hace 3 días".
+ * @param {Object|Date|null|undefined} valor - Timestamp con toDate() o instancia Date.
+ * @returns {string} Texto relativo o cadena vacía si el valor no es válido.
+ */
 export function formatearTiempoRelativo(valor) {
   if (!valor) return "";
 

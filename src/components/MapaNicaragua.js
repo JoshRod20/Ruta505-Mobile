@@ -1,3 +1,7 @@
+/**
+ * MapaNicaragua: componente/pantalla de la aplicación Ruta505.
+ */
+
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   Text,
@@ -81,6 +85,9 @@ async function pedirPermisoUbicacion() {
   }
 }
 
+/**
+ * MapaNicaragua.
+ */
 export default function MapaNicaragua() {
   const insets = useSafeAreaInsets();
   const mapRef = useRef(null);

@@ -1,3 +1,7 @@
+/**
+ * NavigationTabs: componente/pantalla de la aplicación Ruta505.
+ */
+
 import * as React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
@@ -22,6 +26,9 @@ const Tab = createBottomTabNavigator();
 // independiente ("PublicarExperienciaDrawer") que se abre desde el Home.
 const BotonAgregar = () => null;
 
+/**
+ * NavigationTabs.
+ */
 export default function NavigationTabs({ route }) {
   const { role } = useAuth();
 

@@ -1,3 +1,7 @@
+/**
+ * Estilos de misRutasCreativasStyle.
+ */
+
 import { StyleSheet } from "react-native";
 import { VERDE, LIMA, NARANJA } from "./crearRutaStyle";
 

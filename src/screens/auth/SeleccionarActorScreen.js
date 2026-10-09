@@ -1,3 +1,7 @@
+/**
+ * SeleccionarActorScreen: componente/pantalla de la aplicación Ruta505.
+ */
+
 import {
   View,
   Text,

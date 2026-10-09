@@ -1,3 +1,7 @@
+/**
+ * Estilos de LogoutButtonStyle.
+ */
+
 import { StyleSheet } from "react-native";
 
 const COLOR_TINTA = "#2b2b2b";

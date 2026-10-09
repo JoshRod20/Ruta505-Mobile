@@ -1,31 +1,21 @@
-// services/mfa.js
-//
-// Envuelve la API de Multi-Factor Authentication de Firebase Auth
-// (variante TOTP: Google Authenticator, Authy, etc.). Se eligió TOTP
-// en vez de SMS porque el MFA por SMS de Firebase depende de
-// RecaptchaVerifier, una API pensada para navegador que no funciona
-// de forma confiable en React Native. TOTP no necesita reCAPTCHA ni
-// número de teléfono.
-//
-// IMPORTANTE: para que esto funcione, el proyecto de Firebase debe
-// tener Multi-Factor Authentication habilitado en Identity Platform
-// (Firebase Console -> Authentication -> Sign-in method -> Advanced).
-
+/**
+ * Servicio de Multi-Factor Authentication (TOTP).
+ * Usa Google Authenticator / Authy en lugar de SMS (RecaptchaVerifier
+ * no es confiable en React Native). Requiere MFA habilitado en Identity Platform.
+ */
 import {
   multiFactor,
   TotpMultiFactorGenerator,
 } from "firebase/auth";
-
 import { auth } from "./firebase";
 
+/** Nombre de la aplicación mostrado en el código QR TOTP. */
 const NOMBRE_APP = "Ruta505";
 
-// ==================================================
-// ESTADO ACTUAL
-// ==================================================
-
 /**
- * Indica si el usuario dado ya tiene un factor TOTP inscrito.
+ * Indica si el usuario ya tiene un factor TOTP inscrito.
+ * @param {Object|null} user - Usuario de Firebase Auth.
+ * @returns {boolean}
  */
 export const totpYaActivado = (user) => {
   if (!user) return false;
@@ -35,16 +25,10 @@ export const totpYaActivado = (user) => {
   );
 };
 
-// ==================================================
-// ENROLAMIENTO (activar 2FA)
-// ==================================================
-
 /**
- * Paso 1 del enrolamiento: genera el secreto TOTP y la URL para el
- * código QR. Debe llamarse con el usuario recién autenticado (Firebase
- * exige una sesión "reciente"; si el usuario tiene mucho tiempo sin
- * volver a iniciar sesión, esto puede lanzar auth/requires-recent-login,
- * en cuyo caso hay que pedirle la contraseña de nuevo antes de reintentar).
+ * Genera el secreto TOTP y la URL del código QR (paso 1 del enrolamiento).
+ * Requiere sesión reciente; puede lanzar auth/requires-recent-login.
+ * @returns {Promise<{secret: Object, qrCodeUrl: string, secretKey: string}>}
  */
 export const iniciarEnrolamientoTotp = async () => {
   const user = auth.currentUser;
@@ -59,15 +43,18 @@ export const iniciarEnrolamientoTotp = async () => {
   const qrCodeUrl = secret.generateQrCodeUrl(user.email, NOMBRE_APP);
 
   return {
-    secret, // objeto TotpSecret, se necesita para confirmar
-    qrCodeUrl, // uri otpauth:// para el QR
-    secretKey: secret.secretKey, // clave en texto plano, por si no puede escanear
+    secret,
+    qrCodeUrl,
+    secretKey: secret.secretKey,
   };
 };
 
 /**
- * Paso 2 del enrolamiento: confirma el secreto con el código de 6
- * dígitos generado por la app autenticadora del usuario.
+ * Confirma el secreto TOTP con el código de 6 dígitos (paso 2 del enrolamiento).
+ * @param {Object} secret - Objeto TotpSecret generado en el paso 1.
+ * @param {string} codigo - Código de 6 dígitos de la app autenticadora.
+ * @param {string} [alias="App autenticadora"] - Nombre del factor.
+ * @returns {Promise<void>}
  */
 export const confirmarEnrolamientoTotp = async (
   secret,
@@ -82,10 +69,10 @@ export const confirmarEnrolamientoTotp = async (
   await multiFactor(auth.currentUser).enroll(assertion, alias);
 };
 
-// ==================================================
-// DESACTIVAR
-// ==================================================
-
+/**
+ * Desactiva el factor TOTP del usuario autenticado.
+ * @returns {Promise<void>}
+ */
 export const desactivarTotp = async () => {
   const user = auth.currentUser;
   if (!user) return;
@@ -99,14 +86,12 @@ export const desactivarTotp = async () => {
   await multiFactor(user).unenroll(factor.uid);
 };
 
-// ==================================================
-// LOGIN (segundo factor)
-// ==================================================
-
 /**
- * A partir del resolver que Firebase entrega cuando el login inicial
- * lanza auth/multi-factor-auth-required, arma el assertion para
- * completar el inicio de sesión con el código TOTP ingresado.
+ * Construye el assertion TOTP para completar el login cuando
+ * Firebase lanza auth/multi-factor-auth-required.
+ * @param {Object} resolver - MultiFactorResolver de Firebase.
+ * @param {string} codigo - Código de 6 dígitos.
+ * @returns {Object} Assertion para resolver.completeSignIn.
  */
 export const construirAssertionParaLogin = (resolver, codigo) => {
   const hint = resolver.hints.find(

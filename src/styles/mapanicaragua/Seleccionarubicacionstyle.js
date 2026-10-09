@@ -1,3 +1,7 @@
+/**
+ * Estilos de Seleccionarubicacionstyle.
+ */
+
 import { StyleSheet } from "react-native";
 
 export const seleccionarUbicacionStyle = StyleSheet.create({

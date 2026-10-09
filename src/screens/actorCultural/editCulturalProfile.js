@@ -1,3 +1,7 @@
+/**
+ * EditCulturalProfile: componente/pantalla de la aplicación Ruta505.
+ */
+
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -51,6 +55,9 @@ const CampoSelector = ({ texto, placeholder, invalido, onPress }) => (
 
 // Pantalla independiente (sin barra de tabs): se abre desde
 // "Editar perfil cultural" en el perfil del actor cultural.
+/**
+ * EditCulturalProfile.
+ */
 export default function EditCulturalProfile() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();

@@ -1,3 +1,8 @@
+/**
+ * Hook de formulario de registro compartido entre pantallas de turista y actor.
+ * Gestiona estado, validación de credenciales y envío a Firebase.
+ */
+
 import { useState } from "react";
 import { registrarUsuario } from "../services/registro";
 import { mapFirebaseError } from "../utils/firebaseErrors";
@@ -13,6 +18,7 @@ import { EMAIL_REGEX, CEDULA_REGEX, TELEFONO_REGEX } from "../utils/validators";
 // Etiquetas legibles para los mensajes de error de campos
 // requeridos. Cada pantalla decide cuáles de estos campos
 // exigir pasándolos como array a validarCredenciales().
+/** Etiquetas legibles para mensajes de error de campos requeridos. */
 const ETIQUETAS_CAMPOS = {
   nombreCompleto: "el nombre completo",
   telefono: "el teléfono",
@@ -23,6 +29,11 @@ const ETIQUETAS_CAMPOS = {
   tipoTurismo: "el tipo de turismo",
 };
 
+/**
+ * Hook de formulario de registro.
+ * @param {{initialValues: Object}} options - Valores iniciales del formulario.
+ * @returns {Object} Estado, handlers y validadores del formulario.
+ */
 export function useRegistroForm({ initialValues }) {
   const [form, setForm] = useState(initialValues);
   const [mostrarPassword, setMostrarPassword] = useState(false);
@@ -30,6 +41,10 @@ export function useRegistroForm({ initialValues }) {
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
 
+  /** Actualiza un campo del formulario.
+   * @param {string} nombre
+   * @param {*} valor
+   */
   const handleChange = (nombre, valor) => {
     setForm((prev) => ({ ...prev, [nombre]: valor }));
   };
@@ -38,6 +53,11 @@ export function useRegistroForm({ initialValues }) {
   // form (además de email/password/confirmPassword, que
   // siempre se validan) que esta pantalla necesita no-vacíos
   // antes de continuar. Ej: ["nombreCompleto", "telefono", "edad"].
+  /**
+   * Valida email, password y campos requeridos adicionales.
+   * @param {string[]} [camposRequeridos=[]] - Nombres de campos obligatorios.
+   * @returns {boolean} true si la validación pasa.
+   */
   const validarCredenciales = (camposRequeridos = []) => {
     if (!form.email || !form.email.trim()) {
       setError("Falta completar el correo electrónico.");

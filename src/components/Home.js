@@ -1,3 +1,7 @@
+/**
+ * Home: componente/pantalla de la aplicación Ruta505.
+ */
+
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -23,6 +27,9 @@ import {
 } from "../services/rutasService";
 import { homeStyle, VERDE } from "../styles/home/homeStyle";
 
+/**
+ * Home.
+ */
 export default function Home() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();

@@ -1,3 +1,7 @@
+/**
+ * Estilos de crearRutaStyle.
+ */
+
 import { StyleSheet } from "react-native";
 
 // Estilos compartidos del flujo "Ruta Creativa": Mis servicios (tab +),

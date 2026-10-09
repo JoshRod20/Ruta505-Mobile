@@ -1,3 +1,7 @@
+/**
+ * Resenas: componente/pantalla de la aplicación Ruta505.
+ */
+
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,

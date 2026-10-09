@@ -1,5 +1,12 @@
+/** URL base del servicio de rutas OSRM (modo driving). */
 const OSRM_BASE_URL = "https://router.project-osrm.org/route/v1/driving";
 
+/**
+ * Calcula una ruta en carro entre dos puntos.
+ * @param {{lat: number, lon: number}} origen - Punto de origen.
+ * @param {{lat: number, lon: number}} destino - Punto de destino.
+ * @returns {Promise<{coordenadas: number[][], duracionMin: number, distanciaKm: string, pasos: Object[]}>}
+ */
 export async function obtenerRuta(origen, destino) {
   const url = `${OSRM_BASE_URL}/${origen.lon},${origen.lat};${destino.lon},${destino.lat}?overview=full&geometries=geojson&steps=true&annotations=false`;
 
@@ -18,16 +25,14 @@ export async function obtenerRuta(origen, destino) {
   const leg = ruta.legs[0];
 
   return {
-    // [lon, lat][] -> lo convertimos a [lat, lon] para MapLibre/RN
     coordenadas: ruta.geometry.coordinates.map(([lon, lat]) => [lat, lon]),
     duracionMin: Math.round(ruta.duration / 60),
     distanciaKm: (ruta.distance / 1000).toFixed(1),
-    // Cada paso trae: instruction (via maneuver), distance, duration, name (calle)
     pasos: leg.steps.map((paso, index) => ({
       id: `paso-${index}`,
       calle: paso.name || "Sin nombre",
-      tipoManiobra: paso.maneuver.type, // 'turn', 'depart', 'arrive', etc.
-      modificador: paso.maneuver.modifier, // 'left', 'right', 'straight', etc.
+      tipoManiobra: paso.maneuver.type,
+      modificador: paso.maneuver.modifier,
       distanciaM: Math.round(paso.distance),
       duracionSeg: Math.round(paso.duration),
       ubicacion: {
@@ -38,9 +43,11 @@ export async function obtenerRuta(origen, destino) {
   };
 }
 
-// Ruta en carro que pasa por varias paradas, en el orden recibido.
-// puntos: [{ lat, lon }, ...] (mínimo 2). Devuelve la línea completa, la
-// duración y la distancia totales.
+/**
+ * Calcula una ruta en carro que pasa por varias paradas en orden.
+ * @param {Array<{lat: number, lon: number}>} puntos - Paradas (mínimo 2).
+ * @returns {Promise<{coordenadas: number[][], duracionMin: number, distanciaKm: string}>}
+ */
 export async function obtenerRutaConParadas(puntos) {
   if (!Array.isArray(puntos) || puntos.length < 2) {
     throw new Error("Se necesitan al menos 2 paradas para trazar la ruta.");
@@ -61,13 +68,18 @@ export async function obtenerRutaConParadas(puntos) {
 
   const ruta = data.routes[0];
   return {
-    // [lon, lat][] -> [lat, lon][] (igual que obtenerRuta)
     coordenadas: ruta.geometry.coordinates.map(([lon, lat]) => [lat, lon]),
     duracionMin: Math.round(ruta.duration / 60),
     distanciaKm: (ruta.distance / 1000).toFixed(1),
   };
 }
 
+/**
+ * Traduce tipo y modificador de maniobra OSRM a texto en español.
+ * @param {string} tipoManiobra - Tipo de maniobra (turn, depart, arrive, etc.).
+ * @param {string} modificador - Dirección (left, right, straight, etc.).
+ * @returns {string} Descripción legible de la maniobra.
+ */
 export function describirManiobra(tipoManiobra, modificador) {
   const modificadores = {
     left: "izquierda",

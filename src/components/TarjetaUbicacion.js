@@ -1,3 +1,7 @@
+/**
+ * TarjetaUbicacion: componente/pantalla de la aplicación Ruta505.
+ */
+
 import React from "react";
 import {
   ActivityIndicator,

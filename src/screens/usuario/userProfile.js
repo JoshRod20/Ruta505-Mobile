@@ -1,8 +1,15 @@
+/**
+ * UserProfile: componente/pantalla de la aplicación Ruta505.
+ */
+
 import React from "react";
 import { Text, View } from "react-native";
 
 import { userProfileStyle } from "../../styles/usuario/userProfileStyle";
 
+/**
+ * UserProfile.
+ */
 export default function UserProfile() {
   return (
     <View style={userProfileStyle.container}>
