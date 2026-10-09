@@ -41,6 +41,15 @@ export async function crearExperiencia(datos) {
 }
 
 /**
+ * Elimina una experiencia existente.
+ * @param {string} id - ID del documento.
+ * @returns {Promise<void>}
+ */
+export async function eliminarExperiencia(id) {
+  return deleteDoc(doc(db, COLECCION, id));
+}
+
+/**
  * Actualiza una experiencia existente.
  * @param {string} id - ID del documento.
  * @param {Object} datos - Campos a actualizar.
