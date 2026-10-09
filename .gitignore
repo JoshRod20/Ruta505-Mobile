@@ -51,4 +51,5 @@ credentials.json
 
 # builds locales (si se usa --local)
 *.apk
-*.aab
+*.aabandroid/
+ios/
