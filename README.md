@@ -16,6 +16,9 @@ Desarrollado por el equipo Cuajada Salvaje para Hackathon Nicaragua 2026.
 4. [Estructura modular]
 5. [Scripts]
 6. [Ejemplos de endpoints]
+7. [Despliegue del APK en Azure con Docker y Nginx](#despliegue-del-apk-en-azure-con-docker-y-nginx)
+8. [Trazabilidad con GitHub main](#trazabilidad-del-despliegue-con-github-main)
+9. [Comprobaciones, errores y tareas pendientes](#comprobaciones-errores-y-tareas-pendientes)
 
 ---
 
@@ -61,6 +64,7 @@ Ruta 505 no tiene un backend propio: usa **Firebase** como backend-as-a-service 
 | **API de Claude** | Motor de inteligencia artificial detrás de Pinolito, el asistente conversacional |
 | **Netlify** | Hosting y despliegue continuo de la versión web |
 | **GitHub** | Repositorio y control de versiones del proyecto |
+| **Azure VM + Docker + Nginx** | Hospedaje y descarga del APK Android; no aloja el backend Firebase ni sustituye Netlify |
 
 ## Dependencias
 
@@ -515,6 +519,236 @@ const respuesta = await sendMessageToPinolito({
 console.log(respuesta.texto);
 // → "Cerca de Masaya puedes visitar el mercado artesanal y..."
 ```
+
+---
+
+## Despliegue del APK en Azure con Docker y Nginx
+
+> **Alcance:** este despliegue distribuye `Ruta505.apk` mediante HTTP desde una máquina virtual Ubuntu de Microsoft Azure. **No** ejecuta una API REST propia ni el servidor Metro/Expo. Una vez instalado, el APK se comunica directamente con Firebase (Authentication, Firestore y Storage) y con los servicios externos configurados en la aplicación. La versión web continúa documentada como desplegada en Netlify.
+
+### Infraestructura y artefacto publicado (9 de octubre de 2026)
+
+| Elemento | Configuración observada |
+|---|---|
+| Plataforma | Máquina virtual Azure con Ubuntu, usuario SSH `deployuser`, hostname `desploy` |
+| IP pública utilizada | `20.98.53.104` (podría cambiar si no está reservada) |
+| Docker Engine | `29.1.3` |
+| Docker Compose disponible | `docker-compose` V1 `1.29.2` (sintaxis con guion); `docker compose` V2 no estaba instalado |
+| Imagen del servidor de descarga | `nginx:alpine` |
+| Nombre del contenedor | `ruta505_web` |
+| Directorio en VM | `/home/deployuser/ruta505-apk/` |
+| Archivo servido | `/home/deployuser/ruta505-apk/public/Ruta505.apk` |
+| Puerto | `8080` en Azure → `80` dentro del contenedor |
+| URL de descarga HTTP | `http://20.98.53.104:8080/Ruta505.apk` |
+| Tamaño informado por Nginx | `164288846` bytes (aprox. 157 MiB) |
+
+**Evidencia ya obtenida:** `curl -I http://localhost:8080/Ruta505.apk` devolvió `HTTP/1.1 200 OK`, servidor `nginx/1.31.6`, `Content-Length: 164288846` y `Content-Type: application/octet-stream`. Esta prueba acredita que el servidor local entrega el archivo; **no acredita por sí sola** la disponibilidad externa, la instalación correcta en Android ni la existencia de HTTPS.
+
+### Requisitos previos
+
+- APK de Android compilado de Ruta505 (en el despliegue realizado: `C:\Ruta505.apk`).
+- Clave privada SSH para la VM (en el despliegue realizado: `C:\mi-clave.pem`). **Nunca subir la clave privada a GitHub**.
+- Acceso SSH al usuario `deployuser` en la IP de la VM.
+- Docker Engine y `docker-compose` instalados en la VM.
+- Regla de entrada TCP 8080 en el grupo de seguridad de red de Azure si se requiere acceso público. Comprobar también el firewall del sistema operativo si aplica.
+
+### 1. Conectar desde PowerShell de Windows
+
+```powershell
+ssh -i "C:\mi-clave.pem" deployuser@20.98.53.104
+```
+
+**Importante:** los comandos que contienen rutas `C:\...` deben ejecutarse en **PowerShell de Windows**, no dentro de Ubuntu.
+
+### 2. Crear los directorios en Ubuntu
+
+```bash
+mkdir -p ~/ruta505-apk/public
+cd ~/ruta505-apk
+```
+
+Mantener este servicio separado de `~/backend-api/`: durante la configuración se identificó que en ese último directorio solo estaban `.env`, `Dockerfile` y `docker-compose.yml`, sin `package.json` ni `index.js`. Por ello, el contenedor Node.js inicialmente planteado no corresponde al despliegue real del APK.
+
+### 3. Subir el APK desde PowerShell de Windows
+
+Ejecutar en PowerShell (desde Windows, no en la sesión SSH):
+
+```powershell
+scp -i "C:\mi-clave.pem" "C:\Ruta505.apk" deployuser@20.98.53.104:/home/deployuser/ruta505-apk/public/Ruta505.apk
+```
+
+La transferencia efectuada reportó el `100%` del archivo, de aproximadamente `157 MB`. Para comprobarlo en Ubuntu:
+
+```bash
+ls -lh ~/ruta505-apk/public/Ruta505.apk
+sha256sum ~/ruta505-apk/public/Ruta505.apk
+```
+
+El hash SHA-256 se debe conservar para vincular el APK publicado con el artefacto de compilación; **no se registró todavía un hash comprobado** en este documento.
+
+### 4. Crear la configuración Docker Compose
+
+Archivo: `~/ruta505-apk/docker-compose.yml`.
+
+```yaml
+version: "3.8"
+services:
+  web:
+    image: nginx:alpine
+    container_name: ruta505_web
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./public:/usr/share/nginx/html:ro
+```
+
+La carpeta `public/` se monta en modo **solo lectura** dentro de Nginx. De esta manera, el contenedor expone archivos estáticos sin necesidad de una aplicación Express o API Node.js.
+
+> **GitHub:** es recomendable versionar esta configuración en el repositorio como `deploy/azure/docker-compose.yml`, pero no afirmar que ya está allí hasta agregarla y hacer `push` a `main`. Si se copia a `deploy/azure/`, mantener la ruta de `public/` coherente o ejecutar Compose desde el directorio de despliegue correcto.
+
+### 5. Levantar y verificar Nginx
+
+En la VM:
+
+```bash
+cd ~/ruta505-apk
+sudo docker-compose config -q
+sudo docker-compose up -d
+sudo docker ps
+curl -I http://localhost:8080/Ruta505.apk
+sudo docker logs --tail 30 ruta505_web
+```
+
+Se espera `HTTP/1.1 200 OK` al consultar el archivo existente. `docker-compose config -q` terminó sin errores durante la validación realizada.
+
+Si `docker-compose up -d` informa `Conflict. The container name "/ruta505_web" is already in use`, revisar primero el contenedor existente en lugar de eliminarlo:
+
+```bash
+sudo docker ps -a
+sudo docker inspect -f '{{.Name}} {{.State.Status}} {{.Config.Image}}' ruta505_web
+```
+
+Si está detenido y corresponde a este mismo servicio:
+
+```bash
+sudo docker start ruta505_web
+```
+
+Si está activo y el `curl -I` devuelve `200`, no es necesario crear otro contenedor. **No ejecutar `docker-compose` desde `~` si el archivo válido está en `~/ruta505-apk`**.
+
+### 6. Descargar desde el celular
+
+Dirección HTTP utilizada durante las pruebas:
+
+```text
+http://20.98.53.104:8080/Ruta505.apk
+```
+
+Para probar desde fuera de la VM, ejecutar en otro equipo:
+
+```powershell
+curl.exe -I http://20.98.53.104:8080/Ruta505.apk
+```
+
+Si funciona localmente pero no desde internet, revisar la regla de entrada TCP 8080 en Azure y el firewall del servidor. Para la landing page, usar un enlace directo al recurso, preferiblemente **HTTPS**; una página HTTPS puede bloquear la descarga de un APK desde una dirección HTTP (contenido mixto). No se ha demostrado todavía que el botón de descarga de la landing page funcione en Android.
+
+## Trazabilidad del despliegue con GitHub main
+
+**Requisito de evaluación:** demostrar que el código que genera el APK alojado en Azure corresponde exactamente a una revisión identificable de la rama principal (`main`) del repositorio GitHub. La mera existencia del archivo APK en Azure **no prueba** esa correspondencia: el artefacto se subió manualmente mediante `scp`.
+
+### Procedimiento reproducible para acreditar el origen del APK
+
+1. En el repositorio local de Ruta505, comprobar que el árbol de trabajo está limpio y que se compila desde `main`:
+
+   ```bash
+   git fetch origin
+   git switch main
+   git pull --ff-only origin main
+   git status --short
+   git rev-parse HEAD
+   ```
+
+   `git status --short` debe estar vacío. Guardar el hash de commit mostrado por `git rev-parse HEAD`.
+
+2. Compilar el **APK instalable** desde ese commit siguiendo el proceso de Android/EAS definido por el equipo. Con EAS Build, el perfil debe generar `buildType: apk` (no AAB) para descarga directa. Si se usa otra herramienta, registrar el comando, el perfil, la versión de la app y la identificación del build. **El build de `C:\Ruta505.apk` ya subido no tiene aquí un commit de origen verificado**.
+
+3. Calcular el SHA-256 del APK **local**:
+
+   ```powershell
+   Get-FileHash "C:\Ruta505.apk" -Algorithm SHA256
+   ```
+
+4. Calcular el SHA-256 del APK **publicado** en Azure:
+
+   ```bash
+   sha256sum ~/ruta505-apk/public/Ruta505.apk
+   ```
+
+   Los hashes deben coincidir. Esta comparación prueba que se subió el mismo archivo, pero para probar la procedencia también se requiere evidencia de que ese APK fue compilado desde el commit registrado.
+
+5. Mantener en GitHub (`main`) el README actualizado, la configuración Docker Compose del despliegue y, cuando corresponda, los scripts de compilación/publicación. **No subir** la clave `.pem`, `.env`, tokens privados ni credenciales. No es necesario subir el APK al repositorio de código fuente.
+
+6. Registrar por cada versión: `commit de main`, fecha, herramienta/perfil de build, versión del APK, SHA-256 local, SHA-256 en Azure, URL publicada y resultado de la prueba de descarga. Una canalización CI/CD que compile desde `main` y publique el artefacto automáticamente sería una mejora posterior; **no estaba configurada en la evidencia disponible**.
+
+### Plantilla de registro de publicación
+
+| Campo | Valor a completar |
+|---|---|
+| Commit de GitHub `main` | Pendiente de registrar |
+| Build de Android / perfil | Pendiente de registrar |
+| Fecha del despliegue inicial | 2026-10-09 |
+| Archivo | `Ruta505.apk` |
+| SHA-256 local | Pendiente de registrar |
+| SHA-256 en Azure | Pendiente de registrar |
+| Comprobación local Nginx | `HTTP/1.1 200 OK` |
+| Comprobación externa de descarga | Pendiente de verificar |
+
+## Comprobaciones, errores y tareas pendientes
+
+### Comandos para las evidencias de Azure
+
+```bash
+hostname
+whoami
+docker --version
+sudo systemctl status docker --no-pager
+sudo docker ps
+cd ~/ruta505-apk
+cat docker-compose.yml
+sudo docker-compose config -q
+ls -lh public/Ruta505.apk
+curl -I http://localhost:8080/Ruta505.apk
+sudo docker logs --tail 15 ruta505_web
+```
+
+| Criterio | Evidencia lograda | Pendiente |
+|---|---|---|
+| Rendimiento y acceso | APK presente; Nginx respondió con HTTP 200 en localhost | Probar desde internet, disponibilidad sostenida y tiempos de respuesta |
+| HTTPS | Se comprobó que el enlace actual usa HTTP | Configurar dominio/certificado TLS válido, servir HTTPS y redirigir HTTP |
+| Flujo automático | Contenedor configurado con reinicio `unless-stopped` y archivo servido | Verificar instalación sin soporte y configurar páginas de error 404/50X amigables |
+| Integraciones | El proyecto usa Firebase Auth/Firestore/Storage y API de Claude según la arquitectura | Probar funcionalmente las integraciones, permisos, reglas de Firestore/Storage y manejo de fallos |
+| GitHub `main` | Proyecto versionado en GitHub según la documentación | Registrar commit real del build, cotejar hashes y versionar la configuración de Azure |
+
+### Seguridad y secretos
+
+- **No publicar archivos `.pem`, claves privadas de servicio ni `.env` en GitHub.** Mantener un `.env.example` sin valores reales.
+- Las variables `EXPO_PUBLIC_*` se incluyen en el cliente Expo: **no son un almacenamiento seguro de secretos**. En particular, **no publicar una clave secreta de Anthropic/Claude como `EXPO_PUBLIC_ANTHROPIC_API_KEY`**. Para protegerla es necesario mover las llamadas autenticadas a un servicio del lado del servidor (por ejemplo, una Cloud Function) y almacenar allí el secreto.
+- La configuración de Firebase para aplicaciones cliente no reemplaza las **reglas de seguridad** de Firestore y Storage ni las comprobaciones de usuario autenticado.
+- El URL actual es HTTP. Para distribución pública se debe habilitar HTTPS con certificado válido y actualizar el botón de la landing page para apuntar a la URL HTTPS final.
+- Evitar publicar evidencias con variables sensibles, claves o tokens de acceso visibles.
+
+### Comportamiento esperado y solución de problemas
+
+| Síntoma | Comprobación / solución |
+|---|---|
+| `docker compose` no existe | En este servidor estaba instalado Compose V1; usar `sudo docker-compose ...`. Planificar migración a Compose V2. |
+| `docker-compose config -q` sin salida | Configuración Compose válida. |
+| Error por nombre `ruta505_web` en uso | Consultar `sudo docker ps -a`; reutilizar contenedor existente si es el correcto. |
+| `curl -I localhost:8080/Ruta505.apk` devuelve 200 | Nginx entrega el APK localmente. |
+| La URL pública no abre | Verificar NSG de Azure, firewall de Ubuntu, IP y puerto publicado. |
+| Descarga falla desde landing HTTPS | Utilizar un destino HTTPS válido; evitar descargar un APK por HTTP desde una página segura. |
+| APK descargado no representa `main` | Recompilar desde un commit registrado y comparar hashes local/Azure. |
 
 ---
 
