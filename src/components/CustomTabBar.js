@@ -4,13 +4,15 @@ import {
   TouchableOpacity,
   Animated,
   useWindowDimensions,
+  Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Svg, { Path } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { navigationTabsStyle as styles } from "../styles/navigation/navigationTabsStyle";
 
-const ICONS = {
+// ── Iconos Ionicons (fallback) ───────────────
+const IONICONS = {
   Inicio: "home",
   Mapa: "location",
   Rutas: "return-up-back",
@@ -20,27 +22,43 @@ const ICONS = {
   "Generar QR": "qr-code",
   "Perfil cultural": "person-circle",
   Agenda: "calendar",
+  "Crear ruta": "add",
 };
 
-// Medidas base pensadas para un ancho de 360 dp.
-// Todo escala con el ancho de pantalla, entre MIN_SCALE y MAX_SCALE.
+// ── Iconos personalizados ────────────────────
+const CUSTOM_ICONS = {
+  // Turista
+  Inicio: require("../../src/assets/icons/InicioRelleno.png"),
+  Mapa: require("../../src/assets/icons/Mapa.png"),
+  Rutas: require("../../src/assets/icons/Ruta.png"),
+  Pasaporte: require("../../src/assets/icons/Pasaporte.png"),
+  Perfil: require("../../src/assets/icons/Perfil.png"),
+
+  // Actor cultural
+  "Perfil cultural": require("../../src/assets/icons/Perfil.png"),
+  "Generar QR": require("../../src/assets/icons/QR.png"),
+  "Crear ruta": require("../../src/assets/icons/CrearRuta.png"),
+};
+
+// ── Métricas base ────────────────────────────
 const BASE_WIDTH = 360;
 const MIN_SCALE = 0.85;
 const MAX_SCALE = 1.25;
 
 const BASE = {
-  barHeight: 68,     // altura total de la barra
-  notchDepth: 50,    // profundidad del hueco (más alto = más profundo)
-  corner: 17,        // radio de las esquinas superiores
-  edgeInset: -30,    // espacio entre el hueco y el borde (negativo = el hueco se sale de la pantalla)
-  circle: 52,        // diámetro del círculo activo
-  lift: -18,         // cuánto sube el ícono activo (más negativo = sube más)
+  barHeight: 68,
+  notchDepth: 50,
+  corner: 17,
+  edgeInset: -30,
+  circle: 52,
+  lift: -18,
   iconActive: 26,
-  iconInactive: 26,  // más alto = íconos inactivos más grandes
+  iconInactive: 26,
 };
 
-const INACTIVE_SCALE = 0.8; // escala del ícono inactivo (más alto = más grande)
+const INACTIVE_SCALE = 0.8;
 
+// ── Helpers ──────────────────────────────────
 function getMetrics(width) {
   const s = Math.min(Math.max(width / BASE_WIDTH, MIN_SCALE), MAX_SCALE);
   return {
@@ -59,7 +77,6 @@ function getBarPath(width, height, cx, m) {
   const { notchDepth, corner, edgeInset } = m;
   const maxHalf = notchDepth * 1.4;
 
-  // Medio ancho simétrico: se reduce solo cerca de los bordes
   const half = Math.max(
     notchDepth * 0.3,
     Math.min(maxHalf, cx - edgeInset, width - cx - edgeInset)
@@ -67,8 +84,6 @@ function getBarPath(width, height, cx, m) {
 
   const left = cx - half;
   const right = cx + half;
-
-  // La esquina se encoge si no hay espacio para ella
   const cl = Math.min(corner, Math.max(left, 0));
   const cr = Math.min(corner, Math.max(width - right, 0));
 
@@ -86,6 +101,32 @@ function getBarPath(width, height, cx, m) {
   `.replace(/\s+/g, " ").trim();
 }
 
+// ── Icono (extensible) ───────────────────────
+function TabIcon({ routeName, isFocused, size, color }) {
+  const custom = CUSTOM_ICONS[routeName];
+
+  if (custom) {
+    return (
+      <Image
+        source={custom}
+        style={{ width: size, height: size, position: "absolute" }}
+        resizeMode="contain"
+      />
+    );
+  }
+
+  const name = IONICONS[routeName] || "ellipse";
+  return (
+    <Ionicons
+      name={isFocused ? name : `${name}-outline`}
+      size={size}
+      color={color}
+      style={{ position: "absolute" }}
+    />
+  );
+}
+
+// ── Componente principal ─────────────────────
 export default function CustomTabBar({ state, descriptors, navigation }) {
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -101,7 +142,6 @@ export default function CustomTabBar({ state, descriptors, navigation }) {
     getBarPath(width, totalHeight, centerOf(state.index), m)
   );
 
-  // Una animación por ruta (por key), así soporta que las pestañas cambien
   const liftAnims = useRef({});
   state.routes.forEach((r, i) => {
     if (!liftAnims.current[r.key]) {
@@ -109,7 +149,6 @@ export default function CustomTabBar({ state, descriptors, navigation }) {
     }
   });
 
-  // 1) Cada cambio del valor animado recalcula el path
   useEffect(() => {
     const id = notchX.addListener(({ value }) => {
       setPathD(getBarPath(width, totalHeight, value, m));
@@ -117,18 +156,16 @@ export default function CustomTabBar({ state, descriptors, navigation }) {
     return () => notchX.removeListener(id);
   }, [notchX, width, totalHeight, m]);
 
-  // 2) Si cambia el ancho, el inset o el número de pestañas, recoloca sin animar
   useEffect(() => {
     notchX.setValue(centerOf(state.index));
   }, [width, totalHeight, numTabs]);
 
-  // 3) Anima cuando cambia la pestaña activa, sin importar quién la cambió
   useEffect(() => {
     Animated.spring(notchX, {
       toValue: centerOf(state.index),
       useNativeDriver: false,
-      friction: 6,   // más alto = menos rebote, más "seco"
-      tension: 70,   // más alto = más rápido
+      friction: 6,
+      tension: 70,
     }).start();
 
     state.routes.forEach((route, i) => {
@@ -177,8 +214,6 @@ export default function CustomTabBar({ state, descriptors, navigation }) {
           outputRange: [INACTIVE_SCALE, 1],
         });
 
-        const iconName = ICONS[route.name] || "ellipse";
-
         return (
           <TouchableOpacity
             key={route.key}
@@ -212,13 +247,13 @@ export default function CustomTabBar({ state, descriptors, navigation }) {
                   },
                 ]}
               />
-              <Ionicons
-                name={isFocused ? iconName : `${iconName}-outline`}
+              <TabIcon
+                routeName={route.name}
+                isFocused={isFocused}
                 size={isFocused ? m.iconActive : m.iconInactive}
                 color={
                   isFocused ? styles.activeTintColor : styles.inactiveTintColor
                 }
-                style={{ position: "absolute" }}
               />
             </Animated.View>
           </TouchableOpacity>
