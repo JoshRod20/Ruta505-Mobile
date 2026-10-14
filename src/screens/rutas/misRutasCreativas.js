@@ -217,6 +217,10 @@ export default function MisRutasCreativas() {
           </View>
         </View>
 
+        <View style={s.tarjetaHeader}>
+          <View style={s.puntoDecorativo} />
+          <Text style={s.rutaTipo}>Ruta creativa</Text>
+        </View>
         <Text style={s.nombre}>{ruta.nombre}</Text>
         <Text style={s.etiquetaItinerario}>ITINERARIO GUIADO</Text>
 
