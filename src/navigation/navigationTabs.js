@@ -78,6 +78,9 @@ export default function NavigationTabs({ route }) {
         {puedeVerPerfilCultural && (
           <Tab.Screen name="Perfil cultural" component={CulturalProfile} />
         )}
+        {tienePermiso(role, PERMISOS.VER_RUTAS_CULTURALES) && (
+          <Tab.Screen name="Rutas" component={CulturalRoutes} />
+        )}
         {puedeVerPasaporte && (
           <Tab.Screen name="Pasaporte" component={CulturalPassport} />
         )}

@@ -18,6 +18,7 @@ import InvitacionesRuta from "../screens/rutas/invitacionesRuta";
 import Estadisticas from "../screens/actorCultural/estadisticas";
 import { useAuth } from "../context/AuthContext";
 import { drawerStyle } from "../styles/navigation/navigationDrawerStyle";
+import PinolitoScreen from "../screens/usuario/PinolitoScreen";
 
 const Drawer = createDrawerNavigator();
 
@@ -127,6 +128,12 @@ export default function NavigationDrawer() {
       <Drawer.Screen
         name="ResenasDrawer"
         component={Resenas}
+        options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
+      />
+            {/* Pinolito: mascota virtual (atuendos y ajustes). Pantalla independiente, sin barra de tabs. Se abre desde el botón de Pinolito del Home (turista). */}
+      <Drawer.Screen
+        name="PinolitoDrawer"
+        component={PinolitoScreen}
         options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
       />
       <Drawer.Screen

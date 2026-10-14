@@ -1,4 +1,7 @@
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 import { StyleSheet } from "react-native";
 
 export const VERDE = "#0E5A34";
@@ -37,6 +40,7 @@ export const homeStyle = StyleSheet.create({
   botonCampana: {
     width: 36,
     height: 36,
+    marginLeft: wp("-2%"),
     alignItems: "center",
     justifyContent: "center",
   },
@@ -113,5 +117,66 @@ export const homeStyle = StyleSheet.create({
     color: "#2e302f",
     textAlign: "center",
     paddingHorizontal: 24,
+  },
+
+  // ---- Botón de Pinolito (turista) ----
+  botonPinolito: {
+    width: 36,
+    height: 36,
+    marginLeft: wp("-2%"),
+    justifyContent: "center",
+    borderRadius: 22,
+    overflow: "hidden",
+    borderWidth: 2,
+    borderColor: VERDE,
+  },
+  pinolitoImagen: {
+    width: "100%",
+    height: "100%",
+    marginLeft: -3,
+  },
+
+  // ---- Descubrir + categorías (turista) ----
+  tituloDescubrir: {
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 15,
+    color: "#000000",
+    paddingHorizontal: 24,
+    marginTop: 22,
+  },
+  categoriasLista: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    gap: 10,
+  },
+  chip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    height: 38,
+    paddingHorizontal: 16,
+    borderRadius: 999,
+    borderWidth: 1.5,
+    borderColor: VERDE,
+    backgroundColor: "#FFFFFF",
+  },
+  chipActivo: {
+    backgroundColor: VERDE,
+  },
+  chipTexto: {
+    fontFamily: "Inter-SemiBold",
+    fontSize: 13,
+    color: VERDE,
+  },
+  chipTextoActivo: {
+    color: "#FFFFFF",
+  },
+  tituloComunidades: {
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 17,
+    color: "#000000",
+    paddingHorizontal: 24,
+    marginTop: 12,
+    marginBottom: 12,
   },
 });
