@@ -3,6 +3,7 @@
  */
 
 import { StyleSheet } from "react-native";
+import { campo } from "../common/campoStyle";
 
 // Estilos compartidos del flujo "Ruta Creativa": Mis servicios (tab +),
 // el asistente de 5 pasos y la pantalla de invitaciones.
@@ -226,28 +227,15 @@ export const crearRutaStyle = StyleSheet.create({
 
   // ---- Formulario (paso 2 e invitación) ----
   etiqueta: {
-    fontFamily: "Inter-Regular",
-    fontSize: 12,
-    color: "#2D2D2D",
-    textTransform: "uppercase",
+    ...campo.etiqueta,
     marginTop: 14,
     marginBottom: 6,
   },
   input: {
-    borderWidth: 1.5,
-    borderColor: VERDE,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    height: 46,
-    fontFamily: "Inter-Regular",
-    fontSize: 14,
-    color: "#1A1A1A",
-    backgroundColor: "#FFFFFF",
+    ...campo.input,
   },
   inputMultilinea: {
-    height: 92,
-    paddingTop: 10,
-    textAlignVertical: "top",
+    ...campo.inputMultilinea,
   },
   inputConIcono: {
     flexDirection: "row",
@@ -262,13 +250,11 @@ export const crearRutaStyle = StyleSheet.create({
     height: 44,
   },
   multimedia: {
-    borderWidth: 1.5,
-    borderColor: VERDE,
-    borderRadius: 10,
-    minHeight: 70,
+    ...campo.caja,
+    minHeight: 58,
+    padding: 12,
     alignItems: "center",
     justifyContent: "center",
-    padding: 10,
   },
   multimediaTexto: {
     fontFamily: "Inter-Regular",

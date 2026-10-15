@@ -360,7 +360,7 @@ export default function PublicacionCard({ experiencia }) {
                 <Ionicons
                   name="checkmark-circle"
                   size={15}
-                  color="#1A1A1A"
+                  color={NARANJA}
                   style={styles.verificado}
                 />
               )}
@@ -525,43 +525,59 @@ export default function PublicacionCard({ experiencia }) {
         </View>
       )}
 
-      {/* Descripción y tiempo */}
-      {!!experiencia.descripcion && (
-        <Text style={styles.descripcion}>{experiencia.descripcion}</Text>
-      )}
+      {/* Me gusta / comentarios / guardar */}
+      <View style={styles.accionesFila}>
+        <View style={styles.accionesIzquierda}>
+          <TouchableOpacity
+            style={[styles.accionBoton, esAutor && { opacity: 0.6 }]}
+            onPress={handleLike}
+            disabled={esAutor}
+            activeOpacity={0.7}
+            accessibilityLabel={
+              esAutor ? "Me gusta (no puedes darte me gusta a ti mismo)" : "Me gusta"
+            }
+          >
+            <Ionicons
+              name={likeActivo ? "heart" : "heart-outline"}
+              size={24}
+              color={likeActivo || esAutor ? NARANJA : "#1F1F1F"}
+            />
+            <Text style={styles.accionTexto}>{totalLikes}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.accionBoton}
+            onPress={() => setComentariosVisible(true)}
+            activeOpacity={0.7}
+            accessibilityLabel="Ver comentarios"
+          >
+            <Ionicons name="chatbubble-outline" size={21} color="#1F1F1F" />
+            <Text style={styles.accionTexto}>{comentarios.length}</Text>
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity
+          onPress={() => setGuardadoActivo((v) => !v)}
+          activeOpacity={0.7}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          accessibilityLabel={guardadoActivo ? "Quitar de guardados" : "Guardar"}
+        >
+          <Ionicons
+            name={guardadoActivo ? "bookmark" : "bookmark-outline"}
+            size={26}
+            color={VERDE}
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* Título en negrita + descripción, y hora */}
+      <Text style={styles.descripcion}>
+        <Text style={styles.descripcionTitulo}>{titulo}</Text>
+        {experiencia.descripcion ? `  ${experiencia.descripcion}` : ""}
+      </Text>
       <Text style={styles.tiempoTexto}>
         {formatearTiempoRelativo(experiencia.createdAt)}
       </Text>
-
-      {/* Me gusta / Guardar */}
-      <View style={styles.accionesFila}>
-        <TouchableOpacity
-          style={[styles.pastilla, esAutor && { opacity: 0.6 }]}
-          onPress={handleLike}
-          disabled={esAutor}
-          activeOpacity={0.7}
-          accessibilityLabel={
-            esAutor ? "Me gusta (no puedes darte me gusta a ti mismo)" : "Me gusta"
-          }
-        >
-          <Ionicons
-            name={likeActivo ? "heart" : "heart-outline"}
-            size={18}
-            color={likeActivo ? "#C1443C" : "#1F1F1F"}
-          />
-          <Text style={styles.pastillaTexto}>{totalLikes}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.pastilla}
-          onPress={() => setComentariosVisible(true)}
-          activeOpacity={0.7}
-          accessibilityLabel="Ver comentarios"
-        >
-          <Ionicons name="chatbubble-outline" size={17} color="#1F1F1F" />
-          <Text style={styles.pastillaTexto}>{comentarios.length}</Text>
-        </TouchableOpacity>
-      </View>
 
       {/* Comentarios */}
       <Modal

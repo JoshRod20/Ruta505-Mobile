@@ -187,7 +187,7 @@ export default function Home() {
             esActor ? navigation.navigate("InvitacionesRutaDrawer") : undefined
           }
         >
-          <Ionicons name="notifications-outline" size={26} color={VERDE} />
+          <Ionicons name="notifications" size={26} color={VERDE} />
           {invitacionesPendientes > 0 && (
             <View
               style={{

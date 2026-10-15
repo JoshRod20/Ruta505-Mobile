@@ -367,7 +367,6 @@ export default function ExperienciasCulturales() {
               </>
             )}
           </View>
-          <Ionicons name="chevron-forward" size={16} color="#1F2A24" />
         </TouchableOpacity>
 
         <Text style={s.etiqueta}>Fotos / Vídeos cortos</Text>

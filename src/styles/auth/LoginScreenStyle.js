@@ -152,11 +152,11 @@ errorCampo: {
 
     borderRadius: hp("1.5%"),
 
-    backgroundColor: "#ffffff",
+    backgroundColor: "#F3F3F3",
 
-    borderWidth: 1.8,
+    borderWidth: 0,
 
-    borderColor: COLOR_TINTA,
+    borderColor: "transparent",
 
     color: COLOR_TINTA,
 

@@ -3,6 +3,7 @@
  */
 
 import { StyleSheet } from "react-native";
+import { campo } from "../common/campoStyle";
 
 // Pantalla "Reseñas": lista de reseñas de una experiencia (o de todas las
 // experiencias de un actor) y modales para escribir una reseña o responderla.
@@ -294,25 +295,13 @@ export const resenasStyle = StyleSheet.create({
     marginBottom: 4,
   },
   etiqueta: {
-    fontFamily: "Inter-Regular",
-    fontSize: 12,
-    color: "#2D2D2D",
-    textTransform: "uppercase",
+    ...campo.etiqueta,
     marginTop: 14,
-    marginBottom: 8,
   },
   input: {
-    borderWidth: 1.5,
-    borderColor: VERDE,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingTop: 12,
-    paddingBottom: 12,
+    ...campo.input,
+    ...campo.inputMultilinea,
     minHeight: 110,
-    fontFamily: "Inter-Regular",
-    fontSize: 14,
-    color: "#1A1A1A",
-    textAlignVertical: "top",
   },
   contadorCaracteres: {
     fontFamily: "Inter-Regular",
@@ -352,9 +341,7 @@ export const resenasStyle = StyleSheet.create({
     width: 76,
     height: 76,
     borderRadius: 12,
-    borderWidth: 1.5,
-    borderStyle: "dashed",
-    borderColor: VERDE,
+    backgroundColor: "#F3F3F3",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 8,

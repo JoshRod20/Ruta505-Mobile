@@ -70,7 +70,7 @@ export const homeStyle = StyleSheet.create({
     alignSelf: "flex-start",
     fontFamily: "Inter-SemiBold",
     backgroundColor: VERDE,
-    borderRadius: 999,
+    borderRadius: 10,
     height: 40,
     paddingHorizontal: 18,
     marginLeft: 24,

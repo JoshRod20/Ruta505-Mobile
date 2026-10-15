@@ -347,7 +347,6 @@ export default function FormularioExperiencia({
                 )}
               </View>
 
-              <Ionicons name="chevron-forward" size={16} color="#1F2A24" />
             </TouchableOpacity>
 
             {/* Acciones de cancelación y guardado */}
