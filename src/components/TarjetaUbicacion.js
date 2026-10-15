@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-import { CATEGORIAS_EXPERIENCIA } from "../services/Categoriasexperiencias";
+import { buscarCategoria } from "../services/Categoriasexperiencias";
 import { tarjetaUbicacionStyle as s } from "../styles/mapanicaragua/TarjetaUbicacionStyle";
 
 const VERDE = "#0E5A34";
@@ -36,7 +36,7 @@ export default function TarjetaUbicacion({
 }) {
   const { width, height } = useWindowDimensions();
 
-  const categoria = CATEGORIAS_EXPERIENCIA.find((c) => c.id === punto.categoria);
+  const categoria = buscarCategoria(punto.categoria);
   const fotos = punto.imagenes?.length ? punto.imagenes : punto.imagenUrls ?? [];
   const tieneCalificacion = typeof punto.calificacion === "number";
   const hayRutaAqui = ruta && ruta.destino?.id === punto.id;

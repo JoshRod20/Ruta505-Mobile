@@ -40,7 +40,7 @@ import {
   publicarRuta,
 } from "../../services/rutasService";
 import {
-  CATEGORIAS_EXPERIENCIA,
+  buscarCategoria,
   iconoDeCategoria,
 } from "../../services/Categoriasexperiencias";
 import { elegirFotosBase64 } from "../../utils/imagenes";
@@ -71,7 +71,7 @@ const TITULOS = {
 };
 
 const nombreDeCategoria = (id) =>
-  CATEGORIAS_EXPERIENCIA.find((c) => c.id === id)?.label ?? "";
+  buscarCategoria(id)?.label ?? "";
 
 const normalizar = (texto) =>
   (texto || "")

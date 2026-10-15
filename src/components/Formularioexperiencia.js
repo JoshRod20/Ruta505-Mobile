@@ -21,7 +21,10 @@ import {
   formularioExperienciaStyle as s,
   COLOR_VERDE_FORMULARIO as VERDE,
 } from "../styles/mapanicaragua/Formularioexperienciastyle.js";
-import { CATEGORIAS_EXPERIENCIA } from "../services/Categoriasexperiencias.js";
+import {
+  CATEGORIAS_EXPERIENCIA,
+  buscarCategoria,
+} from "../services/Categoriasexperiencias.js";
 
 // Límites para evitar superar el tamaño máximo de documento en Firestore (1MB)
 const MAX_IMAGENES = 2;
@@ -55,9 +58,8 @@ export default function FormularioExperiencia({
       setDescripcion(valoresIniciales.descripcion ?? "");
       setUbicacionExacta(valoresIniciales.ubicacionExacta ?? "");
       setCategoria(
-        CATEGORIAS_EXPERIENCIA.find(
-          (c) => c.id === valoresIniciales.categoria,
-        ) || CATEGORIAS_EXPERIENCIA[0],
+        buscarCategoria(valoresIniciales.categoria) ||
+          CATEGORIAS_EXPERIENCIA[0],
       );
       setImagenes(valoresIniciales.imagenes ?? []);
     } else {

@@ -16,7 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
 import {
-  CATEGORIAS_EXPERIENCIA,
+  buscarCategoria,
   iconoDeCategoria,
   colorDeCategoria,
 } from "../services/Categoriasexperiencias";
@@ -33,7 +33,7 @@ const normalizar = (valor) =>
     .toLowerCase();
 
 const etiquetaCategoria = (id) =>
-  CATEGORIAS_EXPERIENCIA.find((c) => c.id === id)?.label ?? "";
+  buscarCategoria(id)?.label ?? "";
 
 /**
  * Barra de búsqueda del mapa.

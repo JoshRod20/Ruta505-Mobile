@@ -2,7 +2,7 @@
  * Home: componente/pantalla de la aplicación Ruta505.
  */
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect,useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -22,24 +22,16 @@ import { usePermisos } from "../hooks/usePermisos";
 import { PERMISOS } from "../constants/permissions";
 import { ROLES, ESTADOS_VERIFICACION } from "../constants/roles";
 import { escucharExperiencias } from "../services/Experienciasservice";
+import {
+  CATEGORIAS_EXPERIENCIA,
+  idCategoria,
+} from "../services/Categoriasexperiencias";
 import { escucharInvitaciones, ESTADO_PARADA } from "../services/rutasService";
 import { homeStyle, VERDE } from "../styles/home/homeStyle";
 
-// Categorías de búsqueda (solo vista del turista).
-const CATEGORIAS = [
-  { id: "naturaleza", label: "Naturaleza", icon: "leaf-outline" },
-  { id: "gastronomia", label: "Gastronomía", icon: "restaurant-outline" },
-  { id: "aventura", label: "Aventura", icon: "trail-sign-outline" },
-  { id: "cultura", label: "Cultura", icon: "color-palette-outline" },
-  { id: "artesanias", label: "Artesanías", icon: "hammer-outline" },
-];
-
-const normalizar = (s = "") =>
-  String(s)
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .trim();
+// Categorías de búsqueda (solo vista del turista): las mismas del catálogo
+// único de la app, para que coincidan con lo que guardan los formularios.
+const CATEGORIAS = CATEGORIAS_EXPERIENCIA;
 
 export default function Home() {
   const insets = useSafeAreaInsets();
@@ -97,7 +89,7 @@ export default function Home() {
   const experienciasFiltradas = useMemo(() => {
     if (!esTurista || !categoriaActiva) return experiencias;
     return experiencias.filter(
-      (e) => normalizar(e.categoria) === normalizar(categoriaActiva),
+      (e) => idCategoria(e.categoria) === categoriaActiva,
     );
   }, [experiencias, categoriaActiva, esTurista]);
 
@@ -151,7 +143,7 @@ export default function Home() {
               accessibilityState={{ selected: activa }}
             >
               <Ionicons
-                name={cat.icon}
+                name={cat.icono}
                 size={18}
                 color={activa ? "#FFFFFF" : VERDE}
               />
