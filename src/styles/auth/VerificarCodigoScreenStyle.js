@@ -4,6 +4,7 @@
 
 import { StyleSheet } from "react-native";
 import { heightPercentageToDP as hp } from "react-native-responsive-screen";
+import { boton } from "../common/botonStyle";
 
 const COLOR_HEADER = "#086338";
 const COLOR_TINTA = "#065F33";
@@ -58,14 +59,9 @@ const VerificarCodigoScreenStyle = StyleSheet.create({
   },
 
   boton: {
+    ...boton.primario,
     width: "100%",
-    height: hp("6%"),
-    backgroundColor: COLOR_TINTA,
-    borderRadius: hp("5%"),
-    alignItems: "center",
-    justifyContent: "center",
     marginTop: 16,
-    elevation: 3,
   },
 
   botonDeshabilitado: {
@@ -73,9 +69,7 @@ const VerificarCodigoScreenStyle = StyleSheet.create({
   },
 
   botonTexto: {
-    color: "#ffffff",
-    fontFamily: "Poppins-Bold",
-    fontSize: 16,
+    ...boton.primarioTexto,
   },
 
   enlaceWrap: {

@@ -4,6 +4,7 @@
 
 import { StyleSheet } from "react-native";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+import { boton } from "../common/botonStyle";
 
 const COLOR_HEADER = "#086338";
 const COLOR_BORDE = "#0c8046";
@@ -110,37 +111,24 @@ const InteresesUbicacionStyle = StyleSheet.create({
   },
 
   botonNaranja: {
-    width: "60%",
-    height: hp("6%"),
+    ...boton.primario,
     backgroundColor: COLOR_NARANJA,
-    borderRadius: hp("2.5%"),
-    alignItems: "center",
-    justifyContent: "center",
-    elevation: 3,
+    width: "60%",
   },
 
   botonNaranjaTexto: {
-    color: "#ffffff",
-    fontFamily: "Poppins-SemiBold",
-    fontSize: 16,
+    ...boton.primarioTexto,
   },
 
   boton: {
+    ...boton.primario,
     width: "60%",
-    height: hp("6%"),
-    backgroundColor: COLOR_HEADER,
-    borderRadius: hp("2.5%"),
-    alignItems: "center",
-    justifyContent: "center",
-    elevation: 3,
     marginLeft: "20%",
     marginBottom: hp("12%"),
   },
 
   botonTexto: {
-    color: "#ffffff",
-    fontFamily: "Poppins-SemiBold",
-    fontSize: 16,
+    ...boton.primarioTexto,
   },
 
   botonDeshabilitado: {

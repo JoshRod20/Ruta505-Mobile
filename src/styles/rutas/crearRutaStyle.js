@@ -4,6 +4,7 @@
 
 import { StyleSheet } from "react-native";
 import { campo } from "../common/campoStyle";
+import { boton } from "../common/botonStyle";
 
 // Estilos compartidos del flujo "Ruta Creativa": Mis servicios (tab +),
 // el asistente de 5 pasos y la pantalla de invitaciones.
@@ -141,57 +142,36 @@ export const crearRutaStyle = StyleSheet.create({
 
   // ---- Botones ----
   botonLima: {
-    height: 50,
-    borderRadius: 12,
+    ...boton.primario,
     backgroundColor: LIMA,
-    alignItems: "center",
-    justifyContent: "center",
     marginTop: 16,
   },
   botonLimaTexto: {
-    fontFamily: "Poppins-SemiBold",
-    fontSize: 15,
+    ...boton.primarioTexto,
     color: "#1A1A1A",
   },
   botonVerde: {
-    height: 50,
-    borderRadius: 12,
-    backgroundColor: VERDE,
-    alignItems: "center",
-    justifyContent: "center",
+    ...boton.primario,
     marginTop: 16,
   },
   botonVerdeTexto: {
-    fontFamily: "Poppins-SemiBold",
-    fontSize: 15,
-    color: "#FFFFFF",
+    ...boton.primarioTexto,
   },
   botonNaranja: {
-    height: 48,
-    borderRadius: 12,
+    ...boton.primario,
     backgroundColor: NARANJA,
-    alignItems: "center",
-    justifyContent: "center",
     marginTop: 20,
   },
   botonNaranjaTexto: {
-    fontFamily: "Poppins-Bold",
-    fontSize: 15,
+    ...boton.primarioTexto,
     color: "#1A1A1A",
   },
   botonContorno: {
-    height: 50,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: "#9E9E9E",
-    backgroundColor: "#FFFFFF",
-    alignItems: "center",
-    justifyContent: "center",
+    ...boton.contorno,
     marginTop: 16,
   },
   botonContornoTexto: {
-    fontFamily: "Poppins-SemiBold",
-    fontSize: 15,
+    ...boton.contornoTexto,
     color: "#7A7A7A",
   },
   botonDeshabilitado: {

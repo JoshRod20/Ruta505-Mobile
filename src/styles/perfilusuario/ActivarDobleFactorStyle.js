@@ -3,6 +3,7 @@
  */
 
 import { StyleSheet } from "react-native";
+import { boton } from "../common/botonStyle";
 
 const COLOR_HEADER = "#086338";
 const COLOR_TINTA = "#065F33";
@@ -168,12 +169,8 @@ const ActivarDobleFactorStyle = StyleSheet.create({
   },
 
   boton: {
+    ...boton.primario,
     width: "100%",
-    height: 52,
-    backgroundColor: COLOR_TINTA,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
     marginTop: 14,
   },
 
@@ -182,9 +179,7 @@ const ActivarDobleFactorStyle = StyleSheet.create({
   },
 
   botonTexto: {
-    color: "#ffffff",
-    fontFamily: "Poppins-SemiBold",
-    fontSize: 16,
+    ...boton.primarioTexto,
   },
 
   enlaceWrap: {

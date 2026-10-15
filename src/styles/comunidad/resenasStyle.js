@@ -4,6 +4,7 @@
 
 import { StyleSheet } from "react-native";
 import { campo } from "../common/campoStyle";
+import { boton } from "../common/botonStyle";
 
 // Pantalla "Reseñas": lista de reseñas de una experiencia (o de todas las
 // experiencias de un actor) y modales para escribir una reseña o responderla.
@@ -248,17 +249,11 @@ export const resenasStyle = StyleSheet.create({
     backgroundColor: "rgba(250,250,250,0.96)",
   },
   botonEscribir: {
+    ...boton.primario,
     flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: VERDE,
-    borderRadius: 14,
-    paddingVertical: 14,
   },
   botonEscribirTexto: {
-    fontFamily: "Poppins-SemiBold",
-    fontSize: 16,
-    color: "#FFFFFF",
+    ...boton.primarioTexto,
     marginLeft: 8,
   },
 
@@ -358,34 +353,22 @@ export const resenasStyle = StyleSheet.create({
     marginTop: 18,
   },
   botonCancelar: {
+    ...boton.secundario,
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#E6E6E6",
-    borderRadius: 14,
-    paddingVertical: 14,
     marginRight: 8,
   },
   botonCancelarTexto: {
-    fontFamily: "Poppins-SemiBold",
-    fontSize: 15,
-    color: "#1A1A1A",
+    ...boton.secundarioTexto,
   },
   botonConfirmar: {
+    ...boton.primario,
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: VERDE,
-    borderRadius: 14,
-    paddingVertical: 14,
     marginLeft: 8,
   },
   botonDeshabilitado: {
     opacity: 0.6,
   },
   botonConfirmarTexto: {
-    fontFamily: "Poppins-SemiBold",
-    fontSize: 15,
-    color: "#FFFFFF",
+    ...boton.primarioTexto,
   },
 });

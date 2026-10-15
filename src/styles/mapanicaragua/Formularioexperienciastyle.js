@@ -4,6 +4,7 @@
 
 import { StyleSheet } from "react-native";
 import { campo } from "../common/campoStyle";
+import { boton } from "../common/botonStyle";
 
 // Modal "Agregar ubicación de mi negocio" (mapa interactivo).
 const VERDE = "#0E5A34";
@@ -172,33 +173,21 @@ export const formularioExperienciaStyle = StyleSheet.create({
     gap: 12,
   },
   botonCancelar: {
+    ...boton.secundario,
     flex: 1,
-    height: 44,
-    borderRadius: 999,
-    backgroundColor: "#D2D2D2",
-    alignItems: "center",
-    justifyContent: "center",
   },
   botonCancelarTexto: {
-    fontFamily: "Poppins-Bold",
-    fontSize: 15,
-    color: "#7A7A7A",
+    ...boton.secundarioTexto,
   },
   botonGuardar: {
+    ...boton.primario,
     flex: 1,
-    height: 44,
-    borderRadius: 999,
-    backgroundColor: VERDE_CLARO,
-    alignItems: "center",
-    justifyContent: "center",
   },
   botonGuardarDeshabilitado: {
     opacity: 0.5,
   },
   botonGuardarTexto: {
-    fontFamily: "Poppins-Bold",
-    fontSize: 15,
-    color: "#FFFFFF",
+    ...boton.primarioTexto,
   },
 });
 

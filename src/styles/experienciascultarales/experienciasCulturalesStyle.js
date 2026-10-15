@@ -4,6 +4,7 @@
 
 import { StyleSheet } from "react-native";
 import { campo } from "../common/campoStyle";
+import { boton } from "../common/botonStyle";
 
 // Pantalla "Publicar Experiencia" (botón + de la barra de navegación).
 // Diseño verde de Ruta505, distinto al modal del mapa (Formularioexperienciastyle).
@@ -177,20 +178,14 @@ export const experienciasCulturalesStyle = StyleSheet.create({
 
   // ---- Publicar ----
   botonPublicar: {
+    ...boton.primario,
     marginTop: 40,
-    backgroundColor: VERDE,
-    borderRadius: 999,
-    height: 50,
-    alignItems: "center",
-    justifyContent: "center",
   },
   botonPublicarDeshabilitado: {
     opacity: 0.55,
   },
   botonPublicarTexto: {
-    fontFamily: "Poppins-Bold",
-    fontSize: 16,
-    color: "#FFFFFF",
+    ...boton.primarioTexto,
   },
   errorText: {
     fontFamily: "Inter-Regular",

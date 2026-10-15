@@ -4,6 +4,7 @@
 
 import { StyleSheet } from "react-native";
 import { heightPercentageToDP as hp } from "react-native-responsive-screen";
+import { boton } from "../common/botonStyle";
 
 // ==================================================
 // PALETA
@@ -223,13 +224,8 @@ const RegistroActorFormStyle = StyleSheet.create({
   // ==================================================
 
   boton: {
+    ...boton.primario,
     width: "100%",
-    height: hp("6%"),
-    backgroundColor: COLOR_HEADER,
-    borderRadius: hp("2.5%"),
-    alignItems: "center",
-    justifyContent: "center",
-    elevation: 3,
   },
 
   botonDeshabilitado: {
@@ -237,9 +233,7 @@ const RegistroActorFormStyle = StyleSheet.create({
   },
 
   botonTexto: {
-    color: "#ffffff",
-    fontFamily: "Poppins-SemiBold",
-    fontSize: 16,
+    ...boton.primarioTexto,
   },
 });
 
