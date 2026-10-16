@@ -19,7 +19,8 @@
             "image": "./src/assets/splash-icon.png"
           }
         }
-      ]
+      ],
+      "expo-video"
     ],
     "ios": {
       "supportsTablet": true

@@ -1,8 +1,16 @@
 /**
  * InvitacionesRuta: componente/pantalla de la aplicación Ruta505.
+ *
+ * Flujo (se abre desde la campana):
+ *   1. Notificaciones: tarjetas de invitación con "Declinar" y "Ver invitación".
+ *   2. Invitación a una ruta: participantes (creador, aceptaron, en espera) y
+ *      botones Aceptar / Declinar.
+ *   3. Aceptar -> formulario con el servicio que ofrece el negocio.
+ *   4. "¡Listo!": confirmación (también es lo que se ve al abrir una
+ *      invitación que ya aceptaste).
  */
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -23,18 +31,31 @@ import { Picker } from "@react-native-picker/picker";
 import { useAuth } from "../../context/AuthContext";
 import {
   escucharInvitaciones,
+  escucharParadasDeRuta,
   ESTADO_PARADA,
-  formatearPrecio,
   responderInvitacion,
 } from "../../services/rutasService";
-import { iconoDeCategoria } from "../../services/Categoriasexperiencias";
+import {
+  buscarCategoria,
+  iconoDeCategoria,
+} from "../../services/Categoriasexperiencias";
 import { elegirFotosBase64 } from "../../utils/imagenes";
 import {
   crearRutaStyle as s,
   VERDE,
   LIMA,
-  AZUL,
 } from "../../styles/rutas/crearRutaStyle";
+import {
+  invitacionesRutaStyle as i,
+  VERDE_OSCURO,
+  AZUL_ACEPTO,
+} from "../../styles/rutas/invitacionesRutaStyle";
+
+// Imagen de la pantalla "¡Listo!" (la mascota). Para ponerla, importa el
+// archivo aquí, por ejemplo:
+//   const IMAGEN_LISTO = require("../../assets/images/pinolito-listo.png");
+// Mientras sea null, la pantalla deja el espacio libre.
+const IMAGEN_LISTO = require("../../assets/pinolito/Pinolito-Pose-Sorprendido.png");;
 
 const MAX_FOTOS = 2;
 
@@ -46,14 +67,16 @@ const HORARIOS_DISPONIBLES = [
   "Horario por confirmar",
 ];
 
-function insigniaDe(estado) {
-  switch (estado) {
+// Chip de estado de cada participante en "Invitación a una ruta".
+function chipDe(parada, esMia) {
+  if (esMia) return { texto: "Tú", fondo: LIMA, color: "#1A1A1A" };
+  switch (parada.estado) {
+    case ESTADO_PARADA.CREADOR:
+      return { texto: "Creador", fondo: VERDE_OSCURO, color: "#FFFFFF" };
     case ESTADO_PARADA.ACEPTADA:
-      return { texto: "Aceptaste", fondo: LIMA, color: "#1A1A1A" };
-    case ESTADO_PARADA.RECHAZADA:
-      return { texto: "Declinaste", fondo: "#B5B5B5", color: "#1A1A1A" };
+      return { texto: "Acepto", fondo: AZUL_ACEPTO, color: "#FFFFFF" };
     default:
-      return { texto: "Responder", fondo: AZUL, color: "#FFFFFF" };
+      return { texto: "En espera", fondo: "#D6D6D6", color: "#7A7A7A" };
   }
 }
 
@@ -70,9 +93,12 @@ export default function InvitacionesRuta() {
   const [cargando, setCargando] = useState(true);
   const [seleccionadaId, setSeleccionadaId] = useState(null);
   const [aceptando, setAceptando] = useState(false); // muestra el formulario
-  const [confirmada, setConfirmada] = useState(false);
   const [guardando, setGuardando] = useState(false);
+  const [confirmada, setConfirmada] = useState(false); // evita un parpadeo al aceptar
+  const [procesandoId, setProcesandoId] = useState(null); // declinando desde la tarjeta
   const [error, setError] = useState("");
+  const [paradas, setParadas] = useState([]); // participantes de la ruta abierta
+  const [paradasError, setParadasError] = useState(false);
   const [form, setForm] = useState({
     servicio: "",
     precio: "",
@@ -96,7 +122,49 @@ export default function InvitacionesRuta() {
     );
   }, [user?.uid]);
 
-  const seleccionada = invitaciones.find((i) => i.id === seleccionadaId) ?? null;
+  const seleccionada = invitaciones.find((inv) => inv.id === seleccionadaId) ?? null;
+  const rutaId = seleccionada?.rutaId;
+  const creadorId = seleccionada?.creadorId;
+
+  // Participantes de la ruta abierta (creador, quienes aceptaron y en espera).
+  useEffect(() => {
+    if (!rutaId || !creadorId) {
+      setParadas([]);
+      setParadasError(false);
+      return undefined;
+    }
+    setParadasError(false);
+    return escucharParadasDeRuta(rutaId, creadorId, setParadas, () => {
+      setParadas([]);
+      setParadasError(true);
+    });
+  }, [rutaId, creadorId]);
+
+  // Si no se pudo leer toda la ruta, al menos se muestran el creador y el propio negocio.
+  const participantes = useMemo(() => {
+    if (!seleccionada) return [];
+    const lista = paradas.filter((p) => p.estado !== ESTADO_PARADA.RECHAZADA);
+    if (!lista.some((p) => p.actorId === user?.uid)) lista.push(seleccionada);
+    if (!lista.some((p) => p.estado === ESTADO_PARADA.CREADOR)) {
+      lista.unshift({
+        id: `creador-${seleccionada.creadorId}`,
+        estado: ESTADO_PARADA.CREADOR,
+        titulo: seleccionada.creadorNombre,
+        creadorNombre: seleccionada.creadorNombre,
+        categoria: "",
+        lugar: "",
+      });
+    }
+    return lista;
+  }, [paradas, seleccionada, user?.uid]);
+
+  // Invitaciones ya aceptadas se muestran con la pantalla "¡Listo!".
+  const mostrarListo =
+    !!seleccionada &&
+    (confirmada || seleccionada.estado === ESTADO_PARADA.ACEPTADA);
+
+  // Las declinadas dejan de aparecer en Notificaciones.
+  const visibles = invitaciones.filter((inv) => inv.estado !== ESTADO_PARADA.RECHAZADA);
 
   const volverALista = () => {
     setSeleccionadaId(null);
@@ -106,7 +174,10 @@ export default function InvitacionesRuta() {
   };
 
   const volver = () => {
-    if (seleccionadaId) {
+    if (aceptando) {
+      setAceptando(false);
+      setError("");
+    } else if (seleccionadaId) {
       volverALista();
     } else if (navigation.canGoBack()) {
       navigation.goBack();
@@ -141,7 +212,8 @@ export default function InvitacionesRuta() {
     }
   };
 
-  const declinar = () => {
+  // Declina desde la tarjeta de Notificaciones o desde el detalle.
+  const declinar = (invitacion, volverDespues = false) => {
     Alert.alert(
       "Declinar invitación",
       "¿Seguro que no quieres participar en esta ruta?",
@@ -152,14 +224,14 @@ export default function InvitacionesRuta() {
           style: "destructive",
           onPress: async () => {
             try {
-              setGuardando(true);
-              await responderInvitacion(seleccionada.id, false);
-              volverALista();
+              setProcesandoId(invitacion.id);
+              await responderInvitacion(invitacion.id, false);
+              if (volverDespues) volverALista();
             } catch (err) {
               console.warn("Error al declinar:", err);
               Alert.alert("No se pudo declinar", "Inténtalo de nuevo.");
             } finally {
-              setGuardando(false);
+              setProcesandoId(null);
             }
           },
         },
@@ -190,6 +262,7 @@ export default function InvitacionesRuta() {
         horario: form.horario.trim(),
         imagenes: form.imagenes,
       });
+      setAceptando(false);
       setConfirmada(true);
     } catch (err) {
       console.error("Error al aceptar la invitación:", err);
@@ -200,41 +273,55 @@ export default function InvitacionesRuta() {
   };
 
   // ---------------- Pantallas ----------------
-  const renderLista = () => {
+
+  // 1) Notificaciones
+  const renderNotificaciones = () => {
     if (cargando) {
       return <ActivityIndicator size="large" color={VERDE} style={{ marginTop: 40 }} />;
     }
-    if (invitaciones.length === 0) {
+    if (visibles.length === 0) {
       return (
         <Text style={[s.aviso, { marginTop: 40 }]}>
           No tienes invitaciones a rutas creativas por ahora.
         </Text>
       );
     }
-    return invitaciones.map((inv) => {
-      const insignia = insigniaDe(inv.estado);
+    return visibles.map((inv) => {
+      const pendiente = inv.estado === ESTADO_PARADA.INVITADO;
       return (
-        <TouchableOpacity
-          key={inv.id}
-          style={s.tarjeta}
-          onPress={() => abrir(inv)}
-          activeOpacity={0.7}
-        >
-          <View style={s.tarjetaMiniatura}>
+        <View key={inv.id} style={i.notificacion}>
+          {/* TODO: foto del creador cuando exista en la invitación. */}
+          <View style={i.notificacionAvatar}>
             <Ionicons name="map-outline" size={30} color={VERDE} />
           </View>
-          <View style={s.tarjetaCuerpo}>
-            <Text style={s.tarjetaTitulo} numberOfLines={2}>
-              {inv.rutaNombre}
+          <View style={i.notificacionCuerpo}>
+            <Text style={i.notificacionTitulo}>Nueva invitación</Text>
+            <Text style={i.notificacionTexto}>
+              {pendiente
+                ? `${inv.creadorNombre} te invitó a formar parte de una ruta creativa.`
+                : `Aceptaste la invitación de ${inv.creadorNombre} a una ruta creativa.`}
             </Text>
-            <Text style={s.tarjetaDetalle}>Te invitó {inv.creadorNombre}</Text>
+            <View style={i.notificacionBotones}>
+              {pendiente && (
+                <TouchableOpacity
+                  style={[i.botonChico, i.botonChicoGris]}
+                  onPress={() => declinar(inv)}
+                  disabled={procesandoId === inv.id}
+                  activeOpacity={0.85}
+                >
+                  <Text style={i.botonChicoTexto}>Declinar</Text>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity
+                style={[i.botonChico, i.botonChicoLima]}
+                onPress={() => abrir(inv)}
+                activeOpacity={0.85}
+              >
+                <Text style={i.botonChicoTexto}>Ver invitación</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-          <View style={[s.insignia, { backgroundColor: insignia.fondo }]}>
-            <Text style={[s.insigniaTexto, { color: insignia.color }]}>
-              {insignia.texto}
-            </Text>
-          </View>
-        </TouchableOpacity>
+        </View>
       );
     });
   };
@@ -323,46 +410,81 @@ export default function InvitacionesRuta() {
       {!!error && <Text style={s.error}>{error}</Text>}
 
       <TouchableOpacity
-        style={[s.botonLima, guardando && s.botonDeshabilitado]}
+        style={[s.botonVerde, guardando && s.botonDeshabilitado]}
         onPress={aceptar}
         disabled={guardando}
         activeOpacity={0.85}
       >
         {guardando ? (
-          <ActivityIndicator color="#1A1A1A" />
+          <ActivityIndicator color="#FFFFFF" />
         ) : (
-          <Text style={s.botonLimaTexto}>Guardar y aceptar</Text>
+          <Text style={s.botonVerdeTexto}>Guardar y aceptar</Text>
         )}
       </TouchableOpacity>
     </>
   );
 
+  // 2) Invitación a una ruta: participantes y botones
+  const renderParticipante = (p) => {
+    const esMia = p.actorId === user?.uid;
+    const chip = chipDe(p, esMia);
+    const tipo = buscarCategoria(p.categoria)?.label;
+    const propietario =
+      p.estado === ESTADO_PARADA.CREADOR ? p.creadorNombre : p.propietarioNombre;
+    const calificacion = Number(p.calificacion);
+    return (
+      <View key={p.id} style={i.participante}>
+        <View style={i.participanteIcono}>
+          <Ionicons name={iconoDeCategoria(p.categoria)} size={34} color={LIMA} />
+        </View>
+        <View style={i.participanteCuerpo}>
+          <Text style={i.participanteNombre} numberOfLines={2}>
+            {p.titulo || "Negocio"}
+          </Text>
+          {!!tipo && <Text style={i.participanteTipo}>{tipo}</Text>}
+          {!!p.lugar && (
+            <View style={i.participanteFila}>
+              <Ionicons name="location" size={11} color="#0B9BE3" />
+              <Text style={i.participanteFilaTexto} numberOfLines={1}>
+                {p.lugar}
+              </Text>
+            </View>
+          )}
+          {Number.isFinite(calificacion) && calificacion > 0 && (
+            <View style={i.participanteFila}>
+              <Ionicons name="star" size={11} color="#F29100" />
+              <Text style={i.participanteFilaTexto}>{calificacion.toFixed(1)}</Text>
+            </View>
+          )}
+          {!!propietario && (
+            <Text style={i.participantePropietario}>
+              Propietario:{" "}
+              <Text style={i.participantePropietarioNombre}>{propietario}</Text>
+            </Text>
+          )}
+        </View>
+        <View style={[i.estadoChip, { backgroundColor: chip.fondo }]}>
+          <Text style={[i.estadoChipTexto, { color: chip.color }]}>{chip.texto}</Text>
+        </View>
+      </View>
+    );
+  };
+
   const renderDetalle = () => {
     const pendiente = seleccionada.estado === ESTADO_PARADA.INVITADO;
     return (
       <>
-        <Text style={s.invitacionTitulo}>Invitación a una ruta</Text>
-        <View style={[s.tarjeta, { marginTop: 8 }]}>
-          <View style={s.tarjetaMiniatura}>
-            <Ionicons
-              name={iconoDeCategoria(seleccionada.categoria)}
-              size={32}
-              color={VERDE}
-            />
-          </View>
-          <View style={s.tarjetaCuerpo}>
-            <Text style={s.tarjetaTitulo}>{seleccionada.rutaNombre}</Text>
-            <Text style={s.tarjetaDetalle}>
-              Creada por {seleccionada.creadorNombre}
-            </Text>
-          </View>
-        </View>
-
-        <Text style={s.invitacionTexto}>
-          <Text style={s.invitacionNegrita}>{seleccionada.creadorNombre}</Text>{" "}
-          te invitó a formar parte de esta ruta creativa con tu negocio{" "}
-          <Text style={s.invitacionNegrita}>{seleccionada.titulo}</Text>.
+        <Text style={i.subtituloRuta}>
+          Ruta creativa {seleccionada.rutaNombre}
         </Text>
+
+        {participantes.map(renderParticipante)}
+
+        {paradasError && (
+          <Text style={i.avisoParticipantes}>
+            No se pudo cargar la lista completa de participantes.
+          </Text>
+        )}
 
         {pendiente && !aceptando && (
           <View style={s.botonesFila}>
@@ -375,8 +497,8 @@ export default function InvitacionesRuta() {
             </TouchableOpacity>
             <TouchableOpacity
               style={[s.botonContorno, s.botonFilaMitad, { marginLeft: 8 }]}
-              onPress={declinar}
-              disabled={guardando}
+              onPress={() => declinar(seleccionada, true)}
+              disabled={procesandoId === seleccionada.id}
               activeOpacity={0.85}
             >
               <Text style={s.botonContornoTexto}>Declinar</Text>
@@ -385,40 +507,28 @@ export default function InvitacionesRuta() {
         )}
 
         {pendiente && aceptando && renderFormulario()}
-
-        {seleccionada.estado === ESTADO_PARADA.ACEPTADA && (
-          <View style={{ marginTop: 8 }}>
-            <Text style={s.invitacionTexto}>
-              Servicio:{" "}
-              <Text style={s.invitacionNegrita}>{seleccionada.servicio}</Text>
-            </Text>
-            <Text style={s.invitacionTexto}>
-              Precio:{" "}
-              <Text style={s.invitacionNegrita}>
-                {formatearPrecio(seleccionada.precio)}
-              </Text>
-            </Text>
-            <Text style={s.invitacionTexto}>Horario: {seleccionada.horario}</Text>
-            <Text style={s.invitacionTexto}>Dirección: {seleccionada.direccion}</Text>
-          </View>
-        )}
-        {seleccionada.estado === ESTADO_PARADA.RECHAZADA && (
-          <Text style={s.aviso}>Declinaste esta invitación.</Text>
-        )}
       </>
     );
   };
 
-  const renderConfirmacion = () => (
-    <View style={[s.confirmacionContenedor, { paddingTop: 48 }]}>
-      <Ionicons name="checkmark-circle" size={72} color={LIMA} />
-      <Text style={[s.confirmacionTitulo, { marginTop: 12 }]}>¡Listo!</Text>
-      <Text style={s.aviso}>
-        Aceptaste participar en la ruta {seleccionada?.rutaNombre}. Cuando el
-        creador la publique, aparecerá con tu servicio y tu precio.
-      </Text>
+  // 3) "¡Listo!": confirmación con espacio para la imagen
+  const renderListo = () => (
+    <View style={[i.listoContenedor, { paddingBottom: insets.bottom + 28 }]}>
+      <View style={i.listoCentro}>
+        <View style={i.listoImagenEspacio}>
+          {IMAGEN_LISTO ? (
+            <Image source={IMAGEN_LISTO} style={i.listoImagen} resizeMode="contain" />
+          ) : null}
+        </View>
+        <Text style={i.listoTitulo}>¡Listo!</Text>
+        <Text style={i.listoTexto}>
+          Aceptaste participar en la ruta{" "}
+          <Text style={i.listoTextoNegrita}>{seleccionada?.rutaNombre}</Text>.
+          Cuando el creador la publique, aparecerá con tu servicio y precio.
+        </Text>
+      </View>
       <TouchableOpacity
-        style={[s.botonVerde, { alignSelf: "stretch" }]}
+        style={s.botonVerde}
         onPress={volverALista}
         activeOpacity={0.85}
       >
@@ -426,6 +536,12 @@ export default function InvitacionesRuta() {
       </TouchableOpacity>
     </View>
   );
+
+  const titulo = mostrarListo
+    ? ""
+    : seleccionada
+      ? "Invitación a una ruta"
+      : "Notificaciones";
 
   return (
     <View style={[s.container, { paddingTop: insets.top + 8 }]}>
@@ -438,27 +554,30 @@ export default function InvitacionesRuta() {
         >
           <Ionicons name="arrow-back" size={24} color="#111111" />
         </TouchableOpacity>
-        <Text style={s.tituloPantalla}>Invitaciones</Text>
+        <Text style={s.tituloPantalla}>{titulo}</Text>
         <View style={s.botonAtras} />
       </View>
 
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
-        <ScrollView
-          contentContainerStyle={[
-            s.contenido,
-            { paddingTop: 12, paddingBottom: insets.bottom + 32 },
-          ]}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
+      {mostrarListo ? (
+        renderListo()
+      ) : (
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
-          {!seleccionada && renderLista()}
-          {seleccionada && !confirmada && renderDetalle()}
-          {seleccionada && confirmada && renderConfirmacion()}
-        </ScrollView>
-      </KeyboardAvoidingView>
+          <ScrollView
+            contentContainerStyle={[
+              s.contenido,
+              { paddingTop: 12, paddingBottom: insets.bottom + 32 },
+            ]}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            {!seleccionada && renderNotificaciones()}
+            {seleccionada && renderDetalle()}
+          </ScrollView>
+        </KeyboardAvoidingView>
+      )}
     </View>
   );
 }

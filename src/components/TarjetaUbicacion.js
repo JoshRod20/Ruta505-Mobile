@@ -2,7 +2,7 @@
  * TarjetaUbicacion: componente/pantalla de la aplicación Ruta505.
  */
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -13,11 +13,25 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useVideoPlayer, VideoView } from "expo-video";
 
-import { buscarCategoria } from "../services/Categoriasexperiencias";
+import { obtenerMultimedia } from "../services/Negociosservice";
 import { tarjetaUbicacionStyle as s } from "../styles/mapanicaragua/TarjetaUbicacionStyle";
 
 const VERDE = "#0E5A34";
+
+/** Reproductor de un video corto del negocio (requiere expo-video). */
+function VideoNegocio({ uri, style }) {
+  const player = useVideoPlayer(uri);
+  return (
+    <VideoView
+      player={player}
+      style={style}
+      nativeControls
+      contentFit="cover"
+    />
+  );
+}
 
 /**
  * Hoja "Detalles de la ubicación" que se abre al tocar un punto del mapa.
@@ -36,11 +50,27 @@ export default function TarjetaUbicacion({
 }) {
   const { width, height } = useWindowDimensions();
 
-  const categoria = buscarCategoria(punto.categoria);
   const fotos = punto.imagenes?.length ? punto.imagenes : punto.imagenUrls ?? [];
+  // Fotos y videos del negocio (subcolección). Mientras cargan, o si no hay,
+  // se usan las fotos antiguas guardadas en el propio documento.
+  const [multimedia, setMultimedia] = useState([]);
+  useEffect(() => {
+    let vigente = true;
+    setMultimedia([]);
+    obtenerMultimedia(punto.id)
+      .then((items) => vigente && setMultimedia(items))
+      .catch(() => {});
+    return () => {
+      vigente = false;
+    };
+  }, [punto.id]);
   const tieneCalificacion = typeof punto.calificacion === "number";
   const hayRutaAqui = ruta && ruta.destino?.id === punto.id;
-  const anchoFoto = fotos.length > 1 ? width * 0.72 : width - 40;
+  const items = multimedia.length
+    ? multimedia
+    : fotos.map((uri) => ({ tipo: "imagen", uri }));
+  const totalMedia = items.length;
+  const anchoFoto = totalMedia > 1 ? width * 0.72 : width - 40;
 
   return (
     <View style={s.hoja}>
@@ -50,16 +80,10 @@ export default function TarjetaUbicacion({
         showsVerticalScrollIndicator={false}
         nestedScrollEnabled
       >
-        <View style={s.filaSuperior}>
-          <View style={s.badge}>
-            <Ionicons
-              name={categoria?.icono ?? "location-outline"}
-              size={18}
-              color={VERDE}
-              style={s.badgeIcono}
-            />
-            <Text style={s.badgeTexto}>{categoria?.label ?? "Lugar"}</Text>
-          </View>
+        <View style={s.filaTitulo}>
+          <Text style={s.titulo} numberOfLines={2}>
+            {punto.titulo}
+          </Text>
           <TouchableOpacity
             style={s.botonCerrar}
             onPress={onCerrar}
@@ -70,18 +94,16 @@ export default function TarjetaUbicacion({
           </TouchableOpacity>
         </View>
 
-        <Text style={s.titulo}>{punto.titulo}</Text>
-
         {tieneCalificacion && (
           <View style={s.filaCalificacion}>
-            <Ionicons name="star" size={20} color="#111111" />
+            <Ionicons name="star" size={20} color="#F5A623" />
             <Text style={s.calificacionTexto}>
               {punto.calificacion.toFixed(1)}
             </Text>
           </View>
         )}
 
-        {fotos.length > 0 && (
+        {totalMedia > 0 && (
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -89,21 +111,29 @@ export default function TarjetaUbicacion({
             contentContainerStyle={s.filaFotosContenido}
             nestedScrollEnabled
           >
-            {fotos.map((uri, index) => (
-              <Image
-                key={index}
-                source={{ uri }}
-                style={[s.foto, { width: anchoFoto }]}
-                resizeMode="cover"
-              />
-            ))}
+            {items.map((item, index) =>
+              item.tipo === "video" ? (
+                <VideoNegocio
+                  key={index}
+                  uri={item.uri}
+                  style={[s.foto, { width: anchoFoto }]}
+                />
+              ) : (
+                <Image
+                  key={index}
+                  source={{ uri: item.uri }}
+                  style={[s.foto, { width: anchoFoto }]}
+                  resizeMode="cover"
+                />
+              ),
+            )}
           </ScrollView>
         )}
 
         {!!punto.ubicacionExacta && (
           <View style={s.cajaReferencia}>
             <View style={s.referenciaIcono}>
-              <Ionicons name="location-sharp" size={22} color={VERDE} />
+              <Ionicons name="location-sharp" size={20} color={VERDE} />
             </View>
             <View style={s.referenciaTextos}>
               <Text style={s.referenciaEtiqueta}>Referencia registrada</Text>

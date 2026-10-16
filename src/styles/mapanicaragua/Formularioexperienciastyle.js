@@ -110,6 +110,13 @@ export const formularioExperienciaStyle = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
+  miniaturaVideo: {
+    width: "100%",
+    height: "100%",
+    backgroundColor: "#1F2A24",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   botonQuitarImagen: {
     position: "absolute",
     top: 2,

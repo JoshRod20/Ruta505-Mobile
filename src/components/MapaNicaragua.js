@@ -290,6 +290,9 @@ export default function MapaNicaragua() {
         lat: ubicacion.lat,
         lng: ubicacion.lon,
         lugar,
+        // La referencia ya no se escribe en este formulario: se toma de la
+        // dirección que el actor puso al registrarse (perfil del actor).
+        ubicacionExacta: profile?.direccion ?? "",
       };
 
       if (negocioEnEdicion) {
