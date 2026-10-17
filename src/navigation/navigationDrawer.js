@@ -23,6 +23,7 @@ import Estadisticas from "../screens/actorCultural/estadisticas";
 import { useAuth } from "../context/AuthContext";
 import { drawerStyle } from "../styles/navigation/navigationDrawerStyle";
 import PinolitoScreen from "../screens/usuario/PinolitoScreen";
+import Guardados from "../screens/usuario/guardados";
 
 const Drawer = createDrawerNavigator();
 
@@ -141,6 +142,12 @@ export default function NavigationDrawer() {
       <Drawer.Screen
         name="PinolitoDrawer"
         component={PinolitoScreen}
+        options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
+      />
+      {/* Guardados: publicaciones que el turista marcó. Pantalla independiente, sin barra de tabs. Se abre desde el perfil. */}
+      <Drawer.Screen
+        name="GuardadosDrawer"
+        component={Guardados}
         options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
       />
       <Drawer.Screen

@@ -15,7 +15,7 @@ export const ROJO_ERROR_CAMPO = "#d32f2f";
 export const campo = {
   // Texto que va encima de cada campo.
   etiqueta: {
-    fontFamily: "Poppins-Reg",
+    fontFamily: "Poppins-SemiBold",
     fontSize: 14,
     color: VERDE_CAMPO,
     marginTop: 18,

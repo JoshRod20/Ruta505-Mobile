@@ -27,6 +27,7 @@ import {
 } from "../../styles/home/publicacionCardStyle";
 import { formatearTiempoRelativo } from "../../utils/tiempoRelativo";
 import {
+  alternarGuardado,
   alternarLike,
   actualizarExperiencia,
   eliminarComentario,
@@ -36,6 +37,7 @@ import {
   guardarComentario,
 } from "../../services/Experienciasservice";
 import { useAuth } from "../../context/AuthContext";
+import { PERMISOS, tienePermiso } from "../../constants/permissions";
 
 const VERDE = "#0E5A34";
 const NARANJA = "#F29100";
@@ -97,7 +99,7 @@ const ETIQUETAS_ACTOR = {
  */
 export default function PublicacionCard({ experiencia }) {
   const insets = useSafeAreaInsets();
-  const { user, profile } = useAuth();
+  const { user, profile, role } = useAuth();
   const [indiceImagen, setIndiceImagen] = useState(0);
   // Comentarios de la publicación (se actualizan en vivo).
   const [comentarios, setComentarios] = useState([]);
@@ -109,8 +111,13 @@ export default function PublicacionCard({ experiencia }) {
   const [enviandoComentario, setEnviandoComentario] = useState(false);
   // Uids de quienes dieron "me gusta" (se actualiza en vivo).
   const [likes, setLikes] = useState([]);
-  // "Guardar" sigue siendo solo visual: todavía no se persiste en Firestore.
-  const [guardadoActivo, setGuardadoActivo] = useState(false);
+  // Quien tiene el permiso de favoritos (turista) guarda de verdad en su perfil;
+  // para los demás roles el marcador sigue siendo solo visual.
+  const puedeGuardar = tienePermiso(
+    role ?? profile?.role,
+    PERMISOS.GUARDAR_FAVORITOS
+  );
+  const [guardadoLocal, setGuardadoLocal] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const [editando, setEditando] = useState(false);
   const [tituloEditado, setTituloEditado] = useState("");
@@ -123,6 +130,26 @@ export default function PublicacionCard({ experiencia }) {
 
   const totalLikes = likes.length;
   const likeActivo = !!user?.uid && likes.includes(user.uid);
+  const guardadoActivo = puedeGuardar
+    ? (profile?.guardados ?? []).includes(experiencia.id)
+    : guardadoLocal;
+
+  const alternarGuardar = async () => {
+    if (!puedeGuardar) {
+      setGuardadoLocal((v) => !v);
+      return;
+    }
+    if (!user?.uid) return;
+    try {
+      await alternarGuardado(user.uid, experiencia.id, !guardadoActivo);
+    } catch (error) {
+      console.warn("Error al guardar la publicación:", error);
+      Alert.alert(
+        "No se pudo guardar",
+        "Revisa tu conexión e inténtalo de nuevo."
+      );
+    }
+  };
   // El autor ve el contador, pero no puede darse "me gusta" a sí mismo.
   const esAutor = !!user?.uid && experiencia.creadoPor === user.uid;
   const titulo =
@@ -557,7 +584,7 @@ export default function PublicacionCard({ experiencia }) {
         </View>
 
         <TouchableOpacity
-          onPress={() => setGuardadoActivo((v) => !v)}
+          onPress={alternarGuardar}
           activeOpacity={0.7}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           accessibilityLabel={guardadoActivo ? "Quitar de guardados" : "Guardar"}

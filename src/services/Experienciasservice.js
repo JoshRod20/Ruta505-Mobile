@@ -19,6 +19,8 @@ import {
   orderBy,
   where,
   serverTimestamp,
+  arrayUnion,
+  arrayRemove,
 } from "firebase/firestore";
 
 /** Nombre de la colección de publicaciones en Firestore. */
@@ -357,4 +359,26 @@ export function escucharActividadDeActor(actorId, callback, onError) {
     oyentes.clear();
     datos.clear();
   };
+}
+
+// ==================================================
+// GUARDADOS
+// Cada usuario guarda los ids de las publicaciones que marca con el marcador
+// en el arreglo "guardados" de su documento users/{uid}. Como el perfil se
+// escucha en vivo (AuthContext), el marcador y la pantalla Guardados se
+// actualizan solos.
+// ==================================================
+
+/**
+ * Guarda o quita una publicación de los guardados del usuario.
+ * @param {string} uid - Usuario que guarda.
+ * @param {string} experienciaId - Publicación.
+ * @param {boolean} guardar - true para guardar, false para quitar.
+ * @returns {Promise<void>}
+ */
+export async function alternarGuardado(uid, experienciaId, guardar) {
+  return updateDoc(doc(db, "users", uid), {
+    guardados: guardar ? arrayUnion(experienciaId) : arrayRemove(experienciaId),
+    updatedAt: serverTimestamp(),
+  });
 }

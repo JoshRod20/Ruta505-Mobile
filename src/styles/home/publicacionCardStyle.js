@@ -166,7 +166,7 @@ export const publicacionCardStyle = StyleSheet.create({
     color: VERDE,
   },
   modalEditarLabel: {
-    fontFamily: "Poppins-Reg",
+    fontFamily: "Poppins-SemiBold",
     fontSize: 14,
     color: VERDE,
     marginBottom: 8,
