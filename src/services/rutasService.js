@@ -31,7 +31,8 @@ import { db } from "./firebase";
 //   rutaId, rutaNombre, creadorId, creadorNombre,
 //   actorId, ubicacionId, titulo, categoria, lugar   -> el negocio del actor
 //   estado: "creador" | "invitado" | "aceptada" | "rechazada"
-//   servicio, precio, direccion, horario, imagenes   -> lo llena cada actor
+//   servicio, precio, direccion, dia, horario, imagenes   -> lo llena cada actor
+//   dia: número (1, 2, 3...); horario: "09:00 AM - 12:00 PM"
 //   publicada (true cuando la ruta se publica), createdAt, respondidoAt
 //
 // Cada actor tiene un solo negocio (su ubicación en el mapa), así que cada
@@ -107,6 +108,44 @@ export function calcularTotal(paradas) {
 /** Formatea un valor numérico como precio en córdobas. */
 export const formatearPrecio = (valor) =>
   `C$ ${Number(valor || 0).toLocaleString("en-US")}`;
+
+// ---------------- Días y horas de la ruta ----------------
+// Cada parada guarda "dia" (1, 2, 3...) y "horario" ("09:00 AM - 12:00 PM").
+// Los días de la ruta salen del día más alto entre sus paradas.
+
+/** Días que puede durar una ruta (Día 1 ... Día 7). */
+export const DIAS_RUTA = [1, 2, 3, 4, 5, 6, 7];
+
+/** Horas disponibles cada 30 min, de 06:00 AM a 10:00 PM. */
+export const HORAS = Array.from({ length: 33 }, (_, i) => {
+  const minutos = 6 * 60 + i * 30;
+  const h24 = Math.floor(minutos / 60);
+  const min = minutos % 60 === 0 ? "00" : "30";
+  const h12 = h24 % 12 || 12;
+  return `${String(h12).padStart(2, "0")}:${min} ${h24 >= 12 ? "PM" : "AM"}`;
+});
+
+/** Separa "09:00 AM - 12:00 PM" en { horaInicio, horaFin } (vacíos si no coincide). */
+export function separarHorario(horario) {
+  const [horaInicio = "", horaFin = ""] = String(horario ?? "").split(" - ");
+  return HORAS.includes(horaInicio) && HORAS.includes(horaFin)
+    ? { horaInicio, horaFin }
+    : { horaInicio: "", horaFin: "" };
+}
+
+/** Duración de la ruta en días: el día más alto entre las paradas (0 si ninguna tiene día). */
+export function calcularDias(paradas) {
+  return paradas.reduce((max, p) => Math.max(max, Number(p.dia) || 0), 0);
+}
+
+/** Ordena las paradas por día y por hora de inicio. */
+export function ordenarParadas(paradas) {
+  const hora = (p) => HORAS.indexOf(String(p.horario ?? "").split(" - ")[0]);
+  return [...paradas].sort(
+    (a, b) =>
+      (Number(a.dia) || 99) - (Number(b.dia) || 99) || hora(a) - hora(b)
+  );
+}
 
 // ---------------- Lecturas en vivo ----------------
 
@@ -262,6 +301,7 @@ export async function crearRuta({ creador, nombre, negocio, datos }) {
       precio: datos.precio,
       direccion: datos.direccion,
       horario: datos.horario,
+    dia: datos.dia,
       imagenes: datos.imagenes,
       createdAt: serverTimestamp(),
     });
@@ -297,6 +337,7 @@ export async function actualizarPasoDatos({
     precio: datos.precio,
     direccion: datos.direccion,
     horario: datos.horario,
+    dia: datos.dia,
     imagenes: datos.imagenes,
     updatedAt: serverTimestamp(),
   });
@@ -365,6 +406,7 @@ export async function responderInvitacion(paradaId, aceptar, datos) {
     cambios.precio = datos.precio;
     cambios.direccion = datos.direccion;
     cambios.horario = datos.horario;
+    cambios.dia = datos.dia;
     cambios.imagenes = datos.imagenes;
   }
   return updateDoc(doc(db, PARADAS, paradaId), cambios);

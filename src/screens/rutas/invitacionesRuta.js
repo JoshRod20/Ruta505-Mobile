@@ -34,6 +34,9 @@ import {
   escucharParadasDeRuta,
   ESTADO_PARADA,
   responderInvitacion,
+  DIAS_RUTA,
+  HORAS,
+  separarHorario,
 } from "../../services/rutasService";
 import {
   buscarCategoria,
@@ -58,14 +61,6 @@ import {
 const IMAGEN_LISTO = require("../../assets/pinolito/Pinolito-Pose-Sorprendido.png");;
 
 const MAX_FOTOS = 2;
-
-const HORARIOS_DISPONIBLES = [
-  "Lunes a domingo, 8:00 am - 9:00 pm",
-  "Lunes a sábado, 9:00 am - 7:00 pm",
-  "Lunes a viernes, 8:00 am - 5:00 pm",
-  "Fines de semana, 9:00 am - 8:00 pm",
-  "Horario por confirmar",
-];
 
 // Chip de estado de cada participante en "Invitación a una ruta".
 function chipDe(parada, esMia) {
@@ -103,7 +98,9 @@ export default function InvitacionesRuta() {
     servicio: "",
     precio: "",
     direccion: "",
-    horario: "",
+    dia: "",
+    horaInicio: "",
+    horaFin: "",
     imagenes: [],
   });
 
@@ -195,7 +192,9 @@ export default function InvitacionesRuta() {
       servicio: "",
       precio: "",
       direccion: "",
-      horario: "",
+      dia: "",
+    horaInicio: "",
+    horaFin: "",
       imagenes: [],
     });
   };
@@ -244,9 +243,15 @@ export default function InvitacionesRuta() {
     if (
       !form.servicio.trim() ||
       !form.direccion.trim() ||
-      !form.horario.trim()
+      !form.dia ||
+      !form.horaInicio ||
+      !form.horaFin
     ) {
       setError("Completa todos los campos.");
+      return;
+    }
+    if (HORAS.indexOf(form.horaFin) <= HORAS.indexOf(form.horaInicio)) {
+      setError("La hora de fin debe ser posterior a la hora de inicio.");
       return;
     }
     if (!Number.isFinite(precio) || precio <= 0) {
@@ -259,7 +264,8 @@ export default function InvitacionesRuta() {
         servicio: form.servicio.trim(),
         precio,
         direccion: form.direccion.trim(),
-        horario: form.horario.trim(),
+        dia: Number(form.dia),
+      horario: `${form.horaInicio} - ${form.horaFin}`,
         imagenes: form.imagenes,
       });
       setAceptando(false);
@@ -364,18 +370,52 @@ export default function InvitacionesRuta() {
         maxLength={200}
       />
 
-      <Text style={s.etiqueta}>Horario disponible</Text>
+      <Text style={s.etiqueta}>Día de la ruta</Text>
       <View style={[s.input, s.inputConIcono, { paddingRight: 0 }]}>
         <Picker
-          selectedValue={form.horario || HORARIOS_DISPONIBLES[0]}
-          onValueChange={(value) => actualizarForm("horario", value)}
+          selectedValue={form.dia}
+          onValueChange={(value) => actualizarForm("dia", value)}
           style={{ flex: 1, color: "#1A1A1A" }}
           itemStyle={{ color: "#1A1A1A" }}
           dropdownIconColor="#111111"
         >
-          <Picker.Item label="Selecciona horario disponible" value="" />
-          {HORARIOS_DISPONIBLES.map((horario) => (
-            <Picker.Item key={horario} label={horario} value={horario} />
+          <Picker.Item label="Selecciona el día" value="" />
+          {DIAS_RUTA.map((d) => (
+            <Picker.Item key={d} label={`Día ${d}`} value={String(d)} />
+          ))}
+        </Picker>
+        <Ionicons name="calendar-outline" size={22} color="#111111" />
+      </View>
+
+      <Text style={s.etiqueta}>Hora de inicio</Text>
+      <View style={[s.input, s.inputConIcono, { paddingRight: 0 }]}>
+        <Picker
+          selectedValue={form.horaInicio}
+          onValueChange={(value) => actualizarForm("horaInicio", value)}
+          style={{ flex: 1, color: "#1A1A1A" }}
+          itemStyle={{ color: "#1A1A1A" }}
+          dropdownIconColor="#111111"
+        >
+          <Picker.Item label="Selecciona la hora de inicio" value="" />
+          {HORAS.map((h) => (
+            <Picker.Item key={h} label={h} value={h} />
+          ))}
+        </Picker>
+        <Ionicons name="time-outline" size={22} color="#111111" />
+      </View>
+
+      <Text style={s.etiqueta}>Hora de fin</Text>
+      <View style={[s.input, s.inputConIcono, { paddingRight: 0 }]}>
+        <Picker
+          selectedValue={form.horaFin}
+          onValueChange={(value) => actualizarForm("horaFin", value)}
+          style={{ flex: 1, color: "#1A1A1A" }}
+          itemStyle={{ color: "#1A1A1A" }}
+          dropdownIconColor="#111111"
+        >
+          <Picker.Item label="Selecciona la hora de fin" value="" />
+          {HORAS.map((h) => (
+            <Picker.Item key={h} label={h} value={h} />
           ))}
         </Picker>
         <Ionicons name="time-outline" size={22} color="#111111" />

@@ -22,11 +22,13 @@ import {
   ESTADO_RUTA,
   MINIMO_ALIADOS,
   aliadosAceptados,
+  calcularDias,
   calcularTotal,
   cancelarRuta,
   escucharMisRutas,
   escucharParadasDeCreador,
   formatearPrecio,
+  ordenarParadas,
 } from "../../services/rutasService";
 import { iconoDeCategoria } from "../../services/Categoriasexperiencias";
 import { misRutasStyle as s } from "../../styles/rutas/misRutasCreativasStyle";
@@ -150,7 +152,7 @@ export default function MisRutasCreativas() {
     );
   };
 
-  const renderParada = (p) => {
+  const renderParada = (p, mostrarDia) => {
     const imagen = p.imagenes?.[0] ?? p.imagenUrls?.[0];
     const pendiente = p.estado === ESTADO_PARADA.INVITADO;
     const rechazada = p.estado === ESTADO_PARADA.RECHAZADA;
@@ -177,8 +179,9 @@ export default function MisRutasCreativas() {
           </Text>
           {!!p.horario && (
             <View style={s.paradaFilaHorario}>
-              <Ionicons name="time-outline" size={12} color="#4A4A4A" />
+              <Ionicons name="time-outline" size={13} color="#4A4A4A" />
               <Text style={s.paradaHorario} numberOfLines={1}>
+                {mostrarDia && p.dia ? `Día ${p.dia} · ` : ""}
                 {p.horario}
               </Text>
             </View>
@@ -198,9 +201,12 @@ export default function MisRutasCreativas() {
         p.estado === ESTADO_PARADA.ACEPTADA
     );
     const publicada = ruta.estado === ESTADO_RUTA.PUBLICADA;
-    const visibles = publicada
-      ? incluidas
-      : paradasRuta.filter((p) => p.estado !== ESTADO_PARADA.RECHAZADA);
+    const visibles = ordenarParadas(
+      publicada
+        ? incluidas
+        : paradasRuta.filter((p) => p.estado !== ESTADO_PARADA.RECHAZADA)
+    );
+    const dias = calcularDias(visibles); // 3 si la última parada es del Día 3
     const etiqueta = ETIQUETA_ESTADO[ruta.estado] ?? ETIQUETA_ESTADO.borrador;
     const enCancelacion = cancelando === ruta.id;
 
@@ -209,18 +215,17 @@ export default function MisRutasCreativas() {
         <View style={s.filaSuperior}>
           <View style={s.pastillaLugares}>
             <Text style={s.pastillaLugaresTexto}>
-              {incluidas.length} lugares incluidos
+              {incluidas.length}{" "}
+              {incluidas.length === 1 ? "lugar incluido" : "lugares incluidos"}
             </Text>
           </View>
-          <View style={[s.pastillaLugares, s[etiqueta.estilo]]}>
-            <Text style={s.estadoTexto}>{etiqueta.texto}</Text>
-          </View>
+          {!publicada && (
+            <View style={[s.pastillaEstado, s[etiqueta.estilo]]}>
+              <Text style={s.estadoTexto}>{etiqueta.texto}</Text>
+            </View>
+          )}
         </View>
 
-        <View style={s.tarjetaHeader}>
-          <View style={s.puntoDecorativo} />
-          <Text style={s.rutaTipo}>Ruta creativa</Text>
-        </View>
         <Text style={s.nombre}>{ruta.nombre}</Text>
         <Text style={s.etiquetaItinerario}>ITINERARIO GUIADO</Text>
 
@@ -232,8 +237,16 @@ export default function MisRutasCreativas() {
             contentContainerStyle={s.carruselContenido}
             nestedScrollEnabled
           >
-            {visibles.map(renderParada)}
+            {visibles.map((p) => renderParada(p, dias > 1))}
           </ScrollView>
+        )}
+
+        {dias > 0 && (
+          <View style={s.pastillaDias}>
+            <Text style={s.pastillaDiasTexto}>
+              {dias} {dias === 1 ? "día" : "días"}
+            </Text>
+          </View>
         )}
 
         {publicada ? (
@@ -315,11 +328,6 @@ export default function MisRutasCreativas() {
         contentContainerStyle={[s.lista, { paddingBottom: insets.bottom + 24 }]}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={s.subtitulo}>
-          Experiencias culturales inmersivas y talleres guiados por actores
-          culturales.
-        </Text>
-
         {rutas === null ? (
           <ActivityIndicator style={{ marginTop: 30 }} color={VERDE} />
         ) : vigentes.length === 0 ? (

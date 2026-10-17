@@ -38,6 +38,9 @@ import {
   invitarActor,
   MINIMO_ALIADOS,
   publicarRuta,
+  DIAS_RUTA,
+  HORAS,
+  separarHorario,
 } from "../../services/rutasService";
 import {
   buscarCategoria,
@@ -53,14 +56,6 @@ import {
 } from "../../styles/rutas/crearRutaStyle";
 
 const MAX_FOTOS = 2;
-
-const HORARIOS_DISPONIBLES = [
-  "Lunes a domingo, 8:00 am - 9:00 pm",
-  "Lunes a sábado, 9:00 am - 7:00 pm",
-  "Lunes a viernes, 8:00 am - 5:00 pm",
-  "Fines de semana, 9:00 am - 8:00 pm",
-  "Horario por confirmar",
-];
 
 const TITULOS = {
   2: { pantalla: "Servicios que ofreces", seccion: "Completar datos" },
@@ -161,7 +156,9 @@ function AsistenteRutaCreativa() {
     servicio: "",
     precio: "",
     direccion: "",
-    horario: "",
+    dia: "",
+    horaInicio: "",
+    horaFin: "",
     imagenes: [],
   });
   const [formCargado, setFormCargado] = useState(false);
@@ -200,7 +197,8 @@ function AsistenteRutaCreativa() {
       servicio: miParada.servicio ?? "",
       precio: miParada.precio != null ? String(miParada.precio) : "",
       direccion: miParada.direccion ?? "",
-      horario: miParada.horario ?? "",
+      dia: miParada.dia != null ? String(miParada.dia) : "",
+      ...separarHorario(miParada.horario),
       imagenes: miParada.imagenes ?? [],
     });
     setFormCargado(true);
@@ -286,9 +284,15 @@ function AsistenteRutaCreativa() {
       !form.nombre.trim() ||
       !form.servicio.trim() ||
       !form.direccion.trim() ||
-      !form.horario.trim()
+      !form.dia ||
+      !form.horaInicio ||
+      !form.horaFin
     ) {
       setError("Completa todos los campos.");
+      return;
+    }
+    if (HORAS.indexOf(form.horaFin) <= HORAS.indexOf(form.horaInicio)) {
+      setError("La hora de fin debe ser posterior a la hora de inicio.");
       return;
     }
     if (!Number.isFinite(precio) || precio <= 0) {
@@ -304,7 +308,8 @@ function AsistenteRutaCreativa() {
       servicio: form.servicio.trim(),
       precio,
       direccion: form.direccion.trim(),
-      horario: form.horario.trim(),
+      dia: Number(form.dia),
+      horario: `${form.horaInicio} - ${form.horaFin}`,
       imagenes: form.imagenes,
     };
 
@@ -475,20 +480,55 @@ function AsistenteRutaCreativa() {
         maxLength={200}
       />
 
-      <Text style={s.etiqueta}>Horario disponible</Text>
+      <Text style={s.etiqueta}>Día de la ruta</Text>
       <View style={[s.input, s.inputConIcono, { paddingRight: 0 }]}>
         <Picker
-          selectedValue={form.horario || HORARIOS_DISPONIBLES[0]}
-          onValueChange={(value) => actualizarForm("horario", value)}
+          selectedValue={form.dia}
+          onValueChange={(value) => actualizarForm("dia", value)}
           style={{ flex: 1, color: "#1A1A1A" }}
           itemStyle={{ color: "#1A1A1A" }}
           dropdownIconColor="#111111"
         >
-          <Picker.Item label="Selecciona horario disponible" value="" />
-          {HORARIOS_DISPONIBLES.map((horario) => (
-            <Picker.Item key={horario} label={horario} value={horario} />
+          <Picker.Item label="Selecciona el día" value="" />
+          {DIAS_RUTA.map((d) => (
+            <Picker.Item key={d} label={`Día ${d}`} value={String(d)} />
           ))}
         </Picker>
+        <Ionicons name="calendar-outline" size={22} color="#111111" />
+      </View>
+
+      <Text style={s.etiqueta}>Hora de inicio</Text>
+      <View style={[s.input, s.inputConIcono, { paddingRight: 0 }]}>
+        <Picker
+          selectedValue={form.horaInicio}
+          onValueChange={(value) => actualizarForm("horaInicio", value)}
+          style={{ flex: 1, color: "#1A1A1A" }}
+          itemStyle={{ color: "#1A1A1A" }}
+          dropdownIconColor="#111111"
+        >
+          <Picker.Item label="Selecciona la hora de inicio" value="" />
+          {HORAS.map((h) => (
+            <Picker.Item key={h} label={h} value={h} />
+          ))}
+        </Picker>
+        <Ionicons name="time-outline" size={22} color="#111111" />
+      </View>
+
+      <Text style={s.etiqueta}>Hora de fin</Text>
+      <View style={[s.input, s.inputConIcono, { paddingRight: 0 }]}>
+        <Picker
+          selectedValue={form.horaFin}
+          onValueChange={(value) => actualizarForm("horaFin", value)}
+          style={{ flex: 1, color: "#1A1A1A" }}
+          itemStyle={{ color: "#1A1A1A" }}
+          dropdownIconColor="#111111"
+        >
+          <Picker.Item label="Selecciona la hora de fin" value="" />
+          {HORAS.map((h) => (
+            <Picker.Item key={h} label={h} value={h} />
+          ))}
+        </Picker>
+        <Ionicons name="time-outline" size={22} color="#111111" />
       </View>
 
       <Text style={s.etiqueta}>Fotos</Text>
