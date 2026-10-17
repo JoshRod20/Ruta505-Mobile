@@ -101,8 +101,7 @@ export default function UserProfile() {
   const acciones = [
     {
       texto: "Editar perfil",
-      onPress: () =>
-        Alert.alert("Próximamente", "Muy pronto podrás editar tu perfil."),
+      onPress: () => navigation.navigate("EditarPerfilDrawer"),
     },
     {
       texto: "Configuración",

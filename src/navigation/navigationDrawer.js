@@ -24,6 +24,7 @@ import { useAuth } from "../context/AuthContext";
 import { drawerStyle } from "../styles/navigation/navigationDrawerStyle";
 import PinolitoScreen from "../screens/usuario/PinolitoScreen";
 import Guardados from "../screens/usuario/guardados";
+import EditUserProfile from "../screens/usuario/editUserProfile";
 
 const Drawer = createDrawerNavigator();
 
@@ -142,6 +143,12 @@ export default function NavigationDrawer() {
       <Drawer.Screen
         name="PinolitoDrawer"
         component={PinolitoScreen}
+        options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
+      />
+      {/* Edición del perfil del turista: pantalla independiente (sin barra de tabs). Se abre desde "Editar perfil" en el perfil. */}
+      <Drawer.Screen
+        name="EditarPerfilDrawer"
+        component={EditUserProfile}
         options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
       />
       {/* Guardados: publicaciones que el turista marcó. Pantalla independiente, sin barra de tabs. Se abre desde el perfil. */}
