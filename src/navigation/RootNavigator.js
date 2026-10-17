@@ -40,6 +40,8 @@ import PendienteAprobacionScreen from "../screens/auth/PendienteAprobacionScreen
 import SeleccionarInteresesScreen from "../screens/auth/SeleccionarInteresesScreen";
 import SolicitarUbicacionScreen from "../screens/auth/SolicitarUbicacionScreen";
 
+import PassportCollection from "../screens/usuario/passportCollection";
+
 import NavigationDrawer from "./navigationDrawer";
 
 const Stack =
@@ -160,6 +162,26 @@ const AuthStack = () => (
       } 
     />
 
+  </Stack.Navigator>
+);
+
+// Stack de la app con sesión iniciada: el drawer es la base y las
+// pantallas que se abren encima de las pestañas (sin barra inferior) van aquí.
+const AppStack = () => (
+  <Stack.Navigator
+    screenOptions={{
+      headerShown: false,
+    }}
+  >
+    <Stack.Screen
+      name="Main"
+      component={NavigationDrawer}
+    />
+
+    <Stack.Screen
+      name="PassportCollection"
+      component={PassportCollection}
+    />
   </Stack.Navigator>
 );
 
@@ -329,7 +351,7 @@ const RootNavigator = () => {
   }
 
   // Vista principal para usuarios autenticados y con permisos completos.
-  return <NavigationDrawer />;
+  return <AppStack />;
 };
 
 export default RootNavigator;
