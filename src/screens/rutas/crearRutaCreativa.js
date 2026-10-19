@@ -19,9 +19,9 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import { Picker } from "@react-native-picker/picker";
 
 import { useAuth } from "../../context/AuthContext";
+import CampoHorario from "../../components/common/CampoHorario";
 import { escucharNegocios } from "../../services/Negociosservice";
 import {
   aliadosAceptados,
@@ -58,7 +58,7 @@ import {
 const MAX_FOTOS = 2;
 
 const TITULOS = {
-  2: { pantalla: "Servicios que ofreces", seccion: "Completar datos" },
+  2: { pantalla: "Servicios que ofrece", seccion: "Completar datos" },
   3: { pantalla: "Nueva Ruta Creativa", seccion: "Buscar aliados" },
   4: { pantalla: "Ruta Creativa En Espera", seccion: "Invitaciones enviadas" },
   5: { pantalla: "Ruta Creativa", seccion: "Publicación de ruta" },
@@ -99,7 +99,7 @@ function insigniaDe(parada) {
 }
 
 // Tarjeta de una parada (pasos 4, 5 y 6).
-function TarjetaParada({ parada, mostrarPrecio = false }) {
+function TarjetaParada({ parada, calificacion, mostrarPrecio = false }) {
   const insignia = insigniaDe(parada);
   return (
     <View style={s.tarjeta}>
@@ -121,6 +121,12 @@ function TarjetaParada({ parada, mostrarPrecio = false }) {
             <Text style={[s.tarjetaDetalle, { marginLeft: 4 }]}>
               {parada.lugar}
             </Text>
+          </View>
+        )}
+        {typeof calificacion === "number" && (
+          <View style={s.estrellaFila}>
+            <Ionicons name="star" size={13} color="#F5A623" />
+            <Text style={s.estrellaTexto}>{calificacion.toFixed(1)}</Text>
           </View>
         )}
         {mostrarPrecio && (
@@ -229,6 +235,9 @@ function AsistenteRutaCreativa() {
       .sort((a, b) => a.distancia - b.distancia);
   }, [negocios, paradas, busqueda, negocio, uid]);
 
+  const calificacionDe = (parada) =>
+    negocios.find((n) => n.id === parada.ubicacionId)?.calificacion;
+
   const numInvitados = aliadosInvitados(paradas).length;
   const numAceptados = aliadosAceptados(paradas).length;
 
@@ -317,7 +326,7 @@ function AsistenteRutaCreativa() {
       setGuardando(true);
       if (!rutaId) {
         const id = await crearRuta({
-          creador: { uid, nombre: nombreCreador },
+          creador: { uid, nombre: nombreCreador, telefono: profile?.telefono },
           nombre: form.nombre.trim(),
           negocio: {
             id: negocio.id,
@@ -448,7 +457,7 @@ function AsistenteRutaCreativa() {
         maxLength={80}
       />
 
-      <Text style={s.etiqueta}>Servicio que ofrece</Text>
+      <Text style={s.etiqueta}>Servicios que ofrece</Text>
       <TextInput
         style={s.input}
         placeholder="Escribir"
@@ -458,7 +467,7 @@ function AsistenteRutaCreativa() {
         maxLength={80}
       />
 
-      <Text style={s.etiqueta}>Precio (C$)</Text>
+      <Text style={s.etiqueta}>Precio</Text>
       <TextInput
         style={s.input}
         placeholder="Escribir"
@@ -469,7 +478,7 @@ function AsistenteRutaCreativa() {
         maxLength={9}
       />
 
-      <Text style={s.etiqueta}>Dirección breve</Text>
+      <Text style={s.etiqueta}>Descripción breve</Text>
       <TextInput
         style={[s.input, s.inputMultilinea]}
         placeholder="Escribir"
@@ -480,56 +489,15 @@ function AsistenteRutaCreativa() {
         maxLength={200}
       />
 
-      <Text style={s.etiqueta}>Día de la ruta</Text>
-      <View style={[s.input, s.inputConIcono, { paddingRight: 0 }]}>
-        <Picker
-          selectedValue={form.dia}
-          onValueChange={(value) => actualizarForm("dia", value)}
-          style={{ flex: 1, color: "#1A1A1A" }}
-          itemStyle={{ color: "#1A1A1A" }}
-          dropdownIconColor="#111111"
-        >
-          <Picker.Item label="Selecciona el día" value="" />
-          {DIAS_RUTA.map((d) => (
-            <Picker.Item key={d} label={`Día ${d}`} value={String(d)} />
-          ))}
-        </Picker>
-        <Ionicons name="calendar-outline" size={22} color="#111111" />
-      </View>
-
-      <Text style={s.etiqueta}>Hora de inicio</Text>
-      <View style={[s.input, s.inputConIcono, { paddingRight: 0 }]}>
-        <Picker
-          selectedValue={form.horaInicio}
-          onValueChange={(value) => actualizarForm("horaInicio", value)}
-          style={{ flex: 1, color: "#1A1A1A" }}
-          itemStyle={{ color: "#1A1A1A" }}
-          dropdownIconColor="#111111"
-        >
-          <Picker.Item label="Selecciona la hora de inicio" value="" />
-          {HORAS.map((h) => (
-            <Picker.Item key={h} label={h} value={h} />
-          ))}
-        </Picker>
-        <Ionicons name="time-outline" size={22} color="#111111" />
-      </View>
-
-      <Text style={s.etiqueta}>Hora de fin</Text>
-      <View style={[s.input, s.inputConIcono, { paddingRight: 0 }]}>
-        <Picker
-          selectedValue={form.horaFin}
-          onValueChange={(value) => actualizarForm("horaFin", value)}
-          style={{ flex: 1, color: "#1A1A1A" }}
-          itemStyle={{ color: "#1A1A1A" }}
-          dropdownIconColor="#111111"
-        >
-          <Picker.Item label="Selecciona la hora de fin" value="" />
-          {HORAS.map((h) => (
-            <Picker.Item key={h} label={h} value={h} />
-          ))}
-        </Picker>
-        <Ionicons name="time-outline" size={22} color="#111111" />
-      </View>
+      <Text style={s.etiqueta}>Horario disponible</Text>
+      <CampoHorario
+        estiloCampo={s.input}
+        valor={{ dia: form.dia, horaInicio: form.horaInicio, horaFin: form.horaFin }}
+        onChange={(h) => {
+          setForm((prev) => ({ ...prev, ...h }));
+          if (error) setError("");
+        }}
+      />
 
       <Text style={s.etiqueta}>Fotos</Text>
       <TouchableOpacity
@@ -657,6 +625,14 @@ function AsistenteRutaCreativa() {
                     {item.lugar || nombreDeCategoria(item.categoria)}
                   </Text>
                 </View>
+                {typeof item.calificacion === "number" && (
+                  <View style={s.estrellaFila}>
+                    <Ionicons name="star" size={16} color="#F5A623" />
+                    <Text style={s.estrellaTexto}>
+                      {item.calificacion.toFixed(1)}
+                    </Text>
+                  </View>
+                )}
                 <TouchableOpacity
                   style={[
                     s.botonInvitar,
@@ -705,7 +681,7 @@ function AsistenteRutaCreativa() {
   const renderPaso4o5 = () => (
     <>
       {paradas.map((p) => (
-        <TarjetaParada key={p.id} parada={p} />
+        <TarjetaParada key={p.id} parada={p} calificacion={calificacionDe(p)} />
       ))}
 
       {paso === 4 ? (
@@ -759,7 +735,12 @@ function AsistenteRutaCreativa() {
     <>
       <Text style={s.nombreRutaPublicada}>{ruta?.nombre ?? form.nombre}</Text>
       {paradas.map((p) => (
-        <TarjetaParada key={p.id} parada={p} mostrarPrecio />
+        <TarjetaParada
+          key={p.id}
+          parada={p}
+          calificacion={calificacionDe(p)}
+          mostrarPrecio
+        />
       ))}
       <View style={s.totalFila}>
         <Text style={s.totalEtiqueta}>Total de la ruta creativa:</Text>

@@ -20,7 +20,7 @@
           }
         }
       ],
-      "expo-video"
+     "expo-video"
     ],
     "ios": {
       "supportsTablet": true

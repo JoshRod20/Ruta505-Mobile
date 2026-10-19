@@ -129,6 +129,17 @@ export const crearRutaStyle = StyleSheet.create({
     color: "#1A1A1A",
     marginTop: 2,
   },
+  estrellaFila: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 2,
+  },
+  estrellaTexto: {
+    fontFamily: "Inter-Regular",
+    fontSize: 11.5,
+    color: "#444444",
+    marginLeft: 4,
+  },
   insignia: {
     borderRadius: 6,
     paddingHorizontal: 12,
@@ -210,6 +221,12 @@ export const crearRutaStyle = StyleSheet.create({
     ...campo.etiqueta,
     marginTop: 14,
     marginBottom: 6,
+  },
+  etiquetaSecundaria: {
+    fontFamily: "Inter-Regular",
+    fontSize: 11.5,
+    color: "#777777",
+    marginBottom: 4,
   },
   input: {
     ...campo.input,

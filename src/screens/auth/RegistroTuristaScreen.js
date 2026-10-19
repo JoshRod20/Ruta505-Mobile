@@ -38,6 +38,8 @@ import {
   TELEFONO_REGEX,
 } from "../../utils/validators";
 
+import { PAISES } from "../../constants/paises";
+
 import RegistroTuristaScreenStyle
   from "../../styles/auth/RegistroFormStyle";
 
@@ -92,47 +94,6 @@ const IDIOMAS = [
   "Русский",
   "العربية",
   "Otro",
-];
-
-// ==================================================
-// PAÍSES
-// ==================================================
-
-const PAISES = [
-  "Nicaragua",
-  "Costa Rica",
-  "Honduras",
-  "El Salvador",
-  "Guatemala",
-  "Panamá",
-  "Belice",
-  "México",
-  "Estados Unidos",
-  "Canadá",
-  "Colombia",
-  "Venezuela",
-  "Ecuador",
-  "Perú",
-  "Bolivia",
-  "Chile",
-  "Argentina",
-  "Uruguay",
-  "Paraguay",
-  "Brasil",
-  "España",
-  "Francia",
-  "Alemania",
-  "Italia",
-  "Portugal",
-  "Reino Unido",
-  "Países Bajos",
-  "Suiza",
-  "China",
-  "Japón",
-  "Corea del Sur",
-  "India",
-  "Australia",
-  "Otro país",
 ];
 
 // ==================================================

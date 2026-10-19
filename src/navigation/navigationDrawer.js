@@ -19,10 +19,13 @@ import Resenas from "../screens/comunidad/resenas";
 import CrearRutaCreativa from "../screens/rutas/crearRutaCreativa";
 import MisRutasCreativas from "../screens/rutas/misRutasCreativas";
 import InvitacionesRuta from "../screens/rutas/invitacionesRuta";
+import PerfilPublico from "../screens/actorCultural/perfilPublico";
 import Estadisticas from "../screens/actorCultural/estadisticas";
 import { useAuth } from "../context/AuthContext";
 import { drawerStyle } from "../styles/navigation/navigationDrawerStyle";
 import PinolitoScreen from "../screens/usuario/PinolitoScreen";
+import Guardados from "../screens/usuario/guardados";
+import EditUserProfile from "../screens/usuario/editUserProfile";
 
 const Drawer = createDrawerNavigator();
 
@@ -125,6 +128,12 @@ export default function NavigationDrawer() {
         component={InvitacionesRuta}
         options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
       />
+      {/* Perfil público del actor cultural (lo ve el turista): info, publicaciones y reseñas. Sin barra de tabs. */}
+      <Drawer.Screen
+        name="PerfilPublicoDrawer"
+        component={PerfilPublico}
+        options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
+      />
       {/* Estadísticas del espacio cultural: pantalla independiente (sin barra de tabs). Se abre desde el perfil cultural. */}
       <Drawer.Screen
         name="EstadisticasDrawer"
@@ -141,6 +150,18 @@ export default function NavigationDrawer() {
       <Drawer.Screen
         name="PinolitoDrawer"
         component={PinolitoScreen}
+        options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
+      />
+      {/* Edición del perfil del turista: pantalla independiente (sin barra de tabs). Se abre desde "Editar perfil" en el perfil. */}
+      <Drawer.Screen
+        name="EditarPerfilDrawer"
+        component={EditUserProfile}
+        options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
+      />
+      {/* Guardados: publicaciones que el turista marcó. Pantalla independiente, sin barra de tabs. Se abre desde el perfil. */}
+      <Drawer.Screen
+        name="GuardadosDrawer"
+        component={Guardados}
         options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
       />
       <Drawer.Screen

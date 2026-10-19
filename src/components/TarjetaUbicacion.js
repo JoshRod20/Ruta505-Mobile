@@ -45,6 +45,7 @@ export default function TarjetaUbicacion({
   puedeEditar,
   onCerrar,
   onEditar,
+  onVerPerfil,
   onTrazarRuta,
   onIniciarNavegacion,
 }) {
@@ -160,6 +161,15 @@ export default function TarjetaUbicacion({
           </View>
         )}
         <View style={s.filaAcciones}>
+          {!puedeEditar && !!onVerPerfil && (
+            <TouchableOpacity
+              style={s.botonSecundario}
+              onPress={onVerPerfil}
+              activeOpacity={0.8}
+            >
+              <Text style={s.botonSecundarioTexto}>Ver perfil</Text>
+            </TouchableOpacity>
+          )}
           {puedeEditar && (
             <TouchableOpacity
               style={s.botonSecundario}

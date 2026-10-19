@@ -184,6 +184,15 @@ export default function MapaNicaragua() {
     navigation.setParams({ rutaCreativa: undefined });
   }, [rutaCreativaParam, navigation]);
 
+  // Desde el perfil público: "Ver en el mapa" abre la tarjeta de ese negocio.
+  const puntoIdParam = route.params?.puntoId;
+  useEffect(() => {
+    if (!puntoIdParam || puntos.length === 0) return;
+    const punto = puntos.find((p) => p.id === puntoIdParam);
+    if (punto) handleSeleccionarPuntoBuscado(punto);
+    navigation.setParams({ puntoId: undefined });
+  }, [puntoIdParam, puntos]);
+
   // 2) Cuando ya están cargados los negocios, busca las coordenadas de cada
   //    parada, calcula la línea por carretera y encuadra la cámara.
   useEffect(() => {
@@ -857,6 +866,11 @@ export default function MapaNicaragua() {
               }
               onCerrar={cerrarTarjeta}
               onEditar={() => abrirFormularioParaEditar(puntoSeleccionado)}
+              onVerPerfil={() =>
+                navigation.navigate("PerfilPublicoDrawer", {
+                  actorId: puntoSeleccionado.id,
+                })
+              }
               onTrazarRuta={() => handleTrazarRuta(puntoSeleccionado)}
               onIniciarNavegacion={() => setNavegando(true)}
             />

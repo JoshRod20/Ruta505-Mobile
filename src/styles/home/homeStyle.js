@@ -183,4 +183,9 @@ export const homeStyle = StyleSheet.create({
     marginTop: 12,
     marginBottom: 12,
   },
+  // ---- Campana de notificaciones ----
+  campana: {
+    width: 30,
+    height: 30,
+  },
 });

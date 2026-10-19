@@ -26,9 +26,9 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import { Picker } from "@react-native-picker/picker";
 
 import { useAuth } from "../../context/AuthContext";
+import CampoHorario from "../../components/common/CampoHorario";
 import {
   escucharInvitaciones,
   escucharParadasDeRuta,
@@ -82,7 +82,7 @@ function chipDe(parada, esMia) {
 export default function InvitacionesRuta() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
 
   const [invitaciones, setInvitaciones] = useState([]);
   const [cargando, setCargando] = useState(true);
@@ -267,6 +267,7 @@ export default function InvitacionesRuta() {
         dia: Number(form.dia),
       horario: `${form.horaInicio} - ${form.horaFin}`,
         imagenes: form.imagenes,
+        telefono: profile?.telefono,
       });
       setAceptando(false);
       setConfirmada(true);
@@ -338,7 +339,7 @@ export default function InvitacionesRuta() {
         Cuéntanos qué ofrecerás en esta ruta con tu negocio.
       </Text>
 
-      <Text style={s.etiqueta}>Servicio que ofrece</Text>
+      <Text style={s.etiqueta}>Servicios que ofrece</Text>
       <TextInput
         style={s.input}
         placeholder="Escribir"
@@ -348,7 +349,7 @@ export default function InvitacionesRuta() {
         maxLength={80}
       />
 
-      <Text style={s.etiqueta}>Precio (C$)</Text>
+      <Text style={s.etiqueta}>Precio</Text>
       <TextInput
         style={s.input}
         placeholder="Escribir"
@@ -359,7 +360,7 @@ export default function InvitacionesRuta() {
         maxLength={9}
       />
 
-      <Text style={s.etiqueta}>Dirección breve</Text>
+      <Text style={s.etiqueta}>Descripción breve</Text>
       <TextInput
         style={[s.input, s.inputMultilinea]}
         placeholder="Escribir"
@@ -370,56 +371,15 @@ export default function InvitacionesRuta() {
         maxLength={200}
       />
 
-      <Text style={s.etiqueta}>Día de la ruta</Text>
-      <View style={[s.input, s.inputConIcono, { paddingRight: 0 }]}>
-        <Picker
-          selectedValue={form.dia}
-          onValueChange={(value) => actualizarForm("dia", value)}
-          style={{ flex: 1, color: "#1A1A1A" }}
-          itemStyle={{ color: "#1A1A1A" }}
-          dropdownIconColor="#111111"
-        >
-          <Picker.Item label="Selecciona el día" value="" />
-          {DIAS_RUTA.map((d) => (
-            <Picker.Item key={d} label={`Día ${d}`} value={String(d)} />
-          ))}
-        </Picker>
-        <Ionicons name="calendar-outline" size={22} color="#111111" />
-      </View>
-
-      <Text style={s.etiqueta}>Hora de inicio</Text>
-      <View style={[s.input, s.inputConIcono, { paddingRight: 0 }]}>
-        <Picker
-          selectedValue={form.horaInicio}
-          onValueChange={(value) => actualizarForm("horaInicio", value)}
-          style={{ flex: 1, color: "#1A1A1A" }}
-          itemStyle={{ color: "#1A1A1A" }}
-          dropdownIconColor="#111111"
-        >
-          <Picker.Item label="Selecciona la hora de inicio" value="" />
-          {HORAS.map((h) => (
-            <Picker.Item key={h} label={h} value={h} />
-          ))}
-        </Picker>
-        <Ionicons name="time-outline" size={22} color="#111111" />
-      </View>
-
-      <Text style={s.etiqueta}>Hora de fin</Text>
-      <View style={[s.input, s.inputConIcono, { paddingRight: 0 }]}>
-        <Picker
-          selectedValue={form.horaFin}
-          onValueChange={(value) => actualizarForm("horaFin", value)}
-          style={{ flex: 1, color: "#1A1A1A" }}
-          itemStyle={{ color: "#1A1A1A" }}
-          dropdownIconColor="#111111"
-        >
-          <Picker.Item label="Selecciona la hora de fin" value="" />
-          {HORAS.map((h) => (
-            <Picker.Item key={h} label={h} value={h} />
-          ))}
-        </Picker>
-        <Ionicons name="time-outline" size={22} color="#111111" />
-      </View>
+      <Text style={s.etiqueta}>Horario disponible</Text>
+      <CampoHorario
+        estiloCampo={s.input}
+        valor={{ dia: form.dia, horaInicio: form.horaInicio, horaFin: form.horaFin }}
+        onChange={(h) => {
+          setForm((prev) => ({ ...prev, ...h }));
+          if (error) setError("");
+        }}
+      />
 
       <Text style={s.etiqueta}>Fotos</Text>
       <TouchableOpacity style={s.multimedia} onPress={agregarFotos} activeOpacity={0.7}>

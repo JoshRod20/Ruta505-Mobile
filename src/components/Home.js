@@ -187,7 +187,7 @@ export default function Home() {
             esActor ? navigation.navigate("InvitacionesRutaDrawer") : undefined
           }
         >
-          <Ionicons name="notifications" size={26} color={VERDE} />
+        <Image source={require("../assets/icons/campana.png")} style={homeStyle.campana} />
           {invitacionesPendientes > 0 && (
             <View
               style={{

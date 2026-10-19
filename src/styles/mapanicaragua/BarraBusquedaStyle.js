@@ -117,4 +117,8 @@ export const barraBusquedaStyle = StyleSheet.create({
   cargando: {
     paddingVertical: 12,
   },
+  iconoLupa: {
+    width: 18,
+    height: 18,
+  },
 });

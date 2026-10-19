@@ -206,6 +206,61 @@ export function escucharParadasDeCreador(creadorId, callback, onError) {
   );
 }
 
+// Rutas publicadas (las ve cualquier usuario, p. ej. el turista).
+// La consulta lleva el filtro estado == "publicada" porque las reglas de
+// Firestore solo dejan leer las rutas publicadas a quien no es su creador.
+/**
+ * Escucha en tiempo real las rutas creativas publicadas.
+ * @param {function} callback
+ * @param {function} [onError]
+ * @returns {function} Desuscripción.
+ */
+export function escucharRutasPublicadas(callback, onError) {
+  const q = query(
+    collection(db, RUTAS),
+    where("estado", "==", ESTADO_RUTA.PUBLICADA)
+  );
+  return onSnapshot(
+    q,
+    (snapshot) =>
+      callback(
+        snapshot.docs
+          .map((d) => ({ id: d.id, ...d.data() }))
+          .sort((a, b) => milisegundos(b) - milisegundos(a))
+      ),
+    (error) => {
+      console.warn("Error escuchando rutas publicadas:", error);
+      if (onError) onError(error);
+    }
+  );
+}
+
+// Paradas de las rutas publicadas (filtro publicada == true, igual que arriba).
+/**
+ * Escucha en tiempo real las paradas de las rutas publicadas.
+ * @param {function} callback
+ * @param {function} [onError]
+ * @returns {function} Desuscripción.
+ */
+export function escucharParadasPublicadas(callback, onError) {
+  const q = query(collection(db, PARADAS), where("publicada", "==", true));
+  return onSnapshot(
+    q,
+    (snapshot) =>
+      callback(snapshot.docs.map((d) => ({ id: d.id, ...d.data() }))),
+    (error) => {
+      console.warn("Error escuchando paradas publicadas:", error);
+      if (onError) onError(error);
+    }
+  );
+}
+
+/** Enlace de WhatsApp para un teléfono (8 dígitos = Nicaragua, +505). */
+export function urlWhatsApp(telefono) {
+  const numero = String(telefono ?? "").replace(/\D/g, "");
+  return `https://wa.me/${numero.length === 8 ? `505${numero}` : numero}`;
+}
+
 // Paradas de una ruta, vistas por su creador (él primero).
 /**
  * Escucha las paradas de una ruta concreta.
@@ -303,6 +358,7 @@ export async function crearRuta({ creador, nombre, negocio, datos }) {
       horario: datos.horario,
     dia: datos.dia,
       imagenes: datos.imagenes,
+      ...(creador.telefono ? { telefono: String(creador.telefono) } : {}),
       createdAt: serverTimestamp(),
     });
   } catch (error) {
@@ -408,6 +464,7 @@ export async function responderInvitacion(paradaId, aceptar, datos) {
     cambios.horario = datos.horario;
     cambios.dia = datos.dia;
     cambios.imagenes = datos.imagenes;
+    if (datos.telefono) cambios.telefono = String(datos.telefono);
   }
   return updateDoc(doc(db, PARADAS, paradaId), cambios);
 }

@@ -32,14 +32,14 @@ const IONICONS = {
 // ── Iconos personalizados ────────────────────
 const CUSTOM_ICONS = {
   // Turista
-  Inicio: require("../../src/assets/icons/InicioRelleno.png"),
-  Mapa: require("../../src/assets/icons/Mapa.png"),
+  Inicio: require("../../src/assets/icons/hogar.png"),
+  Mapa: require("../../src/assets/icons/mapa-interactivo.png"),
   Rutas: require("../../src/assets/icons/Ruta.png"),
   Pasaporte: require("../../src/assets/icons/Pasaporte.png"),
   Perfil: require("../../src/assets/icons/Perfil.png"),
 
   // Actor cultural
-  "Perfil cultural": require("../../src/assets/icons/Perfil.png"),
+  "Perfil cultural": require("../../src/assets/icons/usuario.png"),
   "Generar QR": require("../../src/assets/icons/QR.png"),
   "Crear ruta": require("../../src/assets/icons/CrearRuta.png"),
 };
