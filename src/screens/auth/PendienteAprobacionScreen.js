@@ -13,7 +13,7 @@ import PendienteAprobacionScreenStyle from "../../styles/auth/PendienteAprobacio
 // cambió a "aprobado".
 //
 // onExplorar lo pasa RootNavigator: al presionarlo, se monta
-// NavigationDrawer (Home con funcionalidad reducida) sin dejar de
+// AppStack (Home con funcionalidad reducida) sin dejar de
 // escuchar el perfil — apenas se apruebe, el resto de la app se
 // desbloquea solo, sin volver a pasar por aquí.
 const PendienteAprobacionScreen = ({ onExplorar }) => {

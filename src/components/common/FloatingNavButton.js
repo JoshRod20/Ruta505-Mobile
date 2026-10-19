@@ -1,5 +1,6 @@
 /**
- * FloatingNavButton: componente/pantalla de la aplicación Ruta505.
+ * FloatingNavButton: botón flotante en la esquina superior izquierda.
+ * Por defecto es un botón "Volver"; ya no abre ningún menú lateral.
  */
 
 import React from "react";
@@ -12,9 +13,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
  * FloatingNavButton.
  */
 export default function FloatingNavButton({
-  icon = "menu-outline",
+  icon = "arrow-back-outline",
   onPress,
-  accessibilityLabel = "Abrir menú",
+  accessibilityLabel = "Volver",
 }) {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
@@ -22,8 +23,10 @@ export default function FloatingNavButton({
   const handlePress = () => {
     if (onPress) {
       onPress();
+    } else if (navigation.canGoBack()) {
+      navigation.goBack();
     } else {
-      navigation.getParent()?.openDrawer();
+      navigation.navigate("MainDrawer");
     }
   };
 
@@ -38,20 +41,20 @@ export default function FloatingNavButton({
         elevation: 20,
       }}
     >
-  <TouchableOpacity
-  onPress={handlePress}
-  accessibilityLabel={accessibilityLabel}
-  activeOpacity={0.7}
-  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-  style={{
-    width: 32,
-    height: 32,
-    alignItems: "center",
-    justifyContent: "center",
-  }}
->
-  <Ionicons name={icon} size={32} color="#2E7D32" />
-</TouchableOpacity>
+      <TouchableOpacity
+        onPress={handlePress}
+        accessibilityLabel={accessibilityLabel}
+        activeOpacity={0.7}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        style={{
+          width: 32,
+          height: 32,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Ionicons name={icon} size={32} color="#2E7D32" />
+      </TouchableOpacity>
     </View>
   );
 }

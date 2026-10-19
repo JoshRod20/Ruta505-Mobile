@@ -800,9 +800,8 @@ function AsistenteRutaCreativa() {
   );
 }
 
-// El Drawer mantiene esta pantalla montada aunque salgas de ella, así que el
-// estado del asistente (paso, ruta y formulario) sobreviviría a la siguiente
-// visita y "Ver mis rutas activas" o "Nueva ruta" abrirían la ruta anterior.
+// Si se navega de nuevo a esta pantalla estando ya abierta, el estado del
+// asistente (paso, ruta y formulario) sobreviviría y "Ver mis rutas activas" o "Nueva ruta" abrirían la ruta anterior.
 // Cada navegación trae una "clave" nueva: al cambiar, el asistente se vuelve a
 // montar desde cero con los parámetros recibidos.
 /**

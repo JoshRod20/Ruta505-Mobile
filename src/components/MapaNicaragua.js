@@ -27,7 +27,6 @@ import {
 import Geolocation from "@react-native-community/geolocation";
 import { Ionicons } from "@expo/vector-icons";
 
-import FloatingNavButton from "./common/FloatingNavButton.js";
 import { mapaNicaraguaStyle } from "../styles/mapanicaragua/mapaNicaraguaStyle.js";
 import { obtenerRuta, obtenerRutaConParadas } from "../services/osrmservice.js";
 import {
@@ -880,8 +879,6 @@ export default function MapaNicaragua() {
               />
             </GeoJSONSource>
           </Map>
-
-          <FloatingNavButton />
 
           {rutaCreativaMapa && (
             <View

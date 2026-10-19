@@ -27,8 +27,8 @@ export const barraBusquedaStyle = StyleSheet.create({
   },
   contenedor: {
     position: "absolute",
-    left: 30, // deja libre el botón del menú
-    right: 30,
+    left: 16,
+    right: 16,
   },
   barra: {
     flexDirection: "row",
