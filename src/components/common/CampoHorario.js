@@ -6,7 +6,7 @@
  */
 
 import React, { useState } from "react";
-import { Modal, Text, TouchableOpacity, View, StyleSheet } from "react-native";
+import { Modal, Text, TouchableOpacity, View, StyleSheet, Image } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -73,7 +73,7 @@ export default function CampoHorario({ valor, onChange, estiloCampo }) {
           {resumen}
         </Text>
         <View style={st.reloj}>
-          <Ionicons name="time" size={16} color="#FFFFFF" />
+         <Image source={require("../../assets/icons/reloj-tres.png")} style={{ width: 24, height: 24 }} />
         </View>
       </TouchableOpacity>
 
@@ -138,11 +138,6 @@ const st = StyleSheet.create({
   reloj: {
     width: 24,
     height: 24,
-    borderRadius: 12,
-    backgroundColor: VERDE,
-    alignItems: "center",
-    justifyContent: "center",
-    marginLeft: 8,
   },
   fondo: {
     flex: 1,
