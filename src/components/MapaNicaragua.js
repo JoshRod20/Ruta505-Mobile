@@ -2,7 +2,7 @@
  * MapaNicaragua: componente/pantalla de la aplicación Ruta505.
  */
 
-import React, { useState, useRef, useCallback, useEffect } from "react";
+import React, { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import {
   Text,
   View,
@@ -45,6 +45,12 @@ import FormularioExperiencia from "../components/Formularioexperiencia.js";
 import SeleccionarUbicacionMapa from "../components/Seleccionarubicacionmapa.js";
 import BarraBusquedaMapa from "../components/BarraBusquedaMapa.js";
 import TarjetaUbicacion from "../components/TarjetaUbicacion.js";
+import CarruselLugares from "../components/CarruselLugares.js";
+import {
+  buscarLugaresDeInteres,
+  distanciaKm,
+} from "../services/lugaresRecomendadosService.js";
+import { ROLES } from "../constants/roles";
 import { useAuth } from "../context/AuthContext";
 import { usePermisos } from "../hooks/usePermisos";
 import { PERMISOS } from "../constants/permissions";
@@ -52,6 +58,11 @@ import { formatearPrecio } from "../services/rutasService.js";
 
 // Estilo libre de OpenFreeMap (sin API key)
 const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
+
+// Si no hay GPS se recomiendan lugares alrededor de Masaya/Granada.
+const CENTRO_RECOMENDACIONES = { lat: 11.9744, lon: -86.0942 };
+// Cuánto esperar al GPS antes de usar el centro por defecto.
+const ESPERA_GPS_MS = 10000;
 
 // Configuración inicial de Geolocation para Android
 if (Platform.OS === "android") {
@@ -101,6 +112,9 @@ export default function MapaNicaragua() {
   const puedePublicar = puede(PERMISOS.PUBLICAR_EXPERIENCIA) && !sancionVigente;
 
   const [puntos, setPuntos] = useState([]);
+  // Lugares de interés de OpenStreetMap que aún no están registrados en la app
+  const [lugaresExternos, setLugaresExternos] = useState([]);
+  const esTurista = role === ROLES.TURISTA;
   const [formularioVisible, setFormularioVisible] = useState(false);
   const [ubicacionParaGuardar, setUbicacionParaGuardar] = useState(null);
   const [selectorMapaVisible, setSelectorMapaVisible] = useState(false);
@@ -174,6 +188,74 @@ export default function MapaNicaragua() {
 
     return () => cancelarSuscripcion();
   }, []);
+
+  // Recomendaciones externas (solo turista): se buscan cerca del usuario; si el
+  // GPS tarda o no hay permiso, se usa el centro por defecto.
+  const origenLat = ubicacionOrigen?.lat;
+  const origenLon = ubicacionOrigen?.lon;
+  useEffect(() => {
+    if (!esTurista) return;
+    let vigente = true;
+
+    const cargar = (centro) =>
+      buscarLugaresDeInteres(centro).then((lugares) => {
+        if (vigente) setLugaresExternos(lugares);
+      });
+
+    if (origenLat != null && origenLon != null) {
+      cargar({ lat: origenLat, lon: origenLon });
+      return () => {
+        vigente = false;
+      };
+    }
+
+    const temporizador = setTimeout(
+      () => cargar(CENTRO_RECOMENDACIONES),
+      ESPERA_GPS_MS,
+    );
+    return () => {
+      vigente = false;
+      clearTimeout(temporizador);
+    };
+  }, [esTurista, origenLat, origenLon]);
+
+  // Lista del carrusel: primero los negocios registrados (con fotos y datos
+  // reales), luego los externos que no se repiten con ninguno registrado.
+  const recomendados = useMemo(() => {
+    if (!esTurista) return [];
+    const normalizar = (t) =>
+      String(t ?? "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+    const nombres = new Set(puntos.map((p) => normalizar(p.titulo)));
+
+    const externosNuevos = lugaresExternos.filter(
+      (l) =>
+        !nombres.has(normalizar(l.titulo)) &&
+        !puntos.some(
+          (p) =>
+            distanciaKm(
+              { lat: p.lat, lon: p.lng },
+              { lat: l.lat, lon: l.lng },
+            ) < 0.1,
+        ),
+    );
+
+    const porCercania = (lista) =>
+      ubicacionOrigen
+        ? [...lista].sort(
+            (a, b) =>
+              distanciaKm(ubicacionOrigen, { lat: a.lat, lon: a.lng }) -
+              distanciaKm(ubicacionOrigen, { lat: b.lat, lon: b.lng }),
+          )
+        : lista;
+
+    return [...porCercania(puntos), ...porCercania(externosNuevos)];
+  }, [esTurista, puntos, lugaresExternos, ubicacionOrigen]);
+
+  const externosVisibles = recomendados.filter((p) => p.externo);
 
   // ---------- Ruta creativa en el mapa ----------
   // 1) Recibe la ruta desde el paso 6 ("Ver ruta en el mapa") por parámetros.
@@ -714,6 +796,33 @@ export default function MapaNicaragua() {
               </ViewAnnotation>
             ))}
 
+            {/* Lugares recomendados de OpenStreetMap (aún sin registrar) */}
+            {externosVisibles
+              .filter((punto) => !idsParadasRuta.has(punto.id))
+              .map((punto) => (
+                <ViewAnnotation
+                  key={`${punto.id}-${epocaMarcadores}`}
+                  id={punto.id}
+                  lngLat={[punto.lng, punto.lat]}
+                  onSelect={() => setPuntoSeleccionado(punto)}
+                >
+                  <View style={mapaNicaraguaStyle.marcadorContenedor}>
+                    <View
+                      style={[
+                        mapaNicaraguaStyle.marcadorPunto,
+                        { borderColor: "#8A99A8", opacity: 0.9 },
+                      ]}
+                    >
+                      <Ionicons
+                        name={iconoDeCategoria(punto.categoria)}
+                        size={16}
+                        color={colorDeCategoria(punto.categoria)}
+                      />
+                    </View>
+                  </View>
+                </ViewAnnotation>
+              ))}
+
             {/* Pin temporal del lugar elegido en la barra de búsqueda */}
             {lugarBuscado && (
               <ViewAnnotation
@@ -838,6 +947,18 @@ export default function MapaNicaragua() {
             onLimpiar={() => setLugarBuscado(null)}
           />
 
+          {/* Carrusel de lugares recomendados (turista) */}
+          {esTurista &&
+            !puntoSeleccionado &&
+            !rutaCreativaMapa &&
+            !ruta && (
+              <CarruselLugares
+                lugares={recomendados}
+                origen={ubicacionOrigen}
+                onSeleccionar={handleSeleccionarPuntoBuscado}
+              />
+            )}
+
           {/* Botón para agregar nueva experiencia */}
           {puedePublicar && (
             <TouchableOpacity
@@ -866,10 +987,13 @@ export default function MapaNicaragua() {
               }
               onCerrar={cerrarTarjeta}
               onEditar={() => abrirFormularioParaEditar(puntoSeleccionado)}
-              onVerPerfil={() =>
-                navigation.navigate("PerfilPublicoDrawer", {
-                  actorId: puntoSeleccionado.id,
-                })
+              onVerPerfil={
+                puntoSeleccionado.externo
+                  ? undefined
+                  : () =>
+                      navigation.navigate("PerfilPublicoDrawer", {
+                        actorId: puntoSeleccionado.id,
+                      })
               }
               onTrazarRuta={() => handleTrazarRuta(puntoSeleccionado)}
               onIniciarNavegacion={() => setNavegando(true)}

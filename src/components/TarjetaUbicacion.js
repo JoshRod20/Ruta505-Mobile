@@ -58,6 +58,8 @@ export default function TarjetaUbicacion({
   useEffect(() => {
     let vigente = true;
     setMultimedia([]);
+    // Los lugares externos (OpenStreetMap) no tienen documento en Firestore.
+    if (punto.externo) return undefined;
     obtenerMultimedia(punto.id)
       .then((items) => vigente && setMultimedia(items))
       .catch(() => {});
@@ -129,6 +131,23 @@ export default function TarjetaUbicacion({
               ),
             )}
           </ScrollView>
+        )}
+
+        {punto.externo && (
+          <View style={s.cajaReferencia}>
+            <View style={s.referenciaIcono}>
+              <Ionicons name="information-circle" size={20} color={VERDE} />
+            </View>
+            <View style={s.referenciaTextos}>
+              <Text style={s.referenciaEtiqueta}>
+                {punto.etiquetaTipo ?? "Lugar de interés"}
+              </Text>
+              <Text style={s.referenciaTexto}>
+                Lugar tomado de OpenStreetMap. Todavía no está registrado en
+                Ruta505{punto.lugar ? ` · ${punto.lugar}` : ""}.
+              </Text>
+            </View>
+          </View>
         )}
 
         {!!punto.ubicacionExacta && (
