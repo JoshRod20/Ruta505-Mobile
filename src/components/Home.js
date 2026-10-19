@@ -190,9 +190,9 @@ export default function Home() {
         <Image source={require("../assets/icons/campana.png")} style={homeStyle.campana} />
           {invitacionesPendientes > 0 && (
             <View
-              style={{
+              style={{  
                 position: "absolute",
-                top: -2,
+                top: 1,
                 right: -2,
                 minWidth: 18,
                 height: 18,

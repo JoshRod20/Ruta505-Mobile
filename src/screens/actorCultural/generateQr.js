@@ -10,6 +10,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Image,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import QRCode from "react-native-qrcode-svg";
@@ -153,8 +154,14 @@ export default function GenerateQr() {
               <Text style={s.botonTexto}>Generar código QR</Text>
             </TouchableOpacity>
 
-            {/* La mascota del diseño se agregará aquí cuando esté el PNG:
-                <Image source={require("../../../assets/mascota.png")} ... /> */}
+            {/* Ocupa el espacio que queda bajo el botón y centra a Pinolito */}
+            <View style={s.mascotaContenedor}>
+              <Image
+                source={require("../../assets/pinolito/Pinolito-Pose-Bailando.png")}
+                style={s.mascota}
+                resizeMode="contain"
+              />
+            </View>
           </>
         ) : (
           <>
