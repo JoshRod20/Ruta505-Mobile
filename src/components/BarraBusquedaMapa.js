@@ -2,7 +2,7 @@
  * BarraBusquedaMapa: componente/pantalla de la aplicación Ruta505.
  */
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, } from "react";
 import {
   ActivityIndicator,
   Keyboard,
@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
+  Image
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -129,7 +130,7 @@ export default function BarraBusquedaMapa({
 
       <View style={[s.contenedor, { top: insets.top + 40 }]}>
         <View style={s.barra}>
-          <Ionicons name="search" size={18} color={VERDE} />
+          <Image source={require("../assets/icons/busqueda.png")} style={s.iconoLupa} />
           <TextInput
             style={s.input}
             value={texto}

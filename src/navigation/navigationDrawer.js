@@ -19,6 +19,7 @@ import Resenas from "../screens/comunidad/resenas";
 import CrearRutaCreativa from "../screens/rutas/crearRutaCreativa";
 import MisRutasCreativas from "../screens/rutas/misRutasCreativas";
 import InvitacionesRuta from "../screens/rutas/invitacionesRuta";
+import PerfilPublico from "../screens/actorCultural/perfilPublico";
 import Estadisticas from "../screens/actorCultural/estadisticas";
 import { useAuth } from "../context/AuthContext";
 import { drawerStyle } from "../styles/navigation/navigationDrawerStyle";
@@ -125,6 +126,12 @@ export default function NavigationDrawer() {
       <Drawer.Screen
         name="InvitacionesRutaDrawer"
         component={InvitacionesRuta}
+        options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
+      />
+      {/* Perfil público del actor cultural (lo ve el turista): info, publicaciones y reseñas. Sin barra de tabs. */}
+      <Drawer.Screen
+        name="PerfilPublicoDrawer"
+        component={PerfilPublico}
         options={{ drawerItemStyle: { height: 0 }, swipeEnabled: false }}
       />
       {/* Estadísticas del espacio cultural: pantalla independiente (sin barra de tabs). Se abre desde el perfil cultural. */}

@@ -48,30 +48,32 @@ export const editUserProfileStyle = StyleSheet.create({
     borderWidth: 0,
   },
 
-  // ---- Intereses (tipos de turismo) ----
-  interesFila: {
+  // ---- Intereses elegidos (se muestran debajo del selector) ----
+  chipsFila: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 4,
+    marginBottom: 6,
+  },
+  chipInteres: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 9,
-  },
-  interesCheck: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 1.5,
+    maxWidth: "100%",
+    backgroundColor: "#EAF4E7",
+    borderWidth: 1,
     borderColor: VERDE,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
+    borderRadius: 999,
+    paddingVertical: 6,
+    paddingLeft: 12,
+    paddingRight: 8,
   },
-  interesCheckActivo: {
-    backgroundColor: VERDE,
-  },
-  interesTexto: {
-    flex: 1,
-    fontFamily: "Inter-Regular",
-    fontSize: 14,
-    color: "#1F2A24",
+  chipInteresTexto: {
+    flexShrink: 1,
+    fontFamily: "Inter-SemiBold",
+    fontSize: 12,
+    color: VERDE,
+    marginRight: 6,
   },
   avisoSinPermiso: {
     fontFamily: "Inter-Regular",

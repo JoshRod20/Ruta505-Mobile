@@ -544,4 +544,38 @@ export const publicacionCardStyle = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#ECEFEC",
   },
+
+  // ---- Íconos propios de la tarjeta (carpeta assets/icons) ----
+  // Tamaños estimados: ajústalos al tamaño de tus imágenes.
+  iconoVerificado: {
+    width: 16,
+    height: 16,
+    marginLeft: 5,
+    resizeMode: "contain",
+  },
+  corazonLleno: {
+    width: 24,
+    height: 24,
+    resizeMode: "contain",
+  },
+  corazonVacio: {
+    width: 24,
+    height: 24,
+    resizeMode: "contain",
+  },
+  comentario: {
+    width: 22,
+    height: 22,
+    resizeMode: "contain",
+  },
+  iconoLleno: {
+    width: 24,
+    height: 24,
+    resizeMode: "contain",
+  },
+  iconoVacio: {
+    width: 24,
+    height: 24,
+    resizeMode: "contain",
+  },
 });

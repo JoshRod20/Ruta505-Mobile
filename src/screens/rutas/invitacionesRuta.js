@@ -26,14 +26,17 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import { Picker } from "@react-native-picker/picker";
 
 import { useAuth } from "../../context/AuthContext";
+import CampoHorario from "../../components/common/CampoHorario";
 import {
   escucharInvitaciones,
   escucharParadasDeRuta,
   ESTADO_PARADA,
   responderInvitacion,
+  DIAS_RUTA,
+  HORAS,
+  separarHorario,
 } from "../../services/rutasService";
 import {
   buscarCategoria,
@@ -59,14 +62,6 @@ const IMAGEN_LISTO = require("../../assets/pinolito/Pinolito-Pose-Sorprendido.pn
 
 const MAX_FOTOS = 2;
 
-const HORARIOS_DISPONIBLES = [
-  "Lunes a domingo, 8:00 am - 9:00 pm",
-  "Lunes a sábado, 9:00 am - 7:00 pm",
-  "Lunes a viernes, 8:00 am - 5:00 pm",
-  "Fines de semana, 9:00 am - 8:00 pm",
-  "Horario por confirmar",
-];
-
 // Chip de estado de cada participante en "Invitación a una ruta".
 function chipDe(parada, esMia) {
   if (esMia) return { texto: "Tú", fondo: LIMA, color: "#1A1A1A" };
@@ -87,7 +82,7 @@ function chipDe(parada, esMia) {
 export default function InvitacionesRuta() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
 
   const [invitaciones, setInvitaciones] = useState([]);
   const [cargando, setCargando] = useState(true);
@@ -103,7 +98,9 @@ export default function InvitacionesRuta() {
     servicio: "",
     precio: "",
     direccion: "",
-    horario: "",
+    dia: "",
+    horaInicio: "",
+    horaFin: "",
     imagenes: [],
   });
 
@@ -195,7 +192,9 @@ export default function InvitacionesRuta() {
       servicio: "",
       precio: "",
       direccion: "",
-      horario: "",
+      dia: "",
+    horaInicio: "",
+    horaFin: "",
       imagenes: [],
     });
   };
@@ -244,9 +243,15 @@ export default function InvitacionesRuta() {
     if (
       !form.servicio.trim() ||
       !form.direccion.trim() ||
-      !form.horario.trim()
+      !form.dia ||
+      !form.horaInicio ||
+      !form.horaFin
     ) {
       setError("Completa todos los campos.");
+      return;
+    }
+    if (HORAS.indexOf(form.horaFin) <= HORAS.indexOf(form.horaInicio)) {
+      setError("La hora de fin debe ser posterior a la hora de inicio.");
       return;
     }
     if (!Number.isFinite(precio) || precio <= 0) {
@@ -259,8 +264,10 @@ export default function InvitacionesRuta() {
         servicio: form.servicio.trim(),
         precio,
         direccion: form.direccion.trim(),
-        horario: form.horario.trim(),
+        dia: Number(form.dia),
+      horario: `${form.horaInicio} - ${form.horaFin}`,
         imagenes: form.imagenes,
+        telefono: profile?.telefono,
       });
       setAceptando(false);
       setConfirmada(true);
@@ -332,7 +339,7 @@ export default function InvitacionesRuta() {
         Cuéntanos qué ofrecerás en esta ruta con tu negocio.
       </Text>
 
-      <Text style={s.etiqueta}>Servicio que ofrece</Text>
+      <Text style={s.etiqueta}>Servicios que ofrece</Text>
       <TextInput
         style={s.input}
         placeholder="Escribir"
@@ -342,7 +349,7 @@ export default function InvitacionesRuta() {
         maxLength={80}
       />
 
-      <Text style={s.etiqueta}>Precio (C$)</Text>
+      <Text style={s.etiqueta}>Precio</Text>
       <TextInput
         style={s.input}
         placeholder="Escribir"
@@ -353,7 +360,7 @@ export default function InvitacionesRuta() {
         maxLength={9}
       />
 
-      <Text style={s.etiqueta}>Dirección breve</Text>
+      <Text style={s.etiqueta}>Descripción breve</Text>
       <TextInput
         style={[s.input, s.inputMultilinea]}
         placeholder="Escribir"
@@ -365,21 +372,14 @@ export default function InvitacionesRuta() {
       />
 
       <Text style={s.etiqueta}>Horario disponible</Text>
-      <View style={[s.input, s.inputConIcono, { paddingRight: 0 }]}>
-        <Picker
-          selectedValue={form.horario || HORARIOS_DISPONIBLES[0]}
-          onValueChange={(value) => actualizarForm("horario", value)}
-          style={{ flex: 1, color: "#1A1A1A" }}
-          itemStyle={{ color: "#1A1A1A" }}
-          dropdownIconColor="#111111"
-        >
-          <Picker.Item label="Selecciona horario disponible" value="" />
-          {HORARIOS_DISPONIBLES.map((horario) => (
-            <Picker.Item key={horario} label={horario} value={horario} />
-          ))}
-        </Picker>
-        <Ionicons name="time-outline" size={22} color="#111111" />
-      </View>
+      <CampoHorario
+        estiloCampo={s.input}
+        valor={{ dia: form.dia, horaInicio: form.horaInicio, horaFin: form.horaFin }}
+        onChange={(h) => {
+          setForm((prev) => ({ ...prev, ...h }));
+          if (error) setError("");
+        }}
+      />
 
       <Text style={s.etiqueta}>Fotos</Text>
       <TouchableOpacity style={s.multimedia} onPress={agregarFotos} activeOpacity={0.7}>

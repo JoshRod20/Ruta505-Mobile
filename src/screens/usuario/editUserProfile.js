@@ -24,6 +24,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
 
 import SelectorModal from "../../components/common/SelectorModal";
+import SelectorMultipleModal from "../../components/common/SelectorMultipleModal";
 import { db } from "../../services/firebase";
 import { useAuth } from "../../context/AuthContext";
 import { usePermisos } from "../../hooks/usePermisos";
@@ -300,22 +301,36 @@ export default function EditUserProfile() {
         <MensajeError texto={err("idiomaPreferido")} />
 
         <Text style={s.etiqueta}>Tipo de turismo que realizas</Text>
-        {INTERESES_TURISTA.map((interes) => {
-          const activo = form.intereses.includes(interes);
-          return (
-            <TouchableOpacity
-              key={interes}
-              style={s.interesFila}
-              onPress={() => alternarInteres(interes)}
-              activeOpacity={0.7}
-            >
-              <View style={[s.interesCheck, activo && s.interesCheckActivo]}>
-                {activo && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
-              </View>
-              <Text style={s.interesTexto}>{interes}</Text>
-            </TouchableOpacity>
-          );
-        })}
+        <CampoSelector
+          texto={
+            form.intereses.length === 0
+              ? ""
+              : `${form.intereses.length} seleccionado${
+                  form.intereses.length === 1 ? "" : "s"
+                }`
+          }
+          placeholder="Selecciona uno o más"
+          invalido={!!err("intereses")}
+          onPress={() => setModalActivo("intereses")}
+        />
+        {form.intereses.length > 0 && (
+          <View style={s.chipsFila}>
+            {form.intereses.map((interes) => (
+              <TouchableOpacity
+                key={interes}
+                style={s.chipInteres}
+                onPress={() => alternarInteres(interes)}
+                activeOpacity={0.7}
+                accessibilityLabel={`Quitar ${interes}`}
+              >
+                <Text style={s.chipInteresTexto} numberOfLines={1}>
+                  {interes}
+                </Text>
+                <Ionicons name="close-circle" size={16} color={VERDE} />
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
         <MensajeError texto={err("intereses")} />
 
         {error ? <Text style={S.error}>{error}</Text> : null}
@@ -357,6 +372,14 @@ export default function EditUserProfile() {
         onClose={() => setModalActivo(null)}
         textoVacio="No se encontraron idiomas."
         enfocarBusqueda={false}
+      />
+      <SelectorMultipleModal
+        visible={modalActivo === "intereses"}
+        titulo="Tipo de turismo que realizas"
+        opciones={INTERESES_TURISTA}
+        valores={form.intereses}
+        onToggle={alternarInteres}
+        onClose={() => setModalActivo(null)}
       />
     </View>
   );

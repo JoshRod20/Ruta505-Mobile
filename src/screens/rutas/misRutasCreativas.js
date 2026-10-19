@@ -22,11 +22,14 @@ import {
   ESTADO_RUTA,
   MINIMO_ALIADOS,
   aliadosAceptados,
+  calcularDias,
   calcularTotal,
   cancelarRuta,
   escucharMisRutas,
   escucharParadasDeCreador,
   formatearPrecio,
+  ordenarParadas,
+  abrirChatWhatsApp,
 } from "../../services/rutasService";
 import { iconoDeCategoria } from "../../services/Categoriasexperiencias";
 import { misRutasStyle as s } from "../../styles/rutas/misRutasCreativasStyle";
@@ -98,14 +101,6 @@ export default function MisRutasCreativas() {
     });
   };
 
-  // "Ver más": abre el resumen de la ruta publicada (paso 6 del asistente).
-  const verMas = (ruta) =>
-    navigation.navigate("CrearRutaDrawer", {
-      rutaId: ruta.id,
-      paso: 6,
-      clave: Date.now(),
-    });
-
   // Continuar una ruta que aún espera invitaciones.
   const continuar = (ruta) =>
     navigation.navigate("CrearRutaDrawer", {
@@ -150,12 +145,29 @@ export default function MisRutasCreativas() {
     );
   };
 
-  const renderParada = (p) => {
+  const abrirWhatsApp = (telefono) =>
+    abrirChatWhatsApp(telefono).catch(() =>
+      Alert.alert("WhatsApp", "No se pudo abrir WhatsApp.")
+    );
+
+  // Al tocar el lugar se abre su perfil público (igual que desde una publicación).
+  const verPerfil = (p) => {
+    const actorId = p.actorId ?? p.ubicacionId;
+    if (actorId) navigation.navigate("PerfilPublicoDrawer", { actorId });
+  };
+
+  const renderParada = (p, mostrarDia) => {
     const imagen = p.imagenes?.[0] ?? p.imagenUrls?.[0];
     const pendiente = p.estado === ESTADO_PARADA.INVITADO;
     const rechazada = p.estado === ESTADO_PARADA.RECHAZADA;
     return (
-      <View key={p.id} style={s.parada}>
+      <TouchableOpacity
+        key={p.id}
+        style={s.parada}
+        onPress={() => verPerfil(p)}
+        activeOpacity={0.85}
+        accessibilityLabel={`Ver perfil de ${p.titulo}`}
+      >
         <View style={s.paradaImagen}>
           {imagen ? (
             <Image
@@ -177,16 +189,29 @@ export default function MisRutasCreativas() {
           </Text>
           {!!p.horario && (
             <View style={s.paradaFilaHorario}>
-              <Ionicons name="time-outline" size={12} color="#4A4A4A" />
+              <Ionicons name="time-outline" size={13} color="#4A4A4A" />
               <Text style={s.paradaHorario} numberOfLines={1}>
+                {mostrarDia && p.dia ? `Día ${p.dia} · ` : ""}
                 {p.horario}
               </Text>
             </View>
           )}
+          {!!p.telefono && !pendiente && !rechazada && (
+            <TouchableOpacity
+              style={s.botonWhatsApp}
+              onPress={() => abrirWhatsApp(p.telefono)}
+              activeOpacity={0.85}
+            >
+              <View style={s.whatsappCirculo}>
+                <Ionicons name="logo-whatsapp" size={14} color={VERDE} />
+              </View>
+              <Text style={s.botonWhatsAppTexto}>WhatsApp</Text>
+            </TouchableOpacity>
+          )}
           {pendiente && <Text style={s.paradaPendiente}>Invitación en espera</Text>}
           {rechazada && <Text style={s.paradaPendiente}>Rechazó la invitación</Text>}
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -198,9 +223,12 @@ export default function MisRutasCreativas() {
         p.estado === ESTADO_PARADA.ACEPTADA
     );
     const publicada = ruta.estado === ESTADO_RUTA.PUBLICADA;
-    const visibles = publicada
-      ? incluidas
-      : paradasRuta.filter((p) => p.estado !== ESTADO_PARADA.RECHAZADA);
+    const visibles = ordenarParadas(
+      publicada
+        ? incluidas
+        : paradasRuta.filter((p) => p.estado !== ESTADO_PARADA.RECHAZADA)
+    );
+    const dias = calcularDias(visibles); // 3 si la última parada es del Día 3
     const etiqueta = ETIQUETA_ESTADO[ruta.estado] ?? ETIQUETA_ESTADO.borrador;
     const enCancelacion = cancelando === ruta.id;
 
@@ -209,20 +237,19 @@ export default function MisRutasCreativas() {
         <View style={s.filaSuperior}>
           <View style={s.pastillaLugares}>
             <Text style={s.pastillaLugaresTexto}>
-              {incluidas.length} lugares incluidos
+              {incluidas.length}{" "}
+              {incluidas.length === 1 ? "lugar incluido" : "lugares incluidos"}
             </Text>
           </View>
-          <View style={[s.pastillaLugares, s[etiqueta.estilo]]}>
-            <Text style={s.estadoTexto}>{etiqueta.texto}</Text>
-          </View>
+          {!publicada && (
+            <View style={[s.pastillaEstado, s[etiqueta.estilo]]}>
+              <Text style={s.estadoTexto}>{etiqueta.texto}</Text>
+            </View>
+          )}
         </View>
 
-        <View style={s.tarjetaHeader}>
-          <View style={s.puntoDecorativo} />
-          <Text style={s.rutaTipo}>Ruta creativa</Text>
-        </View>
         <Text style={s.nombre}>{ruta.nombre}</Text>
-        <Text style={s.etiquetaItinerario}>ITINERARIO GUIADO</Text>
+        <Text style={s.etiquetaItinerario}>Lugares por conocer</Text>
 
         {visibles.length > 0 && (
           <ScrollView
@@ -232,52 +259,63 @@ export default function MisRutasCreativas() {
             contentContainerStyle={s.carruselContenido}
             nestedScrollEnabled
           >
-            {visibles.map(renderParada)}
+            {visibles.map((p) => renderParada(p, dias > 1))}
           </ScrollView>
         )}
 
         {publicada ? (
           <>
-            {incluidas.length >= 2 && (
-              <TouchableOpacity
-                style={s.enlaceMapa}
-                onPress={() => verEnElMapa(ruta, paradasRuta)}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="location" size={18} color={VERDE} />
-                <Text style={s.enlaceMapaTexto}>Ver paradas en el mapa</Text>
-              </TouchableOpacity>
-            )}
+            <View style={s.filaMapaDias}>
+              {incluidas.length >= 2 ? (
+                <TouchableOpacity
+                  style={s.enlaceMapa}
+                  onPress={() => verEnElMapa(ruta, paradasRuta)}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="location" size={18} color={VERDE} />
+                  <Text style={s.enlaceMapaTexto}>Ver paradas en el mapa</Text>
+                </TouchableOpacity>
+              ) : (
+                <View />
+              )}
+              {dias > 0 && (
+                <View style={s.pastillaDias}>
+                  <Text style={s.pastillaDiasTexto}>
+                    {dias} {dias === 1 ? "día" : "días"}
+                  </Text>
+                </View>
+              )}
+            </View>
             <View style={s.cajaTotal}>
-              <View>
-                <Text style={s.totalEtiqueta}>Total por persona</Text>
-                <Text style={s.totalValor}>
-                  {formatearPrecio(calcularTotal(paradasRuta))}
-                </Text>
-              </View>
-              <TouchableOpacity
-                style={s.botonLima}
-                onPress={() => verMas(ruta)}
-                activeOpacity={0.85}
-              >
-                <Text style={s.botonLimaTexto}>Ver más</Text>
-              </TouchableOpacity>
+              <Text style={s.totalEtiqueta}>Total por persona</Text>
+              <Text style={s.totalValor}>
+                {formatearPrecio(calcularTotal(paradasRuta))}
+              </Text>
             </View>
           </>
         ) : (
-          <View style={s.cajaTotal}>
-            <Text style={s.avance}>
-              Han aceptado {aliadosAceptados(paradasRuta).length} de{" "}
-              {MINIMO_ALIADOS} aliados necesarios.
-            </Text>
-            <TouchableOpacity
-              style={s.botonLima}
-              onPress={() => continuar(ruta)}
-              activeOpacity={0.85}
-            >
-              <Text style={s.botonLimaTexto}>Continuar</Text>
-            </TouchableOpacity>
-          </View>
+          <>
+            {dias > 0 && (
+              <View style={[s.pastillaDias, { marginTop: 14 }]}>
+                <Text style={s.pastillaDiasTexto}>
+                  {dias} {dias === 1 ? "día" : "días"}
+                </Text>
+              </View>
+            )}
+            <View style={s.cajaTotal}>
+              <Text style={s.avance}>
+                Han aceptado {aliadosAceptados(paradasRuta).length} de{" "}
+                {MINIMO_ALIADOS} aliados necesarios.
+              </Text>
+              <TouchableOpacity
+                style={s.botonLima}
+                onPress={() => continuar(ruta)}
+                activeOpacity={0.85}
+              >
+                <Text style={s.botonLimaTexto}>Continuar</Text>
+              </TouchableOpacity>
+            </View>
+          </>
         )}
 
         <TouchableOpacity
@@ -311,15 +349,15 @@ export default function MisRutasCreativas() {
         <View style={s.botonAtras} />
       </View>
 
+      <Text style={s.subtitulo}>
+        Experiencias culturales inmersivas y talleres guiados por actores
+        culturales.
+      </Text>
+
       <ScrollView
         contentContainerStyle={[s.lista, { paddingBottom: insets.bottom + 24 }]}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={s.subtitulo}>
-          Experiencias culturales inmersivas y talleres guiados por actores
-          culturales.
-        </Text>
-
         {rutas === null ? (
           <ActivityIndicator style={{ marginTop: 30 }} color={VERDE} />
         ) : vigentes.length === 0 ? (

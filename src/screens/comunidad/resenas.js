@@ -38,7 +38,7 @@ import {
 const MAX_RESPUESTA = 600;
 const ESTRELLA_APAGADA = "#BDBDBD";
 
-function iniciales(nombre) {
+export function iniciales(nombre) {
   const partes = (nombre || "").trim().split(/\s+/).filter(Boolean);
   if (partes.length === 0) return "?";
   if (partes.length === 1) return partes[0][0].toUpperCase();
@@ -46,13 +46,13 @@ function iniciales(nombre) {
 }
 
 // Nombre corto como en el diseño: "Maria Fernanda G."
-function nombreCorto(nombre) {
+export function nombreCorto(nombre) {
   const partes = (nombre || "").trim().split(/\s+/).filter(Boolean);
   if (partes.length <= 2) return partes.join(" ") || "Visitante";
   return `${partes[0]} ${partes[1]} ${partes[2][0].toUpperCase()}.`;
 }
 
-function Estrellas({ valor, size = 26, onChange }) {
+export function Estrellas({ valor, size = 26, onChange }) {
   return (
     <>
       {[1, 2, 3, 4, 5].map((n) => {

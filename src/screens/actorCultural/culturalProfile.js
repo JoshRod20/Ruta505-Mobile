@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
@@ -80,7 +80,7 @@ export default function CulturalProfile() {
   const ubicacion = [profile?.municipio, profile?.departamento]
     .filter(Boolean)
     .join(", ");
-  const subtitulo = [tipo, ubicacion].filter(Boolean).join(" • ");
+  const subtitulo = [tipo, ubicacion].filter(Boolean).join(" - ");
   const verificado = estadoVerificacion === ESTADOS_VERIFICACION.APROBADO;
   const tieneCalificacion = resumenResenas?.promedio != null;
 
@@ -186,9 +186,9 @@ export default function CulturalProfile() {
           accessibilityLabel="Cambiar foto de portada"
         >
           {subiendoPortada ? (
-            <ActivityIndicator color={VERDE} />
+            <ActivityIndicator color="#FFFFFF" />
           ) : (
-            <Ionicons name="image-outline" size={22} color={VERDE} />
+            <Ionicons name="camera" size={24} color="#FFFFFF" />
           )}
         </TouchableOpacity>
       </View>
@@ -196,7 +196,7 @@ export default function CulturalProfile() {
       <View style={s.cuerpo}>
         {verificado && (
           <View style={s.insignia}>
-            <Ionicons name="shield-checkmark" size={14} color={VERDE} />
+            <MaterialCommunityIcons name="check-decagram" size={18} color="#F29100" />
             <Text style={s.insigniaTexto}>Experiencia Verificada</Text>
           </View>
         )}

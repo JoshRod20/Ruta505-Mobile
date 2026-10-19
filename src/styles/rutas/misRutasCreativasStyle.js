@@ -3,12 +3,12 @@
  */
 
 import { StyleSheet } from "react-native";
-import { VERDE, LIMA, NARANJA } from "./crearRutaStyle";
+import { VERDE, LIMA, NARANJA, AZUL } from "./crearRutaStyle";
 
 export const misRutasStyle = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F4F7F2",
+    backgroundColor: "#F9F9F9",
   },
   encabezado: {
     flexDirection: "row",
@@ -43,11 +43,12 @@ export const misRutasStyle = StyleSheet.create({
   // ---- Tarjeta de ruta ----
   tarjeta: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 22,
+    borderRadius: 20,
     padding: 16,
     marginBottom: 18,
+    marginTop: 8,
     borderWidth: 1,
-    borderColor: "#E6EEE3",
+    borderColor: "#EEEEEE",
     elevation: 3,
     shadowColor: "#0E5A34",
     shadowOffset: { width: 0, height: 6 },
@@ -82,17 +83,33 @@ export const misRutasStyle = StyleSheet.create({
     textTransform: "uppercase",
   },
   pastillaLugares: {
-    backgroundColor: "#EDF7EC",
-    borderRadius: 999,
+    alignSelf: "flex-start",
+    backgroundColor: AZUL,
+    borderRadius: 6,
     paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderWidth: 1,
-    borderColor: "#D9EAD9",
+    paddingVertical: 4,
   },
   pastillaLugaresTexto: {
     fontFamily: "Poppins-SemiBold",
     fontSize: 11,
-    color: VERDE,
+    color: "#FFFFFF",
+  },
+  pastillaEstado: {
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  pastillaDias: {
+    alignSelf: "flex-start",
+    backgroundColor: AZUL,
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+  },
+  pastillaDiasTexto: {
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 11,
+    color: "#FFFFFF",
   },
   estadoPublicada: { backgroundColor: "#E9F9D9" },
   estadoEnEspera: { backgroundColor: "#FFF2D8" },
@@ -110,13 +127,12 @@ export const misRutasStyle = StyleSheet.create({
     marginTop: 2,
   },
   etiquetaItinerario: {
-    fontFamily: "Inter-SemiBold",
-    fontSize: 10,
-    color: "#5E776A",
-    letterSpacing: 1.4,
+    fontFamily: "Inter-Regular",
+    fontSize: 12,
+    color: "#1A1A1A",
+    letterSpacing: 0,
     marginTop: 8,
     marginBottom: 8,
-    textTransform: "uppercase",
   },
 
   // ---- Paradas (carrusel) ----
@@ -171,17 +187,40 @@ export const misRutasStyle = StyleSheet.create({
   },
 
   // ---- Pie ----
+  filaMapaDias: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 12,
+  },
   enlaceMapa: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 14,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    backgroundColor: "#F0F8EE",
+  },
+  botonWhatsApp: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "flex-end",
+    backgroundColor: VERDE,
     borderRadius: 10,
-    alignSelf: "flex-start",
-    borderWidth: 1,
-    borderColor: "#DDEEDB",
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    marginTop: 6,
+  },
+  whatsappCirculo: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  botonWhatsAppTexto: {
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 12,
+    color: "#FFFFFF",
+    marginLeft: 6,
   },
   enlaceMapaTexto: {
     fontFamily: "Poppins-SemiBold",
@@ -201,13 +240,8 @@ export const misRutasStyle = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "#F2F7F0",
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#E2EAE1",
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    marginTop: 14,
+    paddingTop: 12,
+    marginTop: 10,
   },
   totalEtiqueta: {
     fontFamily: "Inter-Regular",
@@ -216,9 +250,8 @@ export const misRutasStyle = StyleSheet.create({
   },
   totalValor: {
     fontFamily: "Poppins-Bold",
-    fontSize: 20,
+    fontSize: 26,
     color: "#12251A",
-    marginTop: 2,
   },
   botonLima: {
     backgroundColor: LIMA,
