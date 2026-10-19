@@ -8,7 +8,6 @@ import {
   ActivityIndicator,
   Alert,
   Image,
-  Linking,
   ScrollView,
   Text,
   TextInput,
@@ -27,7 +26,7 @@ import {
   escucharRutasPublicadas,
   formatearPrecio,
   ordenarParadas,
-  urlWhatsApp,
+  abrirChatWhatsApp,
 } from "../../services/rutasService";
 import { iconoDeCategoria } from "../../services/Categoriasexperiencias";
 import { misRutasStyle as s } from "../../styles/rutas/misRutasCreativasStyle";
@@ -106,14 +105,26 @@ export default function CulturalRoutes() {
     });
 
   const abrirWhatsApp = (telefono) =>
-    Linking.openURL(urlWhatsApp(telefono)).catch(() =>
+    abrirChatWhatsApp(telefono).catch(() =>
       Alert.alert("WhatsApp", "No se pudo abrir WhatsApp.")
     );
+
+  // Al tocar el lugar se abre su perfil público (igual que desde una publicación).
+  const verPerfil = (p) => {
+    const actorId = p.actorId ?? p.ubicacionId;
+    if (actorId) navigation.navigate("PerfilPublicoDrawer", { actorId });
+  };
 
   const renderParada = (p, mostrarDia) => {
     const imagen = p.imagenes?.[0] ?? p.imagenUrls?.[0];
     return (
-      <View key={p.id} style={s.parada}>
+      <TouchableOpacity
+        key={p.id}
+        style={s.parada}
+        onPress={() => verPerfil(p)}
+        activeOpacity={0.85}
+        accessibilityLabel={`Ver perfil de ${p.titulo}`}
+      >
         <View style={s.paradaImagen}>
           {imagen ? (
             <Image
@@ -155,7 +166,7 @@ export default function CulturalRoutes() {
             </TouchableOpacity>
           )}
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 

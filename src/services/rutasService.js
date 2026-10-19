@@ -16,6 +16,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 
+import { Linking } from "react-native";
 import { db } from "./firebase";
 
 // ==================================================
@@ -259,6 +260,23 @@ export function escucharParadasPublicadas(callback, onError) {
 export function urlWhatsApp(telefono) {
   const numero = String(telefono ?? "").replace(/\D/g, "");
   return `https://wa.me/${numero.length === 8 ? `505${numero}` : numero}`;
+}
+
+/**
+ * Abre directo el chat de WhatsApp con ese número (sin pasar por el
+ * navegador). Si la app no responde al esquema "whatsapp://", usa wa.me.
+ * @param {string} telefono
+ * @throws Si no se puede abrir ninguno de los dos enlaces.
+ */
+export async function abrirChatWhatsApp(telefono) {
+  const numero = String(telefono ?? "").replace(/\D/g, "");
+  if (!numero) throw new Error("Teléfono vacío");
+  const completo = numero.length === 8 ? `505${numero}` : numero;
+  try {
+    await Linking.openURL(`whatsapp://send?phone=${completo}`);
+  } catch {
+    await Linking.openURL(`https://wa.me/${completo}`);
+  }
 }
 
 // Paradas de una ruta, vistas por su creador (él primero).
