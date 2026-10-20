@@ -26,6 +26,18 @@ export default function SeleccionarUbicacionMapa({
     lon: centroInicial?.lon ?? -85.2072,
   });
 
+  // Posición y zoom con los que se abre el mapa. Se guardan una sola vez: si la
+  // cámara dependiera de coordenadasCentro, cada vez que el usuario mueve o
+  // aleja el mapa el estado cambiaría y la cámara volvería a zoom 15 al centro
+  // anterior (el "rebote" al pellizcar para alejar).
+  const camaraInicial = useRef({
+    center: [
+      centroInicial?.lon ?? -85.2072,
+      centroInicial?.lat ?? 12.8654,
+    ],
+    zoom: 15,
+  }).current;
+
   async function handleRegionDidChange() {
     if (!mapRef.current) return;
     try {
@@ -45,10 +57,7 @@ export default function SeleccionarUbicacionMapa({
         logo={false}
         onRegionDidChange={handleRegionDidChange}
       >
-        <Camera
-          zoom={15}
-          center={[coordenadasCentro.lon, coordenadasCentro.lat]}
-        />
+        <Camera zoom={camaraInicial.zoom} center={camaraInicial.center} />
       </Map>
 
       {/* Pin fijo en el centro de la pantalla */}
