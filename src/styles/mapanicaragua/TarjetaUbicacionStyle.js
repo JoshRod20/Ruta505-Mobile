@@ -154,6 +154,25 @@ export const tarjetaUbicacionStyle = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#EEF2EE",
   },
+  // Fila "Desde: Mi ubicación · Cambiar"
+  filaOrigen: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingBottom: 8,
+    gap: 6,
+  },
+  filaOrigenTexto: {
+    flex: 1,
+    fontFamily: "Inter-Regular",
+    fontSize: 12,
+    color: "#4A4A4A",
+  },
+  filaOrigenCambiar: {
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 12,
+    color: "#0E5A34",
+    textDecorationLine: "underline",
+  },
   filaAcciones: {
     flexDirection: "row",
     gap: 10,

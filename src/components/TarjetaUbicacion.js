@@ -48,6 +48,8 @@ export default function TarjetaUbicacion({
   onVerPerfil,
   onTrazarRuta,
   onIniciarNavegacion,
+  origenRuta, // { nombre } del punto de partida elegido; null = mi ubicación
+  onCambiarOrigen,
 }) {
   const { width, height } = useWindowDimensions();
 
@@ -172,6 +174,19 @@ export default function TarjetaUbicacion({
 
       {/* Acciones fijas (siempre visibles aunque la descripción sea larga) */}
       <View style={s.acciones}>
+        {!!onCambiarOrigen && (
+          <TouchableOpacity
+            style={s.filaOrigen}
+            onPress={onCambiarOrigen}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="radio-button-on" size={14} color={VERDE} />
+            <Text style={s.filaOrigenTexto} numberOfLines={1}>
+              Desde: {origenRuta ? origenRuta.nombre : "Mi ubicación"}
+            </Text>
+            <Text style={s.filaOrigenCambiar}>Cambiar</Text>
+          </TouchableOpacity>
+        )}
         {hayRutaAqui && (
           <View style={s.etaPill}>
             <Text style={s.etaPillTexto}>
@@ -204,7 +219,9 @@ export default function TarjetaUbicacion({
               onPress={onIniciarNavegacion}
               activeOpacity={0.85}
             >
-              <Text style={s.botonPrimarioTexto}>Iniciar navegación</Text>
+              <Text style={s.botonPrimarioTexto}>
+                {origenRuta ? "Iniciar desde mi ubicación" : "Iniciar navegación"}
+              </Text>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity

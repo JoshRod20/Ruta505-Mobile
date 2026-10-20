@@ -55,29 +55,67 @@ export async function obtenerMultimedia(uid) {
   }));
 }
 
+/** Texto legible de un error de Firestore (con su código, que es lo útil). */
+function describirError(error) {
+  return [error?.code, error?.message].filter(Boolean).join(": ") || "error desconocido";
+}
+
 /**
  * Deja la subcolección igual a la lista del formulario: borra lo que se quitó
  * y agrega lo nuevo (lo que ya existía no se vuelve a escribir).
+ *
+ * Nunca lanza error: el negocio ya está guardado cuando esto corre, así que un
+ * fallo aquí no debe mostrarse como "no se pudo guardar". Devuelve cuántos
+ * archivos fallaron y el motivo del primero.
+ * @returns {Promise<{fallidos: number, motivo: string|null}>}
  */
 async function sincronizarMultimedia(uid, multimedia) {
   const ref = collection(db, COLECCION, uid, SUBCOLECCION_MULTIMEDIA);
-  const existentes = await getDocs(ref);
+  const nuevos = multimedia.filter((x) => !x.docId);
+  let fallidos = 0;
+  let motivo = null;
+  const registrarFallo = (error) => {
+    fallidos += 1;
+    if (!motivo) motivo = describirError(error);
+    console.warn("Fallo al sincronizar multimedia:", error);
+  };
+
+  let existentes;
+  try {
+    existentes = await getDocs(ref);
+  } catch (error) {
+    // Sin poder leer la subcolección no se puede sincronizar nada.
+    fallidos = nuevos.length;
+    motivo = describirError(error);
+    console.warn("No se pudo leer la multimedia del negocio:", error);
+    return { fallidos, motivo };
+  }
+
   const conservar = new Set(
     multimedia.filter((m) => m.docId).map((m) => m.docId)
   );
-  await Promise.all(
+  const borrados = await Promise.allSettled(
     existentes.docs.filter((d) => !conservar.has(d.id)).map((d) => deleteDoc(d.ref))
   );
+  borrados.forEach((r) => {
+    if (r.status === "rejected") registrarFallo(r.reason);
+  });
+
   let orden = Date.now();
-  for (const m of multimedia.filter((x) => !x.docId)) {
+  for (const m of nuevos) {
     orden += 1;
-    await addDoc(ref, {
-      tipo: m.tipo,
-      data: m.data,
-      orden,
-      createdAt: serverTimestamp(),
-    });
+    try {
+      await addDoc(ref, {
+        tipo: m.tipo,
+        data: m.data,
+        orden,
+        createdAt: serverTimestamp(),
+      });
+    } catch (error) {
+      registrarFallo(error);
+    }
   }
+  return { fallidos, motivo };
 }
 
 /** Separa la multimedia de los datos y calcula la portada (primera foto). */
@@ -105,7 +143,8 @@ export async function crearNegocio(uid, datos) {
     creadoPor: uid,
     createdAt: serverTimestamp(),
   });
-  if (multimedia) await sincronizarMultimedia(uid, multimedia);
+  if (!multimedia) return { fallidos: 0, motivo: null };
+  return sincronizarMultimedia(uid, multimedia);
 }
 
 /**
@@ -120,7 +159,8 @@ export async function actualizarNegocio(uid, datos) {
     ...resto,
     updatedAt: serverTimestamp(),
   });
-  if (multimedia) await sincronizarMultimedia(uid, multimedia);
+  if (!multimedia) return { fallidos: 0, motivo: null };
+  return sincronizarMultimedia(uid, multimedia);
 }
 
 /**

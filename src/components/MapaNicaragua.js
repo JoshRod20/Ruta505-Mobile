@@ -122,6 +122,11 @@ export default function MapaNicaragua() {
   const [puntoSeleccionado, setPuntoSeleccionado] = useState(null);
   const [epocaMarcadores, setEpocaMarcadores] = useState(0); // Forzar remount de ViewAnnotation
   const [lugarBuscado, setLugarBuscado] = useState(null); // { nombre, lat, lon } elegido en la barra de búsqueda
+  // Punto de partida elegido por el usuario (null = su ubicación GPS)
+  const [origenRuta, setOrigenRuta] = useState(null); // { lat, lon, nombre }
+  const [eligiendoOrigen, setEligiendoOrigen] = useState(false); // esperando que busque o toque un lugar
+  const [selectorParaOrigen, setSelectorParaOrigen] = useState(false); // el selector de mapa es para el origen
+  const [destinoPendiente, setDestinoPendiente] = useState(null); // destino que se recuerda mientras se elige el origen
 
   const cerrarTarjeta = useCallback(() => {
     setPuntoSeleccionado(null);
@@ -385,11 +390,20 @@ export default function MapaNicaragua() {
         ubicacionExacta: profile?.direccion ?? "",
       };
 
-      if (negocioEnEdicion) {
-        await actualizarNegocio(user.uid, datos);
+      // El negocio se guarda primero; sus fotos y videos van aparte. Si fallan
+      // las fotos, el negocio ya existe: se avisa de eso y no de "no se pudo guardar".
+      const resultado = negocioEnEdicion
+        ? await actualizarNegocio(user.uid, datos)
+        : await crearNegocio(user.uid, datos);
+
+      if (resultado?.fallidos > 0) {
+        Alert.alert(
+          "Negocio guardado",
+          `Tu negocio sí se guardó, pero no se pudieron subir ${resultado.fallidos} foto(s) o video(s).\n\nMotivo: ${resultado.motivo}\n\nAbre tu negocio con "Editar" para intentar agregarlos de nuevo.`,
+        );
+      } else if (negocioEnEdicion) {
         Alert.alert("Listo", "Tus cambios ya están guardados.");
       } else {
-        await crearNegocio(user.uid, datos);
         Alert.alert(
           "Listo",
           "Tu negocio ya está visible en el mapa para todos.",
@@ -435,18 +449,39 @@ export default function MapaNicaragua() {
   }
 
   function handleConfirmarUbicacionElegida(coordenadas) {
+    if (selectorParaOrigen) {
+      setSelectorParaOrigen(false);
+      setSelectorMapaVisible(false);
+      usarComoOrigen({
+        lat: coordenadas.lat,
+        lon: coordenadas.lon,
+        nombre: "Punto elegido en el mapa",
+      });
+      return;
+    }
     setUbicacionParaGuardar(coordenadas);
     setSelectorMapaVisible(false);
     setFormularioVisible(true);
   }
 
   function handleCancelarSelectorMapa() {
+    if (selectorParaOrigen) {
+      setSelectorParaOrigen(false);
+      setSelectorMapaVisible(false);
+      setPuntoSeleccionado(destinoPendiente);
+      setDestinoPendiente(null);
+      return;
+    }
     setSelectorMapaVisible(false);
     setFormularioVisible(true);
   }
 
   // Búsqueda: vuela a una ubicación guardada y abre su tarjeta
   function handleSeleccionarPuntoBuscado(punto) {
+    if (eligiendoOrigen) {
+      usarComoOrigen({ lat: punto.lat, lon: punto.lng, nombre: punto.titulo });
+      return;
+    }
     setLugarBuscado(null);
     setPuntoSeleccionado(punto);
     cameraRef.current?.setStop({
@@ -458,6 +493,10 @@ export default function MapaNicaragua() {
 
   // Búsqueda: vuela a un lugar/calle y deja un pin temporal
   function handleSeleccionarLugarBuscado(lugar) {
+    if (eligiendoOrigen) {
+      usarComoOrigen({ lat: lugar.lat, lon: lugar.lon, nombre: lugar.nombre });
+      return;
+    }
     cerrarTarjeta();
     setLugarBuscado(lugar);
     cameraRef.current?.setStop({
@@ -505,8 +544,11 @@ export default function MapaNicaragua() {
   }
 
   const handleTrazarRuta = useCallback(
-    async (destino) => {
-      if (!ubicacionOrigen) {
+    // origenElegido: undefined = el que haya guardado el usuario; null = su GPS.
+    async (destino, origenElegido) => {
+      const elegido = origenElegido !== undefined ? origenElegido : origenRuta;
+      const origen = elegido ?? ubicacionOrigen;
+      if (!origen) {
         Alert.alert(
           "Ubicación no disponible todavía",
           "Espera un momento a que se detecte tu posición antes de trazar una ruta.",
@@ -517,10 +559,10 @@ export default function MapaNicaragua() {
       setCargandoRuta(true);
       setRuta(null);
       try {
-        const resultado = await obtenerRuta(ubicacionOrigen, {
-          lat: destino.lat,
-          lon: destino.lng,
-        });
+        const resultado = await obtenerRuta(
+          { lat: origen.lat, lon: origen.lon },
+          { lat: destino.lat, lon: destino.lng },
+        );
         setRuta({ ...resultado, destino });
 
         // Encuadra la cámara en los límites de la ruta
@@ -540,8 +582,96 @@ export default function MapaNicaragua() {
         setCargandoRuta(false);
       }
     },
-    [ubicacionOrigen],
+    [ubicacionOrigen, origenRuta],
   );
+
+  // ---------- Punto de partida elegido (de A a B) ----------
+  // Guarda el origen y vuelve a trazar la ruta hacia el destino recordado.
+  function usarComoOrigen(origen) {
+    const destino = destinoPendiente ?? puntoSeleccionado;
+    setEligiendoOrigen(false);
+    setLugarBuscado(null);
+    setOrigenRuta(origen);
+    if (destino) {
+      setPuntoSeleccionado(destino);
+      setDestinoPendiente(null);
+      handleTrazarRuta(destino, origen);
+    }
+  }
+
+  function usarMiUbicacionComoOrigen() {
+    setOrigenRuta(null);
+    if (puntoSeleccionado && ruta?.destino?.id === puntoSeleccionado.id) {
+      handleTrazarRuta(puntoSeleccionado, null);
+    }
+  }
+
+  function cancelarEleccionOrigen() {
+    setEligiendoOrigen(false);
+    setPuntoSeleccionado(destinoPendiente);
+    setDestinoPendiente(null);
+  }
+
+  function pedirOrigen(destino) {
+    Alert.alert(
+      "Punto de partida",
+      "¿Desde dónde quieres salir?",
+      [
+        {
+          text: "Buscar un lugar",
+          onPress: () => {
+            setDestinoPendiente(destino);
+            cerrarTarjeta();
+            setEligiendoOrigen(true);
+          },
+        },
+        {
+          text: "Elegir en el mapa",
+          onPress: () => {
+            setDestinoPendiente(destino);
+            setSelectorParaOrigen(true);
+            setSelectorMapaVisible(true);
+          },
+        },
+        { text: "Mi ubicación", onPress: usarMiUbicacionComoOrigen },
+      ],
+      { cancelable: true },
+    );
+  }
+
+  // Tocar un marcador: abre su tarjeta, o lo usa de origen si se está eligiendo.
+  function manejarToqueMarcador(punto) {
+    if (eligiendoOrigen) {
+      usarComoOrigen({ lat: punto.lat, lon: punto.lng, nombre: punto.titulo });
+    } else {
+      setPuntoSeleccionado(punto);
+    }
+  }
+
+  // La navegación sigue el GPS: si el origen era otro punto, se parte de donde estás.
+  async function iniciarDesdeMiUbicacion(destino) {
+    if (!ubicacionOrigen) {
+      Alert.alert(
+        "Ubicación no disponible todavía",
+        "Espera un momento a que se detecte tu posición antes de iniciar.",
+      );
+      return;
+    }
+    setCargandoRuta(true);
+    try {
+      const resultado = await obtenerRuta(ubicacionOrigen, {
+        lat: destino.lat,
+        lon: destino.lng,
+      });
+      setOrigenRuta(null);
+      setRuta({ ...resultado, destino });
+      setNavegando(true);
+    } catch (error) {
+      Alert.alert("No se pudo calcular la ruta", error.message);
+    } finally {
+      setCargandoRuta(false);
+    }
+  }
 
   // ---------- Iniciar la ruta creativa (navegación parada por parada) ----------
   async function iniciarTramo(indice, origen) {
@@ -676,7 +806,11 @@ export default function MapaNicaragua() {
         />
       ) : selectorMapaVisible ? (
         <SeleccionarUbicacionMapa
-          centroInicial={ubicacionParaGuardar ?? ubicacionOrigen}
+          centroInicial={
+            selectorParaOrigen
+              ? (origenRuta ?? ubicacionOrigen)
+              : (ubicacionParaGuardar ?? ubicacionOrigen)
+          }
           onConfirmar={handleConfirmarUbicacionElegida}
           onCancelar={handleCancelarSelectorMapa}
         />
@@ -773,6 +907,33 @@ export default function MapaNicaragua() {
               </ViewAnnotation>
             )}
 
+            {/* Punto de partida elegido (A) */}
+            {origenRuta && (
+              <ViewAnnotation
+                id="origen-ruta"
+                lngLat={[origenRuta.lon, origenRuta.lat]}
+              >
+                <View
+                  style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: 14,
+                    backgroundColor: "#1D7A46",
+                    borderWidth: 3,
+                    borderColor: "#FFFFFF",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Text
+                    style={{ color: "#FFFFFF", fontSize: 12, fontWeight: "700" }}
+                  >
+                    A
+                  </Text>
+                </View>
+              </ViewAnnotation>
+            )}
+
             {/* Marcadores de puntos de interés */}
             {puntos
               .filter((punto) => !idsParadasRuta.has(punto.id))
@@ -781,7 +942,7 @@ export default function MapaNicaragua() {
                 key={`${punto.id}-${epocaMarcadores}`}
                 id={punto.id}
                 lngLat={[punto.lng, punto.lat]}
-                onSelect={() => setPuntoSeleccionado(punto)}
+                onSelect={() => manejarToqueMarcador(punto)}
               >
                 <View style={mapaNicaraguaStyle.marcadorContenedor}>
                   <View style={mapaNicaraguaStyle.marcadorPunto}>
@@ -803,7 +964,7 @@ export default function MapaNicaragua() {
                   key={`${punto.id}-${epocaMarcadores}`}
                   id={punto.id}
                   lngLat={[punto.lng, punto.lat]}
-                  onSelect={() => setPuntoSeleccionado(punto)}
+                  onSelect={() => manejarToqueMarcador(punto)}
                 >
                   <View style={mapaNicaraguaStyle.marcadorContenedor}>
                     <View
@@ -937,6 +1098,29 @@ export default function MapaNicaragua() {
             </TouchableOpacity>
           )}
 
+          {eligiendoOrigen && (
+            <View
+              style={[mapaNicaraguaStyle.bannerRuta, { top: insets.top + 100 }]}
+            >
+              <View style={mapaNicaraguaStyle.bannerRutaTextos}>
+                <Text style={mapaNicaraguaStyle.bannerRutaTitulo} numberOfLines={1}>
+                  Elige el punto de partida
+                </Text>
+                <Text style={mapaNicaraguaStyle.bannerRutaDetalle} numberOfLines={2}>
+                  Busca un lugar arriba o toca un negocio del mapa.
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={mapaNicaraguaStyle.bannerRutaCerrar}
+                onPress={cancelarEleccionOrigen}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                accessibilityLabel="Cancelar"
+              >
+                <Ionicons name="close" size={16} color="#4A4A4A" />
+              </TouchableOpacity>
+            </View>
+          )}
+
           <BarraBusquedaMapa
             puntos={puntos}
             onSeleccionarPunto={handleSeleccionarPuntoBuscado}
@@ -993,7 +1177,13 @@ export default function MapaNicaragua() {
                       })
               }
               onTrazarRuta={() => handleTrazarRuta(puntoSeleccionado)}
-              onIniciarNavegacion={() => setNavegando(true)}
+              origenRuta={origenRuta}
+              onCambiarOrigen={() => pedirOrigen(puntoSeleccionado)}
+              onIniciarNavegacion={
+                origenRuta
+                  ? () => iniciarDesdeMiUbicacion(puntoSeleccionado)
+                  : () => setNavegando(true)
+              }
             />
           )}
         </View>
