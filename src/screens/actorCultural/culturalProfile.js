@@ -139,9 +139,6 @@ export default function CulturalProfile() {
     }
   };
 
-  const proximamente = (mensaje) => () =>
-    Alert.alert("Próximamente", mensaje);
-
   const acciones = [
     {
       texto: "Editar perfil cultural",
@@ -154,7 +151,7 @@ export default function CulturalProfile() {
     },
     {
       texto: "Conocer Plan Destacado",
-      onPress: proximamente("Muy pronto podrás conocer el Plan Destacado."),
+      onPress: () => navigation.navigate("PlanDestacado"),
     },
     {
       texto: "Configuración",

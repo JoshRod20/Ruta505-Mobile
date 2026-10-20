@@ -165,7 +165,7 @@ export default function PerfilUsuario({ navigation }) {
                 icono="sparkles-outline"
                 titulo="Suscripción actual"
                 subtitulo="Conoce el Plan Destacado"
-                onPress={proximamente("Suscripción")}
+                onPress={() => navigation.navigate("PlanDestacado")}
                 ultima
               />
             </>

@@ -56,6 +56,7 @@ import PinolitoScreen from "../screens/usuario/PinolitoScreen";
 import Guardados from "../screens/usuario/guardados";
 import EditUserProfile from "../screens/usuario/editUserProfile";
 import PassportCollection from "../screens/usuario/passportCollection";
+import PlanDestacado from "../screens/actorCultural/planDestacado";
 
 const Stack =
   createNativeStackNavigator();
@@ -210,6 +211,7 @@ const AppStack = () => (
     <Stack.Screen name="ActivarDobleFactorDrawer" component={ActivarDobleFactorScreen} />
     <Stack.Screen name="AcercaDeDrawer" component={AcercaDe} />
     <Stack.Screen name="PassportCollection" component={PassportCollection} />
+    <Stack.Screen name="PlanDestacado" component={PlanDestacado} />
   </Stack.Navigator>
 );
 
