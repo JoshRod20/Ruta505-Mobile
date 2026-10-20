@@ -20,6 +20,14 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+// en el TextInput del correo (arriba de placeholder="Nombre de usuario o correo")
+testID="login-correo"
+
+// en el TextInput de la contraseña (arriba de placeholder="Contraseña")
+testID="login-clave"
+
+// en el botón de login (junto a onPress={handleLogin})
+testID="login-boton"
 
 import Svg, { Path } from "react-native-svg";
 import { Ionicons } from "@expo/vector-icons";
