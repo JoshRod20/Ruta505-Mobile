@@ -33,6 +33,13 @@ const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
 
 const UMBRAL_REROUTE_METROS = 40;
 const COOLDOWN_REROUTE_MS = 10000;
+// Anti-ruido del GPS: sin esto, un GPS que "baila" estando quieto dispara
+// recálculos y mueve la cámara sin parar.
+const PRECISION_MAXIMA_METROS = 50; // lecturas peores que esto se ignoran
+const LECTURAS_FUERA_PARA_REROUTE = 3; // lecturas seguidas fuera de ruta antes de recalcular
+const MARGEN_FUERA_MAXIMO_METROS = 150; // tope del margen si empiezas lejos de la vía
+const MOVIMIENTO_MINIMO_CAMARA_METROS = 4; // si no te has movido tanto, la cámara no se mueve
+const MOVIMIENTO_MINIMO_BEARING_METROS = 8; // para girar el mapa por movimiento real, no por ruido
 const UMBRAL_LLEGADA_METROS = 30;
 const VELOCIDAD_MINIMA_PARA_HEADING = 1.2; // m/s
 const SEGUNDOS_MINIMOS_PARA_ETA_REAL = 15;
@@ -65,7 +72,14 @@ export default function NavegacionRuta({
   const ultimoRerouteRef = useRef(0);
   const velocidadInstantaneaRef = useRef(null);
   const bearingActualRef = useRef(0);
-  const posicionAnteriorRef = useRef(null);
+  const ultimaCamaraRef = useRef(null); // { lat, lon } donde se movió la cámara por última vez
+  const recalculandoRef = useRef(false);
+  const fueraDeRutaConteoRef = useRef(0);
+  const margenFueraRef = useRef(0); // distancia inicial a la vía (p. ej. estás dentro de un campus)
+  const calibrarMargenRef = useRef(true);
+  // El watchPosition se registra una sola vez, así que su callback vería siempre
+  // la ruta de la primera pantalla. Este ref le da siempre los valores actuales.
+  const estadoRef = useRef({});
   const tripStartRef = useRef(Date.now());
   const progresoMaximoRef = useRef(0); // Avance monótono en metros (evita retrocesos por ruido GPS)
   const etaSuavizadoRef = useRef(null);
@@ -98,9 +112,19 @@ export default function NavegacionRuta({
     };
   }, [ruta]);
 
+  estadoRef.current = {
+    ruta,
+    llegado,
+    distanciasAcumuladasCoord,
+    distanciasAcumuladasPasos,
+    distanciaTotalRutaM,
+  };
+
   // Reinicia el progreso al cambiar o recalcular la ruta
   useEffect(() => {
     progresoMaximoRef.current = 0;
+    fueraDeRutaConteoRef.current = 0;
+    calibrarMargenRef.current = true;
     setPasoActualIndex(0);
   }, [ruta]);
 
@@ -143,9 +167,21 @@ export default function NavegacionRuta({
   }, []);
 
   async function manejarNuevaPosicion(pos) {
-    if (llegado || !pos?.coords) return;
+    const {
+      ruta,
+      llegado,
+      distanciasAcumuladasCoord,
+      distanciasAcumuladasPasos,
+      distanciaTotalRutaM,
+    } = estadoRef.current;
+    if (llegado || recalculandoRef.current || !pos?.coords) return;
 
-    const { latitude, longitude, speed, heading } = pos.coords;
+    const { latitude, longitude, speed, heading, accuracy } = pos.coords;
+
+    // Una lectura imprecisa no sirve para decidir nada: se ignora.
+    if (typeof accuracy === "number" && accuracy > PRECISION_MAXIMA_METROS) {
+      return;
+    }
 
     // 1. Detección de llegada al destino
     const distanciaAlDestino = distanciaAproximadaMetros(
@@ -169,16 +205,35 @@ export default function NavegacionRuta({
     if (!proyeccion) return;
 
     // 3. Recalculo por desvío de ruta
+    // La ruta de OSRM empieza en la vía más cercana, no donde estás. Si arrancas
+    // a 80 m de la calle (campus, estacionamiento), esos 80 m no son un desvío:
+    // se miden la primera vez y se suman al umbral.
+    if (calibrarMargenRef.current) {
+      margenFueraRef.current = Math.min(
+        proyeccion.distancia,
+        MARGEN_FUERA_MAXIMO_METROS,
+      );
+      calibrarMargenRef.current = false;
+    }
+    const umbralDesvio = UMBRAL_REROUTE_METROS + margenFueraRef.current;
+
+    // Solo cuenta como desvío si se repite en varias lecturas seguidas.
+    fueraDeRutaConteoRef.current =
+      proyeccion.distancia > umbralDesvio
+        ? fueraDeRutaConteoRef.current + 1
+        : 0;
+
     const ahora = Date.now();
     const puedeRecalcular =
       ahora - ultimoRerouteRef.current > COOLDOWN_REROUTE_MS;
 
     if (
-      proyeccion.distancia > UMBRAL_REROUTE_METROS &&
-      puedeRecalcular &&
-      !recalculando
+      fueraDeRutaConteoRef.current >= LECTURAS_FUERA_PARA_REROUTE &&
+      puedeRecalcular
     ) {
       ultimoRerouteRef.current = ahora;
+      fueraDeRutaConteoRef.current = 0;
+      recalculandoRef.current = true;
       setRecalculando(true);
       try {
         const nuevaRuta = await obtenerRuta(
@@ -191,6 +246,7 @@ export default function NavegacionRuta({
       } catch (error) {
         console.warn("Error al recalcular ruta:", error);
       } finally {
+        recalculandoRef.current = false;
         setRecalculando(false);
       }
       return;
@@ -247,7 +303,14 @@ export default function NavegacionRuta({
         : etaSuavizadoRef.current * 0.75 + etaMinutosCrudo * 0.25;
     setTiempoRestanteMin(Math.max(1, Math.round(etaSuavizadoRef.current)));
 
-    // 6. Orientación y seguimiento de cámara (Bearing)
+    // 6. Seguimiento de cámara: solo si de verdad te has movido. Estando quieto
+    // el GPS varía unos metros; sin este filtro la cámara se mueve y gira sola.
+    const ultima = ultimaCamaraRef.current;
+    const metrosDesdeUltimaCamara = ultima
+      ? distanciaAproximadaMetros(ultima.lat, ultima.lon, latitude, longitude)
+      : Infinity;
+    if (metrosDesdeUltimaCamara < MOVIMIENTO_MINIMO_CAMARA_METROS) return;
+
     let bearingParaCamara = bearingActualRef.current;
     if (
       typeof heading === "number" &&
@@ -255,28 +318,26 @@ export default function NavegacionRuta({
       (speed ?? 0) > VELOCIDAD_MINIMA_PARA_HEADING
     ) {
       bearingParaCamara = heading;
-    } else if (posicionAnteriorRef.current) {
-      const dist = distanciaAproximadaMetros(
-        posicionAnteriorRef.current.lat,
-        posicionAnteriorRef.current.lon,
+    } else if (ultima && metrosDesdeUltimaCamara > MOVIMIENTO_MINIMO_BEARING_METROS) {
+      bearingParaCamara = calcularBearing(
+        ultima.lat,
+        ultima.lon,
         latitude,
         longitude,
       );
-      if (dist > 3) {
-        bearingParaCamara = calcularBearing(
-          posicionAnteriorRef.current.lat,
-          posicionAnteriorRef.current.lon,
-          latitude,
-          longitude,
-        );
-      }
     }
     bearingActualRef.current = bearingParaCamara;
-    posicionAnteriorRef.current = { lat: latitude, lon: longitude };
+    ultimaCamaraRef.current = { lat: latitude, lon: longitude };
 
     if (cameraRef.current) {
+      // Sobre la ruta, la cámara va pegada a la línea; si estás lejos de ella,
+      // sigue tu posición real.
+      const centro =
+        proyeccion.distancia < 25
+          ? [proyeccion.lon, proyeccion.lat]
+          : [longitude, latitude];
       cameraRef.current.setStop({
-        center: [proyeccion.lon, proyeccion.lat],
+        center: centro,
         zoom: 17,
         bearing: bearingParaCamara,
         duration: 500,
