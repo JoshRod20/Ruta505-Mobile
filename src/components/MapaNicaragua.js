@@ -1,5 +1,7 @@
 /**
  * MapaNicaragua: componente/pantalla de la aplicación Ruta505.
+ *
+ * Los cambios para la recomendación de Pinolito están marcados con [PINOLITO].
  */
 
 import React, { useState, useRef, useCallback, useEffect, useMemo } from "react";
@@ -63,6 +65,14 @@ const CENTRO_RECOMENDACIONES = { lat: 11.9744, lon: -86.0942 };
 // Cuánto esperar al GPS antes de usar el centro por defecto.
 const ESPERA_GPS_MS = 10000;
 
+// [PINOLITO] Normaliza texto para comparar nombres sin tildes ni mayúsculas.
+const normalizarTexto = (t) =>
+  String(t ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+
 // Configuración inicial de Geolocation para Android
 if (Platform.OS === "android") {
   Geolocation.setRNConfiguration({
@@ -114,6 +124,13 @@ export default function MapaNicaragua() {
   // Lugares de interés de OpenStreetMap que aún no están registrados en la app
   const [lugaresExternos, setLugaresExternos] = useState([]);
   const esTurista = role === ROLES.TURISTA;
+
+  // [PINOLITO] Lugar que Pinolito recomendó: se guarda aparte para que siempre tenga marcador
+  const [lugarRecomendadoExtra, setLugarRecomendadoExtra] = useState(null);
+  const [recomendadoPendiente, setRecomendadoPendiente] = useState(null);
+  const [negociosCargados, setNegociosCargados] = useState(false);
+  const seleccionRecomendadaRef = useRef(false);
+
   const [formularioVisible, setFormularioVisible] = useState(false);
   const [ubicacionParaGuardar, setUbicacionParaGuardar] = useState(null);
   const [selectorMapaVisible, setSelectorMapaVisible] = useState(false);
@@ -185,9 +202,12 @@ export default function MapaNicaragua() {
         }
 
         setPuntos(conCoordenadasValidas);
+        setNegociosCargados(true); // [PINOLITO]
       },
-      (error) =>
-        Alert.alert("No se pudieron cargar los negocios", error.message),
+      (error) => {
+        setNegociosCargados(true); // [PINOLITO] un fallo no debe dejar la selección esperando
+        Alert.alert("No se pudieron cargar los negocios", error.message);
+      },
     );
 
     return () => cancelarSuscripcion();
@@ -225,19 +245,21 @@ export default function MapaNicaragua() {
 
   // Lista del carrusel: primero los negocios registrados (con fotos y datos
   // reales), luego los externos que no se repiten con ninguno registrado.
+  // [PINOLITO] Incluye el lugar recomendado por Pinolito aunque la consulta
+  // del mapa no lo haya traído.
   const recomendados = useMemo(() => {
     if (!esTurista) return [];
-    const normalizar = (t) =>
-      String(t ?? "")
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase()
-        .trim();
-    const nombres = new Set(puntos.map((p) => normalizar(p.titulo)));
+    const nombres = new Set(puntos.map((p) => normalizarTexto(p.titulo)));
 
-    const externosNuevos = lugaresExternos.filter(
+    const externosBase =
+      lugarRecomendadoExtra &&
+      !lugaresExternos.some((l) => l.id === lugarRecomendadoExtra.id)
+        ? [lugarRecomendadoExtra, ...lugaresExternos]
+        : lugaresExternos;
+
+    const externosNuevos = externosBase.filter(
       (l) =>
-        !nombres.has(normalizar(l.titulo)) &&
+        !nombres.has(normalizarTexto(l.titulo)) &&
         !puntos.some(
           (p) =>
             distanciaKm(
@@ -257,7 +279,13 @@ export default function MapaNicaragua() {
         : lista;
 
     return [...porCercania(puntos), ...porCercania(externosNuevos)];
-  }, [esTurista, puntos, lugaresExternos, ubicacionOrigen]);
+  }, [
+    esTurista,
+    puntos,
+    lugaresExternos,
+    lugarRecomendadoExtra,
+    ubicacionOrigen,
+  ]);
 
   const externosVisibles = recomendados.filter((p) => p.externo);
 
@@ -278,6 +306,37 @@ export default function MapaNicaragua() {
     if (punto) handleSeleccionarPuntoBuscado(punto);
     navigation.setParams({ puntoId: undefined });
   }, [puntoIdParam, puntos]);
+
+  // [PINOLITO] Desde Pinolito: "Ver mapa" con el lugar recomendado.
+  const lugarRecomendadoParam = route.params?.lugarRecomendado;
+  useEffect(() => {
+    if (!lugarRecomendadoParam) return;
+    setLugarRecomendadoExtra(lugarRecomendadoParam);
+    setRecomendadoPendiente(lugarRecomendadoParam);
+    navigation.setParams({ lugarRecomendado: undefined, ts: undefined });
+  }, [lugarRecomendadoParam, navigation]);
+
+  // [PINOLITO] Cuando ya cargaron los negocios: si el lugar coincide con uno
+  // registrado se selecciona ese (con fotos y datos reales); si no, el externo
+  // de OpenStreetMap.
+  useEffect(() => {
+    if (!recomendadoPendiente || !negociosCargados) return;
+
+    const lugar = recomendadoPendiente;
+    setRecomendadoPendiente(null);
+
+    const registrado = puntos.find(
+      (p) =>
+        normalizarTexto(p.titulo) === normalizarTexto(lugar.titulo) ||
+        distanciaKm(
+          { lat: p.lat, lon: p.lng },
+          { lat: lugar.lat, lon: lugar.lng },
+        ) < 0.1,
+    );
+
+    seleccionRecomendadaRef.current = true; // evita que el GPS inicial pise la cámara
+    handleSeleccionarPuntoBuscado(registrado ?? lugar);
+  }, [recomendadoPendiente, negociosCargados, puntos]);
 
   // 2) Cuando ya están cargados los negocios, busca las coordenadas de cada
   //    parada, calcula la línea por carretera y encuadra la cámara.
@@ -508,8 +567,13 @@ export default function MapaNicaragua() {
 
   function moverCamaraA(lat, lon) {
     setUbicacionOrigen({ lat, lon });
-    // Si hay una ruta creativa en pantalla, la cámara se queda encuadrada en ella.
-    if (cameraRef.current && !rutaCreativaActivaRef.current) {
+    // [PINOLITO] Si hay una ruta creativa en pantalla o Pinolito recomendó un
+    // lugar, la cámara se queda donde está.
+    if (
+      cameraRef.current &&
+      !rutaCreativaActivaRef.current &&
+      !seleccionRecomendadaRef.current
+    ) {
       cameraRef.current.setStop({
         center: [lon, lat],
         zoom: 15,
