@@ -1,0 +1,60 @@
+# E2E01: Turista inicia sesión y entra al Mapa
+# Uso: maestro test -e CORREO=usuario -e CLAVE=contraseña maestro/01-turista-mapa.yaml
+appId: com.kennrod20.Ruta505
+---
+- launchApp:
+    clearState: true
+
+# 1. Saltar el onboarding (la app puede tardar en abrir tras clearState)
+- extendedWaitUntil:
+    visible: "Saltar"
+    timeout: 60000
+- tapOn: "Saltar"
+
+# 2. Iniciar sesión
+- extendedWaitUntil:
+    visible: "Iniciar Sesión"
+    timeout: 30000
+- tapOn: "Iniciar Sesión"
+- tapOn: "Nombre de usuario o correo"
+- inputText: ${CORREO}
+- hideKeyboard
+- extendedWaitUntil:
+    visible: "Contraseña"
+    timeout: 10000
+- tapOn: "Contraseña"
+- inputText: ${CLAVE}
+- hideKeyboard
+# "Iniciar Sesión" aparece como título y como botón; el botón es el segundo
+- tapOn:
+    text: "Iniciar Sesión"
+    index: 1
+
+# # Permiso de ubicación, si el teléfono lo pregunta
+# - 
+# tapOn:
+#     text: "Mientras la app está en uso"
+#     optional: true
+# - 
+# tapOn:
+#     text: "Al usar la app"
+#     optional: true
+
+# 3. Esperar la barra inferior del turista
+- extendedWaitUntil:
+    visible:
+      id: "tab-Mapa"
+    timeout: 45000
+
+# 4. Pestaña Mapa y buscador
+- tapOn:
+    id: "tab-Mapa"
+- extendedWaitUntil:
+    visible: "Buscar"
+    timeout: 20000
+- assertVisible: "Buscar"
+
+# 5. Escribir en el buscador y capturar
+- tapOn: "Buscar"
+- inputText: "Granada"
+- takeScreenshot: e2e01-mapa

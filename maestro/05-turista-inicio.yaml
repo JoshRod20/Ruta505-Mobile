@@ -1,0 +1,44 @@
+# E2E05: Turista inicia sesión y ve la pantalla de Inicio
+# Uso: maestro test -e CORREO=usuario -e CLAVE=contraseña maestro/05-turista-inicio.yaml
+appId: com.kennrod20.Ruta505
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Saltar"
+    timeout: 60000
+- tapOn: "Saltar"
+- extendedWaitUntil:
+    visible: "Iniciar Sesión"
+    timeout: 30000
+- tapOn: "Iniciar Sesión"
+- tapOn: "Nombre de usuario o correo"
+- inputText: ${CORREO}
+- hideKeyboard
+- extendedWaitUntil:
+    visible: "Contraseña"
+    timeout: 10000
+- tapOn: "Contraseña"
+- inputText: ${CLAVE}
+- hideKeyboard
+- tapOn:
+    text: "Iniciar Sesión"
+    index: 1
+#- tapOn:
+ #   text: "Mientras la app está en uso"
+    optional: true
+#- tapOn:
+ #   text: "Al usar la app"
+ #   optional: true
+- extendedWaitUntil:
+    visible: "¿Qué deseas descubrir hoy\\?"
+    timeout: 45000
+- assertVisible: "Explora nuestras comunidades"
+- assertVisible: "Naturaleza"
+- assertVisible: "Gastronomía"
+
+# Activar y desactivar un filtro de categoría
+- tapOn: "Gastronomía"
+- assertVisible: "Gastronomía"
+- tapOn: "Gastronomía"
+- takeScreenshot: e2e05-inicio

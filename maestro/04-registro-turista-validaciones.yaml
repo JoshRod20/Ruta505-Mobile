@@ -1,0 +1,48 @@
+# E2E04: Validaciones del registro de turista (no necesita cuenta)
+# Uso: maestro test maestro/04-registro-turista-validaciones.yaml
+appId: com.kennrod20.Ruta505
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Saltar"
+    timeout: 60000
+- tapOn: "Saltar"
+- extendedWaitUntil:
+    visible: "Iniciar Sesión"
+    timeout: 30000
+- tapOn: "Registrar cuenta"
+- assertVisible: "Turista"
+- tapOn: "Turista"
+- extendedWaitUntil:
+    visible: "Nombre completo"
+    timeout: 15000
+
+# Enviar el formulario vacío
+- scrollUntilVisible:
+    element: "Registrarse"
+- tapOn: "Registrarse"
+- scrollUntilVisible:
+    element: "El nombre completo es obligatorio."
+    direction: UP
+- scrollUntilVisible:
+    element: "El correo es obligatorio."
+- scrollUntilVisible:
+    element: "El teléfono es obligatorio."
+- scrollUntilVisible:
+    element: "La contraseña es obligatoria."
+- takeScreenshot: e2e04-registro-turista-vacio
+
+# Contraseñas distintas
+- tapOn: "Contraseña"
+- inputText: "123456"
+- hideKeyboard
+- tapOn: "Confirmar contraseña"
+- inputText: "654321"
+- hideKeyboard
+- scrollUntilVisible:
+    element: "Registrarse"
+- tapOn: "Registrarse"
+- scrollUntilVisible:
+    element: "Las contraseñas no coinciden."
+- takeScreenshot: e2e04-registro-turista-contrasenas

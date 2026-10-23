@@ -1,0 +1,45 @@
+# E2E03: Validaciones de la pantalla de inicio de sesión (no necesita cuenta)
+# Uso: maestro test maestro/03-login-validaciones.yaml
+appId: com.kennrod20.Ruta505
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Saltar"
+    timeout: 60000
+- tapOn: "Saltar"
+- extendedWaitUntil:
+    visible: "Iniciar Sesión"
+    timeout: 30000
+- tapOn: "Iniciar Sesión"
+
+# Envío vacío
+- tapOn:
+    text: "Iniciar Sesión"
+    index: 1
+- assertVisible: "Completa tu correo y contraseña."
+
+# Correo con formato inválido
+- tapOn: "Nombre de usuario o correo"
+- inputText: "correo-invalido"
+- hideKeyboard
+- tapOn: "Contraseña"
+- inputText: "123456"
+- hideKeyboard
+- tapOn:
+    text: "Iniciar Sesión"
+    index: 1
+- assertVisible: "Escribe un correo electrónico válido."
+
+# Recuperar contraseña sin correo
+- tapOn: "correo-invalido"
+- eraseText
+- hideKeyboard
+- tapOn: "¿Olvidaste tu contraseña\\?"
+- assertVisible: "Escribe tu correo para enviarte el enlace."
+
+# Ir al registro
+- tapOn: "¿No tienes cuenta? Regístrate"
+- assertVisible: "Turista"
+- assertVisible: "Actor Cultural"
+- takeScreenshot: e2e03-login-validaciones

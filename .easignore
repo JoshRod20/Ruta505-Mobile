@@ -14,3 +14,11 @@ docs/
 # Excluye PNGs sueltos por defecto, pero conserva los assets reales de la app
 *.png
 !src/assets/**/*.png
+
+# Carpetas de compilación nativa y cachés (¡Esto es lo que hace que pese tanto!)
+android/app/build/
+android/.gradle/
+ios/Pods/
+ios/build/
+dist/
+build/
