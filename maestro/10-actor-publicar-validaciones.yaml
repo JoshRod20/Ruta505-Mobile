@@ -1,0 +1,66 @@
+# E2E10: Validaciones de "Publicar Experiencia" del actor cultural (no publica nada)
+# Uso: maestro test -e CORREO=actor@correo.com -e CLAVE=contraseña maestro/10-actor-publicar-validaciones.yaml
+# Requiere una cuenta de actor cultural YA APROBADA.
+appId: com.kennrod20.Ruta505
+---
+- runFlow:
+    file: subflows/login-actor.yaml
+    env:
+      CORREO: ${CORREO}
+      CLAVE: ${CLAVE}
+
+- tapOn: "Nueva publicación"
+- extendedWaitUntil:
+    visible: "Publicar Experiencia"
+    timeout: 15000
+# La pantalla pide la ubicación al abrirse
+- runFlow: subflows/permiso-ubicacion.yaml
+- assertVisible: "Como .*"
+- assertVisible: "Título"
+- assertVisible: "Descripción"
+- assertVisible: "Fotos / Vídeos cortos"
+- takeScreenshot: e2e10-publicar-formulario
+
+# Publicar con el formulario vacío
+- scrollUntilVisible:
+    element: "Publicar"
+- tapOn: "Publicar"
+- scrollUntilVisible:
+    element: "Completa el título y la descripción."
+- assertVisible: "Completa el título y la descripción."
+- takeScreenshot: e2e10-publicar-vacio
+
+# Solo el título: sigue faltando la descripción
+- scrollUntilVisible:
+    element: "Ej. Recorrido por talleres de barro"
+    direction: UP
+- tapOn: "Ej. Recorrido por talleres de barro"
+- inputText: "Taller de barro de prueba"
+- hideKeyboard
+- scrollUntilVisible:
+    element: "Publicar"
+- tapOn: "Publicar"
+- scrollUntilVisible:
+    element: "Completa el título y la descripción."
+- assertVisible: "Completa el título y la descripción."
+
+# Título y descripción, sin foto: ahora falta la ubicación o la foto
+- scrollUntilVisible:
+    element: "Cuéntale al turista qué va a vivir…"
+    direction: UP
+- tapOn: "Cuéntale al turista qué va a vivir…"
+- inputText: "Descripción de prueba"
+- hideKeyboard
+- scrollUntilVisible:
+    element: "Publicar"
+- tapOn: "Publicar"
+- scrollUntilVisible:
+    element: "Elige la ubicación de tu experiencia\\.|Agrega al menos una foto de la experiencia\\."
+- takeScreenshot: e2e10-publicar-sin-foto
+
+# Volver al Inicio sin publicar
+- scrollUntilVisible:
+    element: "Volver al inicio"
+    direction: UP
+- tapOn: "Volver al inicio"
+- assertVisible: "Nueva publicación"

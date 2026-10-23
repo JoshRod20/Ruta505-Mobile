@@ -1,0 +1,48 @@
+# E2E14: Configuración del actor cultural y cierre de sesión
+# Uso: maestro test -e CORREO=actor@correo.com -e CLAVE=contraseña maestro/14-actor-configuracion-cerrar-sesion.yaml
+appId: com.kennrod20.Ruta505
+---
+- runFlow:
+    file: subflows/login-actor.yaml
+    env:
+      CORREO: ${CORREO}
+      CLAVE: ${CLAVE}
+
+- tapOn:
+    id: "tab-Perfil cultural"
+- extendedWaitUntil:
+    visible: "ACCIONES"
+    timeout: 20000
+- scrollUntilVisible:
+    element: "Configuración"
+- tapOn: "Configuración"
+
+# Secciones de Configuración (las de pago y suscripción son solo del actor)
+- extendedWaitUntil:
+    visible: "Información personal y seguridad"
+    timeout: 15000
+- assertVisible: "Cuenta"
+- assertVisible: "Métodos de pago y facturación"
+- assertVisible: "Suscripción actual"
+- assertVisible: "Preferencias"
+- takeScreenshot: e2e14-configuracion
+
+- scrollUntilVisible:
+    element: "Soporte y Ayuda"
+- scrollUntilVisible:
+    element: "Cerrar sesión"
+- takeScreenshot: e2e14-configuracion-final
+
+# Cerrar sesión: primero pide confirmación
+- tapOn: "Cerrar sesión"
+- assertVisible: "¿Quieres cerrar tu sesión?"
+# Botón positivo del diálogo de Android (el texto "Cerrar sesión" aparece repetido)
+- tapOn:
+    id: "android:id/button1"
+
+# Vuelve a la pantalla de bienvenida
+- extendedWaitUntil:
+    visible: "Iniciar Sesión"
+    timeout: 30000
+- assertVisible: "Registrar cuenta"
+- takeScreenshot: e2e14-sesion-cerrada

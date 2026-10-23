@@ -1,0 +1,23 @@
+# E2E13: Perfil cultural del actor cultural y sus acciones
+# Uso: maestro test -e CORREO=actor@correo.com -e CLAVE=contraseña maestro/13-actor-perfil-cultural.yaml
+appId: com.kennrod20.Ruta505
+---
+- runFlow:
+    file: subflows/login-actor.yaml
+    env:
+      CORREO: ${CORREO}
+      CLAVE: ${CLAVE}
+
+- tapOn:
+    id: "tab-Perfil cultural"
+- extendedWaitUntil:
+    visible: "ACCIONES"
+    timeout: 20000
+- assertVisible: "Cambiar foto de portada"
+- assertVisible: "Editar perfil cultural"
+- assertVisible: "Ver valoraciones recibidas"
+- assertVisible: "Conocer Plan Destacado"
+- scrollUntilVisible:
+    element: "Configuración"
+- assertVisible: "Configuración"
+- takeScreenshot: e2e13-perfil-cultural

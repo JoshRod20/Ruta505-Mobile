@@ -1,0 +1,12 @@
+# Subflujo: acepta el permiso de ubicación si el teléfono lo pregunta (si no, sigue de largo).
+appId: com.kennrod20.Ruta505
+---
+- extendedWaitUntil:
+    visible: "Mientras la app está en uso|Al usar la app"
+    timeout: 5000
+    optional: true
+- runFlow:
+    when:
+      visible: "Mientras la app está en uso|Al usar la app"
+    commands:
+      - tapOn: "Mientras la app está en uso|Al usar la app"

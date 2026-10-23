@@ -1,0 +1,48 @@
+# E2E09: Actor cultural inicia sesión, ve su Inicio y su barra inferior
+# Uso: maestro test -e CORREO=actor@correo.com -e CLAVE=contraseña maestro/09-actor-inicio.yaml
+# Requiere una cuenta de actor cultural YA APROBADA (si está en revisión no ve "Nueva publicación").
+appId: com.kennrod20.Ruta505
+---
+- runFlow:
+    file: subflows/login-actor.yaml
+    env:
+      CORREO: ${CORREO}
+      CLAVE: ${CLAVE}
+
+# Inicio del actor: texto propio del rol y botón para publicar
+- assertVisible: "Visualiza aquí todas tus publicaciones.*"
+- assertVisible: "Nueva publicación"
+- assertVisible: "Nuevos"
+- assertNotVisible: "Abrir Pinolito"
+- assertVisible: "Notificaciones"
+
+# Barra inferior del actor: 5 pestañas
+- assertVisible:
+    id: "tab-Inicio"
+- assertVisible:
+    id: "tab-Mapa"
+- assertVisible:
+    id: "tab-Publicar experiencias"
+- assertVisible:
+    id: "tab-Generar QR"
+- assertVisible:
+    id: "tab-Perfil cultural"
+
+# Las pestañas del turista NO deben aparecer
+- assertNotVisible:
+    id: "tab-Pasaporte"
+- assertNotVisible:
+    id: "tab-Perfil"
+- takeScreenshot: e2e09-actor-inicio
+
+# Ir al Mapa y volver al Inicio
+- tapOn:
+    id: "tab-Mapa"
+- extendedWaitUntil:
+    visible: "Buscar"
+    timeout: 30000
+- tapOn:
+    id: "tab-Inicio"
+- extendedWaitUntil:
+    visible: "Visualiza aquí todas tus publicaciones.*"
+    timeout: 15000
