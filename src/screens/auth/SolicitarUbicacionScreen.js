@@ -135,11 +135,14 @@ const SolicitarUbicacionScreen = ({ navigation, route }) => {
           borderRadius: 20,
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: "rgba(255,255,255,0.85)",
           opacity: cargando ? 0.4 : 1,
         }}
       >
-        <Ionicons name="chevron-back" size={24} color="#2b2b2b" />
+        <Image
+          source={require("../../assets/icons/volver.png")}
+          style={{ width: 24, height: 24 }}
+          resizeMode="contain"
+        />
       </TouchableOpacity>
 
       <View style={InteresesUbicacionStyle.barraProgreso}>

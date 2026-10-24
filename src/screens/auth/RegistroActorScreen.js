@@ -12,7 +12,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View,Image,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { Ionicons } from "@expo/vector-icons";
@@ -418,7 +418,11 @@ const RegistroActorScreen = ({ navigation, route }) => {
             onPress={handleVolver}
             activeOpacity={0.7}
           >
-            <Ionicons name="chevron-back" size={24} color="#2b2b2b" />
+            <Image
+              source={require("../../assets/icons/volver.png")}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
+            />
           </TouchableOpacity>
         </ImageBackground>
 
@@ -453,7 +457,7 @@ const RegistroActorScreen = ({ navigation, route }) => {
           <TextInput
             style={[S.input, !!err("nombreCompleto") && S.inputInvalido]}
             placeholder="Nombre completo/Negocio"
-            placeholderTextColor="#a8a8a8"
+            placeholderTextColor="#000000"
             value={form.nombreCompleto}
             onChangeText={(t) => handleChange("nombreCompleto", t)}
             onFocus={alEnfocar}
@@ -469,7 +473,7 @@ const RegistroActorScreen = ({ navigation, route }) => {
               !!err("descripcion") && S.inputInvalido,
             ]}
             placeholder="Descripción del negocio"
-            placeholderTextColor="#a8a8a8"
+            placeholderTextColor="#000000"
             multiline
             scrollEnabled={false}
             maxLength={500}
@@ -484,7 +488,7 @@ const RegistroActorScreen = ({ navigation, route }) => {
           <TextInput
             style={[S.input, !!err("direccion") && S.inputInvalido]}
             placeholder="Dirección del negocio"
-            placeholderTextColor="#a8a8a8"
+            placeholderTextColor="#000000"
             value={form.direccion}
             onChangeText={(t) => handleChange("direccion", t)}
             onFocus={alEnfocar}
@@ -515,7 +519,7 @@ const RegistroActorScreen = ({ navigation, route }) => {
           <TextInput
             style={[S.input, !!err("email") && S.inputInvalido]}
             placeholder="Correo electrónico"
-            placeholderTextColor="#a8a8a8"
+            placeholderTextColor="#000000"
             autoCapitalize="none"
             keyboardType="email-address"
             value={form.email}
@@ -529,7 +533,7 @@ const RegistroActorScreen = ({ navigation, route }) => {
           <TextInput
             style={[S.input, !!err("cedula") && S.inputInvalido]}
             placeholder="Cédula de identidad"
-            placeholderTextColor="#a8a8a8"
+            placeholderTextColor="#000000"
             autoCapitalize="characters"
             keyboardType="default"
             maxLength={16}
@@ -557,7 +561,7 @@ const RegistroActorScreen = ({ navigation, route }) => {
           <TextInput
             style={[S.input, !!err("telefono") && S.inputInvalido]}
             placeholder="Teléfono"
-            placeholderTextColor="#a8a8a8"
+            placeholderTextColor="#000000"
             keyboardType="phone-pad"
             value={form.telefono}
             onChangeText={(t) => handleChange("telefono", t)}
@@ -575,7 +579,7 @@ const RegistroActorScreen = ({ navigation, route }) => {
                 !!err("password") && S.inputInvalido,
               ]}
               placeholder="Contraseña"
-              placeholderTextColor="#a8a8a8"
+              placeholderTextColor="#000000"
               secureTextEntry={!mostrarPassword}
               value={form.password}
               onChangeText={(t) => handleChange("password", t)}
@@ -587,10 +591,14 @@ const RegistroActorScreen = ({ navigation, route }) => {
               onPress={() => setMostrarPassword((v) => !v)}
               activeOpacity={0.7}
             >
-              <Ionicons
-                name={mostrarPassword ? "eye-off-outline" : "eye-outline"}
-                size={22}
-                color="#086338"
+              <Image
+                source={
+                  mostrarPassword
+                    ? require("../../assets/icons/ojo.png")
+                    : require("../../assets/icons/ojo.png")
+                }
+                style={{ width: 22, height: 22 }}
+                resizeMode="contain"
               />
             </TouchableOpacity>
           </View>
@@ -605,7 +613,7 @@ const RegistroActorScreen = ({ navigation, route }) => {
                 !!err("confirmPassword") && S.inputInvalido,
               ]}
               placeholder="Confirmar contraseña"
-              placeholderTextColor="#a8a8a8"
+              placeholderTextColor="#000000"
               secureTextEntry={!mostrarConfirmPassword}
               value={form.confirmPassword}
               onChangeText={(t) => handleChange("confirmPassword", t)}
@@ -617,10 +625,14 @@ const RegistroActorScreen = ({ navigation, route }) => {
               onPress={() => setMostrarConfirmPassword((v) => !v)}
               activeOpacity={0.7}
             >
-              <Ionicons
-                name={mostrarConfirmPassword ? "eye-off-outline" : "eye-outline"}
-                size={22}
-                color="#086338"
+              <Image
+                source={
+                  mostrarPassword
+                    ? require("../../assets/icons/ojo.png")
+                    : require("../../assets/icons/ojo.png")
+                }
+                style={{ width: 22, height: 22 }}
+                resizeMode="contain"
               />
             </TouchableOpacity>
           </View>
