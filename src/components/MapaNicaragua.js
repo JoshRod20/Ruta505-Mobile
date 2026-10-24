@@ -62,6 +62,8 @@ const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
 const CENTRO_RECOMENDACIONES = { lat: 11.9744, lon: -86.0942 };
 // Cuánto esperar al GPS antes de usar el centro por defecto.
 const ESPERA_GPS_MS = 10000;
+// Radio (km) alrededor del usuario dentro del cual un lugar cuenta como "cercano".
+const RADIO_CERCANO_KM = 25;
 
 // Configuración inicial de Geolocation para Android
 if (Platform.OS === "android") {
@@ -256,7 +258,21 @@ export default function MapaNicaragua() {
           )
         : lista;
 
-    return [...porCercania(puntos), ...porCercania(externosNuevos)];
+    // Solo lugares cercanos a la ubicación del usuario. Sin GPS no se puede
+    // medir la distancia, así que en ese caso se muestra todo como antes.
+    const soloCercanos = (lista) =>
+      ubicacionOrigen
+        ? lista.filter(
+            (p) =>
+              distanciaKm(ubicacionOrigen, { lat: p.lat, lon: p.lng }) <=
+              RADIO_CERCANO_KM,
+          )
+        : lista;
+
+    return [
+      ...porCercania(soloCercanos(puntos)),
+      ...porCercania(soloCercanos(externosNuevos)),
+    ];
   }, [esTurista, puntos, lugaresExternos, ubicacionOrigen]);
 
   const externosVisibles = recomendados.filter((p) => p.externo);
