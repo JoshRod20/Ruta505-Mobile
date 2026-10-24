@@ -17,6 +17,7 @@ import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 
 import PublicacionCard from "../components/comunidad/PublicacionCard";
+import PinolitoAvatar from "../components/PinolitoAvatar";
 import { useAuth } from "../context/AuthContext";
 import { usePermisos } from "../hooks/usePermisos";
 import { PERMISOS } from "../constants/permissions";
@@ -115,11 +116,8 @@ export default function Home() {
             accessibilityLabel="Abrir Pinolito"
             onPress={() => navigation.navigate("PinolitoDrawer")}
           >
-            <Image
-              source={require("../assets/images/pinolito.png")}
-              style={homeStyle.pinolitoImagen}
-              resizeMode="cover"
-            />
+            {/* Pinolito con el atuendo que el usuario guardó */}
+            <PinolitoAvatar style={homeStyle.pinolitoImagen} />
           </TouchableOpacity>
         )}
       </View>

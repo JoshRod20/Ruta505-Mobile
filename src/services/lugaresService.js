@@ -20,6 +20,126 @@ const MAX_POOL = 6;
 // Cuántos lugares ya recomendados se recuerdan (el ciclo se reinicia antes).
 export const MAX_VISTOS = 20;
 
+// ───────────────────────── Intereses del usuario ─────────────────────────
+
+/**
+ * Cada grupo relaciona palabras que aparecen en el texto del interés
+ * ("Turismo gastronómico", "Turismo de naturaleza / ecoturismo"...) con
+ * palabras que aparecen en el nombre, la categoría o el tipo del lugar.
+ * Todo se compara sin tildes ni mayúsculas, y por "contiene".
+ * AGREGA aquí los demás intereses que ofrece tu app.
+ */
+const GRUPOS = [
+  {
+    claves: ["naturaleza", "ecoturismo", "ecologic"],
+    palabras: ["parque", "volcan", "laguna", "reserva", "mirador", "playa", "sendero", "lago", "cascada", "isla", "bosque", "natural", "rio", "finca"],
+  },
+  {
+    claves: ["gastronom", "comida", "culinari"],
+    palabras: ["restaurante", "comida", "cafe", "cafeteria", "fritanga", "cocina", "mercado", "bar", "panaderia", "dulce", "gastronom", "cantina"],
+  },
+  {
+    claves: ["aventura", "deporte"],
+    palabras: ["volcan", "sendero", "tirolesa", "canopy", "kayak", "senderismo", "surf", "cueva", "mirador", "laguna", "deslizamiento"],
+  },
+  {
+    claves: ["cultur", "tradicion", "folklor", "artesan"],
+    palabras: ["museo", "teatro", "galeria", "artesania", "cultura", "centro cultural", "mercado", "taller", "ceramica"],
+  },
+  {
+    claves: ["histor", "patrimonio", "colonial"],
+    palabras: ["museo", "iglesia", "catedral", "monumento", "fortaleza", "plaza", "historico", "convento", "parque central"],
+  },
+  {
+    claves: ["religios", "peregrin"],
+    palabras: ["iglesia", "catedral", "santuario", "parroquia", "basilica", "capilla"],
+  },
+  {
+    claves: ["playa", "sol y mar", "costero"],
+    palabras: ["playa", "costa", "mar", "surf", "bahia"],
+  },
+  {
+    claves: ["rural", "agroturismo", "comunitario"],
+    palabras: ["finca", "hacienda", "cooperativa", "comunidad", "granja", "cafetal"],
+  },
+];
+
+// Palabras del interés que no sirven para comparar
+const IGNORAR = ["turismo", "lugares", "actividades", "experiencias"];
+
+const sinTildes = (texto) => {
+  const base = String(texto ?? "").toLowerCase();
+  try {
+    return base.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+  } catch {
+    return base.trim();
+  }
+};
+
+/**
+ * Acepta ["Turismo gastronómico", ...], [{nombre: "..."}] o "a, b" y devuelve
+ * [{ texto: original, norm: sin tildes }] sin repetidos ni vacíos.
+ */
+export function normalizarIntereses(intereses) {
+  if (!intereses) return [];
+  const lista = Array.isArray(intereses)
+    ? intereses
+    : typeof intereses === "string"
+      ? intereses.split(/[,;]/)
+      : Object.values(intereses);
+  const vistos = new Set();
+  const salida = [];
+  for (const i of lista) {
+    const texto = String(
+      typeof i === "string" ? i : (i?.nombre ?? i?.label ?? i?.titulo ?? i?.id ?? ""),
+    ).trim();
+    const norm = sinTildes(texto);
+    if (!norm || vistos.has(norm)) continue;
+    vistos.add(norm);
+    salida.push({ texto, norm });
+  }
+  return salida;
+}
+
+// Palabras con las que se busca un interés en el texto de un lugar
+function palabrasDe(interes) {
+  const palabras = new Set();
+  for (const g of GRUPOS) {
+    if (g.claves.some((c) => interes.norm.includes(c))) {
+      g.palabras.forEach((p) => palabras.add(p));
+    }
+  }
+  // Respaldo para intereses que no están en los grupos: sus propias palabras
+  interes.norm
+    .split(/[^a-z0-9]+/)
+    .filter((w) => w.length >= 5 && !IGNORAR.includes(w))
+    .forEach((w) => palabras.add(w));
+  return [...palabras];
+}
+
+/**
+ * Cuántos intereses del usuario coinciden con el lugar, y el texto original
+ * del primero que coincidió.
+ * @returns {{puntaje: number, interes: string|null}}
+ */
+function coincidencia(lugar, intereses) {
+  if (!intereses.length) return { puntaje: 0, interes: null };
+  const texto = sinTildes(
+    `${lugar.nombre ?? ""} ${lugar.categoria ?? ""} ${lugar.etiquetaTipo ?? ""}`,
+  );
+  let puntaje = 0;
+  let interes = null;
+  for (const i of intereses) {
+    if (palabrasDe(i).some((p) => texto.includes(p))) {
+      puntaje += 1;
+      if (!interes) interes = i.texto;
+    }
+  }
+  return { puntaje, interes };
+}
+
+// ───────────────────────── Utilidades ─────────────────────────
+
 function conTimeout(promesa, ms) {
   let temporizador;
   const limite = new Promise((_, rechazar) => {
@@ -98,19 +218,38 @@ const esCoordenadaValida = (n) =>
 const porDistancia = (a, b) =>
   (a.distanciaKm ?? Infinity) - (b.distanciaKm ?? Infinity);
 
+// Primero los que coinciden con más intereses; a igual puntaje, el más cercano.
+// Sin intereses (puntaje 0 para todos) queda ordenado solo por cercanía.
+const porInteresYDistancia = (a, b) =>
+  (b.puntaje ?? 0) - (a.puntaje ?? 0) || porDistancia(a, b);
+
+// ───────────────────────── Pool de candidatos ─────────────────────────
+
 /**
- * Pool de lugares cercanos, ordenado del más cercano al más lejano:
- *  - los negocios registrados más cercanos (apoyan a la comunidad)
- *  - el lugar de OpenStreetMap más cercano de cada tipo (variedad)
+ * Pool de lugares cercanos a la ubicación actual:
+ *  - negocios registrados (apoyan a la comunidad)
+ *  - lugares de OpenStreetMap, el más cercano de cada tipo (variedad)
+ * Orden: 1) coinciden con los intereses del usuario, 2) más cercanos.
+ * Si el usuario no tiene intereses (o ninguno coincide), queda por cercanía.
  * Se piden en paralelo; si una fuente falla o tarda, se usa la otra.
+ *
+ * @param {{lat:number, lon:number, aproximada?:boolean}} ubicacion
+ * @param {Array|string} intereses  `intereses` del perfil del usuario.
  */
-export async function candidatosCercanos(ubicacion) {
+export async function candidatosCercanos(ubicacion, intereses = []) {
   if (!ubicacion) return [];
+
+  const listaIntereses = normalizarIntereses(intereses);
 
   const distanciaA = (l) =>
     ubicacion.aproximada
       ? null
       : distanciaKm(ubicacion, { lat: l.lat, lon: l.lng });
+
+  const conInteres = (c) => {
+    const { puntaje, interes } = coincidencia(c, listaIntereses);
+    return { ...c, puntaje, interesCoincidente: interes };
+  };
 
   const [registradosRaw, externosRaw] = await Promise.all([
     negociosRegistradosUnaVez().catch(() => []),
@@ -125,52 +264,62 @@ export async function candidatosCercanos(ubicacion) {
 
   const registrados = registradosRaw
     .filter(esCoordenadaValida)
-    .map((n) => ({
-      id: n.id,
-      nombre: n.titulo,
-      categoria: n.categoria,
-      etiquetaTipo: "Negocio local",
-      municipio: n.lugar,
-      lat: n.lat,
-      lng: n.lng,
-      externo: false,
-      distanciaKm: distanciaA(n),
-      lugarMapa: n, // el mapa lo encuentra entre sus negocios por nombre/posición
-    }))
-    .sort(porDistancia)
+    .map((n) =>
+      conInteres({
+        id: n.id,
+        nombre: n.titulo,
+        categoria: n.categoria,
+        etiquetaTipo: "Negocio local",
+        municipio: n.lugar,
+        lat: n.lat,
+        lng: n.lng,
+        externo: false,
+        distanciaKm: distanciaA(n),
+        lugarMapa: n, // el mapa lo encuentra entre sus negocios por nombre/posición
+      }),
+    )
+    .sort(porInteresYDistancia)
     .slice(0, MAX_REGISTRADOS);
 
   // Externos: el más cercano de cada tipo (evita 5 iglesias seguidas)
   const porTipo = new Map();
   for (const l of externosRaw) {
     if (porTipo.has(l.etiquetaTipo)) continue;
-    porTipo.set(l.etiquetaTipo, {
-      id: l.id,
-      nombre: l.titulo,
-      categoria: l.categoria,
-      etiquetaTipo: l.etiquetaTipo,
-      municipio: l.lugar,
-      lat: l.lat,
-      lng: l.lng,
-      externo: true,
-      distanciaKm: distanciaA(l),
-      lugarMapa: l, // objeto original de buscarLugaresDeInteres
-    });
+    porTipo.set(
+      l.etiquetaTipo,
+      conInteres({
+        id: l.id,
+        nombre: l.titulo,
+        categoria: l.categoria,
+        etiquetaTipo: l.etiquetaTipo,
+        municipio: l.lugar,
+        lat: l.lat,
+        lng: l.lng,
+        externo: true,
+        distanciaKm: distanciaA(l),
+        lugarMapa: l, // objeto original de buscarLugaresDeInteres
+      }),
+    );
   }
-  const externos = [...porTipo.values()].slice(0, MAX_EXTERNOS);
+  const externos = [...porTipo.values()]
+    .sort(porInteresYDistancia)
+    .slice(0, MAX_EXTERNOS);
 
-  // Mezcla ambas fuentes por cercanía. Sin distancias (ubicación aproximada)
-  // el orden estable deja primero a los negocios registrados.
-  const pool = [...registrados, ...externos].sort(porDistancia).slice(0, MAX_POOL);
+  // Mezcla ambas fuentes: intereses primero, luego cercanía. Sin distancias
+  // (ubicación aproximada) el orden estable deja primero a los registrados.
+  const pool = [...registrados, ...externos]
+    .sort(porInteresYDistancia)
+    .slice(0, MAX_POOL);
 
   if (DEBUG) {
     console.log(
-      `[Pinolito] pool: ${registrados.length} registrados + ${externos.length} externos`,
+      `[Pinolito] intereses: ${listaIntereses.map((i) => i.texto).join(", ") || "ninguno"} | ` +
+        `pool: ${registrados.length} registrados + ${externos.length} externos`,
       pool.map(
         (c) =>
-          `${c.nombre} (${c.etiquetaTipo}${
-            c.distanciaKm != null ? `, ${c.distanciaKm.toFixed(1)} km` : ""
-          })`,
+          `${c.nombre} (${c.etiquetaTipo}` +
+          `${c.distanciaKm != null ? `, ${c.distanciaKm.toFixed(1)} km` : ""}` +
+          `${c.puntaje ? `, interés: ${c.interesCoincidente}` : ""})`,
       ),
     );
   }
@@ -179,11 +328,11 @@ export async function candidatosCercanos(ubicacion) {
 }
 
 /**
- * Rotación: elige el lugar más cercano que aún no se haya recomendado.
- * Cuando ya se recomendaron todos los del pool, reinicia el ciclo (sin
- * repetir justo el último).
+ * Rotación: elige el primer lugar del pool que aún no se haya recomendado
+ * (el pool ya viene ordenado por intereses y cercanía). Cuando ya se
+ * recomendaron todos, reinicia el ciclo (sin repetir justo el último).
  *
- * @param {Array} candidatos  Pool ordenado por cercanía.
+ * @param {Array} candidatos  Pool ordenado.
  * @param {string[]} vistos   Ids ya recomendados, del más antiguo al más reciente.
  * @returns {{elegido: object|null, vistos: string[]}} Nuevo historial a guardar.
  */

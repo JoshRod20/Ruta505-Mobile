@@ -24,6 +24,13 @@ const PLANTILLAS = [
   (n) => `¡Mira lo que encontré! ${n} está a un paso. ¿Abrimos el mapa?`,
 ];
 
+// Cuando el lugar coincide con un interés del usuario
+const PLANTILLAS_INTERES = [
+  (n, i) => `Por tu interés en «${i}», te sugiero ${n}. ¿Lo vemos en el mapa?`,
+  (n, i) => `¡Va con lo que te gusta! ${n} (${i}) está cerca. ¿Abrimos el mapa?`,
+  (n, i) => `Pensé en ti y en «${i}»: ${n} te espera cerca. ¿Vamos al mapa?`,
+];
+
 const GENERICOS = [
   "¡Hola, explorador! Hay mucho por descubrir cerca de ti. ¿Te gustaría ver el mapa?",
   "Nicaragua guarda historias en cada rincón. ¿Salimos a descubrirlas en el mapa?",
@@ -35,6 +42,7 @@ const elegir = (lista) => lista[Math.floor(Math.random() * lista.length)];
 /**
  * Respaldo sin IA. Varía el lugar y la plantilla para no repetir siempre
  * el mismo mensaje, y evita los lugares ya recomendados recientemente.
+ * Los candidatos ya vienen ordenados (intereses primero, luego cercanía).
  */
 const fallback = (candidatos, previas = []) => {
   if (!candidatos.length) {
@@ -44,8 +52,11 @@ const fallback = (candidatos, previas = []) => {
   const sinRepetir = candidatos.filter(
     (c) => !previas.some((p) => p.includes(c.nombre)),
   );
-  const lugar = elegir(sinRepetir.length ? sinRepetir : candidatos);
-  return { mensaje: elegir(PLANTILLAS)(lugar.nombre), lugar };
+  const lugar = sinRepetir.length ? sinRepetir[0] : candidatos[0];
+  const mensaje = lugar.interesCoincidente
+    ? elegir(PLANTILLAS_INTERES)(lugar.nombre, lugar.interesCoincidente)
+    : elegir(PLANTILLAS)(lugar.nombre);
+  return { mensaje, lugar };
 };
 
 // ───────────────────────── Llamada a Gemini ─────────────────────────
@@ -101,7 +112,10 @@ export async function generarRecomendacion({
       (c) =>
         `- id: ${c.id} | ${c.nombre} | tipo: ${c.etiquetaTipo ?? c.categoria}` +
         (c.municipio ? ` | ${c.municipio}` : "") +
-        (c.distanciaKm != null ? ` | a ${c.distanciaKm.toFixed(1)} km` : ""),
+        (c.distanciaKm != null ? ` | a ${c.distanciaKm.toFixed(1)} km` : "") +
+        (c.interesCoincidente
+          ? ` | coincide con el interés del usuario: ${c.interesCoincidente}`
+          : ""),
     )
     .join("\n");
 
@@ -113,6 +127,7 @@ Reglas:
 - Escribe máximo 140 caracteres, en español amigable y juguetón.
 - Menciona el nombre exacto del lugar elegido.
 - Termina con una pregunta corta que invite a ver el mapa.
+- Si el lugar indica que coincide con un interés del usuario, menciónalo de forma natural (por ejemplo, "como te gusta...").
 - Los lugares de tipo "Negocio local" son emprendimientos de la comunidad: prefiérelos cuando encajen.
 - Usuario: ${nombre ?? "explorador"} (rol: ${rol ?? "turista"}). Momento del día: ${momento}.
 - Evita repetir lugares de estas recomendaciones previas: ${previas.join(" | ") || "ninguna"}.

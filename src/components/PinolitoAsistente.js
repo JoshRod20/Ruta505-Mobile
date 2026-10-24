@@ -27,12 +27,15 @@ export default function PinolitoAsistente() {
   const { isLoggedIn, profile, role } = useAuth();
   const { equipadoGuardado, cargando } = usePinolito();
 
-  // Espera a cargar el atuendo para que Pinolito aparezca ya vestido
+  // Espera a cargar el atuendo para que Pinolito aparezca ya vestido.
+  // Los intereses salen del perfil del usuario conectado; si no tiene,
+  // el hook recomienda los lugares más cercanos.
   const { recomendacion, cerrar } = usePinolitoRecomendaciones({
-  habilitado: isLoggedIn && !cargando && role === ROLES.TURISTA,
-  nombre: profile?.nombre ?? profile?.displayName,
-  rol: role,
-});
+    habilitado: isLoggedIn && !cargando && role === ROLES.TURISTA,
+    nombre: profile?.nombreCompleto ?? profile?.nombre ?? profile?.displayName,
+    rol: role,
+    intereses: profile?.intereses, // users/{uid}.intereses (arreglo de textos)
+  });
 
   // Mismas capas que la pantalla de Pinolito: cuerpo -> accesorio -> sombrero
   const cuerpo = porId(equipadoGuardado.cuerpo) ?? porId("cuerpo_1");
