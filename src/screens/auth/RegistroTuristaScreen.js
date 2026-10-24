@@ -18,7 +18,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View,Image,
 } from "react-native";
 
 import Svg, { Path } from "react-native-svg";
@@ -496,10 +496,10 @@ const RegistroTuristaScreen = ({
             onPress={handleVolver}
             activeOpacity={0.7}
           >
-            <Ionicons
-              name="chevron-back"
-              size={24}
-              color="#2b2b2b"
+            <Image
+              source={require("../../assets/icons/volver.png")}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
             />
           </TouchableOpacity>
         </ImageBackground>
@@ -608,7 +608,7 @@ const RegistroTuristaScreen = ({
                   .inputInvalido,
             ]}
             placeholder="Nombre completo"
-            placeholderTextColor="#a8a8a8"
+            placeholderTextColor="#000000"
             value={
               form.nombreCompleto
             }
@@ -651,7 +651,7 @@ const RegistroTuristaScreen = ({
                   .inputInvalido,
             ]}
             placeholder="Correo electrónico"
-            placeholderTextColor="#a8a8a8"
+            placeholderTextColor="#000000"
             autoCapitalize="none"
             keyboardType="email-address"
             value={form.email}
@@ -703,7 +703,7 @@ const RegistroTuristaScreen = ({
                   .inputInvalido,
             ]}
             placeholder="Teléfono"
-            placeholderTextColor="#a8a8a8"
+            placeholderTextColor="#000000"
             keyboardType="phone-pad"
             value={form.telefono}
             onChangeText={(texto) =>
@@ -763,7 +763,7 @@ const RegistroTuristaScreen = ({
                     .inputInvalido,
               ]}
               placeholder="Contraseña"
-              placeholderTextColor="#a8a8a8"
+              placeholderTextColor="#000000"
               secureTextEntry={
                 !mostrarPassword
               }
@@ -794,14 +794,14 @@ const RegistroTuristaScreen = ({
               }
               activeOpacity={0.7}
             >
-              <Ionicons
-                name={
+              <Image
+                source={
                   mostrarPassword
-                    ? "eye-off-outline"
-                    : "eye-outline"
+                    ? require("../../assets/icons/ojo.png")
+                    : require("../../assets/icons/ojo.png")
                 }
-                size={22}
-                color="#086338"
+                style={{ width: 22, height: 22 }}
+                resizeMode="contain"
               />
             </TouchableOpacity>
           </View>
@@ -845,7 +845,7 @@ const RegistroTuristaScreen = ({
                     .inputInvalido,
               ]}
               placeholder="Confirmar contraseña"
-              placeholderTextColor="#a8a8a8"
+              placeholderTextColor="#000000"
               secureTextEntry={
                 !mostrarConfirmPassword
               }
@@ -878,14 +878,14 @@ const RegistroTuristaScreen = ({
               }
               activeOpacity={0.7}
             >
-              <Ionicons
-                name={
-                  mostrarConfirmPassword
-                    ? "eye-off-outline"
-                    : "eye-outline"
+              <Image
+                source={
+                  mostrarPassword
+                    ? require("../../assets/icons/ojo.png")
+                    : require("../../assets/icons/ojo.png")
                 }
-                size={22}
-                color="#086338"
+                style={{ width: 22, height: 22 }}
+                resizeMode="contain"
               />
             </TouchableOpacity>
           </View>
@@ -920,7 +920,7 @@ const RegistroTuristaScreen = ({
                   .inputInvalido,
             ]}
             placeholder="Edad"
-            placeholderTextColor="#a8a8a8"
+            placeholderTextColor="#000000"
             keyboardType="number-pad"
             value={form.edad}
             onChangeText={(texto) =>

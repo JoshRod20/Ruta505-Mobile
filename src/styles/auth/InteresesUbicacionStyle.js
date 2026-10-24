@@ -11,6 +11,7 @@ const COLOR_BORDE = "#0c8046";
 const COLOR_NARANJA = "#f5a623";
 const COLOR_TINTA = "#2b2b2b";
 const COLOR_GRIS_CLARO = "#e2e2e2";
+const COLOR_VERDE_CLARO = "#95C11F";
 
 const InteresesUbicacionStyle = StyleSheet.create({
   contenedor: {
@@ -22,7 +23,8 @@ const InteresesUbicacionStyle = StyleSheet.create({
   barraProgreso: {
     flexDirection: "row",
     gap: 8,
-    marginBottom: 40,
+    marginTop: hp("5%"),
+    marginBottom: hp("1%"),
   },
 
   segmentoProgreso: {
@@ -33,7 +35,7 @@ const InteresesUbicacionStyle = StyleSheet.create({
   },
 
   segmentoActivo: {
-    backgroundColor: COLOR_HEADER,
+    backgroundColor: COLOR_VERDE_CLARO,
   },
 
   titulo: {

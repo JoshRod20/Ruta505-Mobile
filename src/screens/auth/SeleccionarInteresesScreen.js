@@ -3,7 +3,7 @@
  */
 
 import { useState } from "react";
-import { View, Text, TouchableOpacity, FlatList } from "react-native";
+import { View, Text, TouchableOpacity, FlatList, Image} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -74,10 +74,13 @@ const SeleccionarInteresesScreen = ({ navigation, route }) => {
           borderRadius: 20,
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: "rgba(255,255,255,0.85)",
         }}
       >
-        <Ionicons name="chevron-back" size={24} color="#2b2b2b" />
+        <Image
+          source={require("../../assets/icons/volver.png")}
+          style={{ width: 24, height: 24 }}
+          resizeMode="contain"
+        />
       </TouchableOpacity>
 
       <View style={InteresesUbicacionStyle.barraProgreso}>

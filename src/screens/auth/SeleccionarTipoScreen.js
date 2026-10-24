@@ -77,10 +77,10 @@ const SeleccionarTipoScreen = ({ navigation }) => {
             onPress={handleVolver}
             activeOpacity={0.7}
           >
-            <Ionicons
-              name="chevron-back"
-              size={24}
-              color="#2b2b2b"
+            <Image
+              source={require("../../assets/icons/volver.png")}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
             />
           </TouchableOpacity>
 
