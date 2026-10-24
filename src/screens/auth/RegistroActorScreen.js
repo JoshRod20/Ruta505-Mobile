@@ -180,6 +180,7 @@ const RegistroActorScreen = ({ navigation, route }) => {
       municipio: "",
       email: "",
       cedula: "",
+      matricula: "",
       telefono: "",
       password: "",
       confirmPassword: "",
@@ -361,6 +362,7 @@ const RegistroActorScreen = ({ navigation, route }) => {
         email: form.email.trim(),
         password: form.password,
         cedula: form.cedula,
+        matricula: form.matricula.trim(),
         telefono: form.telefono,
         tipoTurismo: form.tipoTurismo,
         idiomaPreferido: form.idiomaPreferido,
@@ -537,6 +539,19 @@ const RegistroActorScreen = ({ navigation, route }) => {
             onBlur={() => marcarTocado("cedula")}
           />
           <MensajeError texto={err("cedula")} />
+
+          {/* MATRÍCULA (opcional) */}
+          <TextInput
+            style={S.input}
+            placeholder="Matrícula del negocio (opcional)"
+            placeholderTextColor="#a8a8a8"
+            autoCapitalize="characters"
+            autoCorrect={false}
+            maxLength={30}
+            value={form.matricula}
+            onChangeText={(t) => handleChange("matricula", t)}
+            onFocus={alEnfocar}
+          />
 
           {/* TELÉFONO */}
           <TextInput

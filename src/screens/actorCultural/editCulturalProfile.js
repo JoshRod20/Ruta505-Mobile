@@ -70,6 +70,7 @@ export default function EditCulturalProfile() {
     direccion: profile?.direccion ?? "",
     departamento: profile?.departamento ?? "",
     municipio: profile?.municipio ?? "",
+    matricula: profile?.matricula ?? "",
     telefono: profile?.telefono ?? "",
     tipoTurismo: profile?.tipoTurismo ?? "",
     idiomaPreferido: profile?.idiomaPreferido ?? "",
@@ -198,6 +199,7 @@ export default function EditCulturalProfile() {
         direccion: form.direccion.trim(),
         departamento: form.departamento,
         municipio: form.municipio,
+        matricula: form.matricula.trim(),
         telefono: form.telefono.trim(),
         tipoTurismo: form.tipoTurismo,
         idiomaPreferido: form.idiomaPreferido,
@@ -320,6 +322,16 @@ export default function EditCulturalProfile() {
             pointerEvents="none"
           />
         </TouchableOpacity>
+
+        <Text style={s.etiqueta}>Matrícula del negocio (opcional)</Text>
+        <TextInput
+          style={S.input}
+          value={form.matricula}
+          onChangeText={(t) => handleChange("matricula", t)}
+          autoCapitalize="characters"
+          autoCorrect={false}
+          maxLength={30}
+        />
 
         <Text style={s.etiqueta}>Teléfono</Text>
         <TextInput
