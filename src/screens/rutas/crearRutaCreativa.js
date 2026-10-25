@@ -54,6 +54,7 @@ import {
   NARANJA,
   AZUL,
 } from "../../styles/rutas/crearRutaStyle";
+import IconoCategoria from "../../components/common/IconoCategoria";
 
 const MAX_FOTOS = 2;
 
@@ -104,8 +105,8 @@ function TarjetaParada({ parada, calificacion, mostrarPrecio = false }) {
   return (
     <View style={s.tarjeta}>
       <View style={s.tarjetaMiniatura}>
-        <Ionicons
-          name={iconoDeCategoria(parada.categoria)}
+        <IconoCategoria
+          categoria={parada.categoria}
           size={32}
           color={VERDE}
         />
@@ -569,8 +570,8 @@ function AsistenteRutaCreativa() {
       {negocio && (
         <View style={s.miNegocio}>
           <View style={s.tarjetaMiniatura}>
-            <Ionicons
-              name={iconoDeCategoria(negocio.categoria)}
+            <IconoCategoria
+              categoria={negocio.categoria}
               size={32}
               color={VERDE}
             />
@@ -609,8 +610,8 @@ function AsistenteRutaCreativa() {
                   {foto ? (
                     <Image source={{ uri: foto }} style={s.aliadoImagen} />
                   ) : (
-                    <Ionicons
-                      name={iconoDeCategoria(item.categoria)}
+                    <IconoCategoria
+                      categoria={item.categoria}
                       size={44}
                       color={VERDE}
                     />

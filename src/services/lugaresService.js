@@ -59,8 +59,8 @@ const GRUPOS = [
     palabras: ["playa", "costa", "mar", "surf", "bahia"],
   },
   {
-    claves: ["rural", "agroturismo", "comunitario"],
-    palabras: ["finca", "hacienda", "cooperativa", "comunidad", "granja", "cafetal"],
+    claves: ["rural", "agroturismo", "comunitario", "agricultur", "agricola", "agro"],
+    palabras: ["finca", "hacienda", "cooperativa", "comunidad", "granja", "cafetal", "cultivo", "plantacion", "agricultura", "huerto"],
   },
 ];
 

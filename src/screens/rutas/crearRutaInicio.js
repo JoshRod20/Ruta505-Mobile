@@ -32,6 +32,7 @@ import {
   VERDE,
   LIMA,
 } from "../../styles/rutas/crearRutaStyle";
+import IconoCategoria from "../../components/common/IconoCategoria";
 
 // Alto de la barra de tabs: la barra flota sobre la pantalla.
 const ALTO_BARRA_TABS = 68;
@@ -123,8 +124,8 @@ export default function CrearRutaInicio() {
                     style={s.tarjetaMiniaturaImagen}
                   />
                 ) : (
-                  <Ionicons
-                    name={iconoDeCategoria(negocio.categoria)}
+                  <IconoCategoria
+                    categoria={negocio.categoria}
                     size={32}
                     color={VERDE}
                   />

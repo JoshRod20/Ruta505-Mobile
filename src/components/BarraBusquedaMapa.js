@@ -23,6 +23,7 @@ import {
 } from "../services/Categoriasexperiencias";
 import { buscarLugares } from "../services/geocodingservice";
 import { barraBusquedaStyle as s } from "../styles/mapanicaragua/BarraBusquedaStyle";
+import IconoCategoria from "./common/IconoCategoria";
 
 const VERDE = "#0E5A34";
 const MAX_RESULTADOS_PROPIOS = 5;
@@ -167,8 +168,8 @@ export default function BarraBusquedaMapa({
                     activeOpacity={0.7}
                   >
                     <View style={s.filaIcono}>
-                      <Ionicons
-                        name={iconoDeCategoria(punto.categoria)}
+                      <IconoCategoria
+                        categoria={punto.categoria}
                         size={16}
                         color={colorDeCategoria(punto.categoria)}
                       />

@@ -140,11 +140,24 @@ export default function Home() {
               accessibilityRole="button"
               accessibilityState={{ selected: activa }}
             >
-              <Ionicons
-                name={cat.icono}
-                size={18}
-                color={activa ? "#FFFFFF" : VERDE}
-              />
+              {/* ICONO_CATEGORIA: ícono personalizado o de respaldo */}
+              {typeof cat.icono === "string" ? (
+                <Ionicons
+                  name={cat.icono}
+                  size={18}
+                  color={activa ? "#FFFFFF" : VERDE}
+                />
+              ) : (
+                <Image
+                  source={cat.icono}
+                  style={{
+                    width: 24,
+                    height: 24,
+                    tintColor: activa ? "#FFFFFF" : VERDE, // Pinta el PNG si tiene fondo transparente
+                  }}
+                  resizeMode="contain"
+                />
+              )}
               <Text
                 style={[
                   homeStyle.chipTexto,

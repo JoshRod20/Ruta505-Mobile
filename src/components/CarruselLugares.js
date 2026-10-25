@@ -18,6 +18,7 @@ import {
   carruselLugaresStyle as s,
   ANCHO_TARJETA,
 } from "../styles/mapanicaragua/CarruselLugaresStyle";
+import IconoCategoria from "./common/IconoCategoria";
 
 // Alto de la barra de tabs custom (CustomTabBar BASE.barHeight) + aire.
 const ALTO_TAB_BAR = 68;
@@ -38,8 +39,8 @@ function TarjetaLugar({ punto, origen, onPress }) {
         <Image source={{ uri: foto }} style={s.foto} resizeMode="cover" />
       ) : (
         <View style={[s.foto, s.fotoVacia]}>
-          <Ionicons
-            name={iconoDeCategoria(punto.categoria)}
+          <IconoCategoria
+            categoria={punto.categoria}
             size={28}
             color={colorDeCategoria(punto.categoria)}
           />

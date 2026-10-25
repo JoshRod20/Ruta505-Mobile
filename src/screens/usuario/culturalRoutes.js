@@ -32,6 +32,7 @@ import { iconoDeCategoria } from "../../services/Categoriasexperiencias";
 import { misRutasStyle as s } from "../../styles/rutas/misRutasCreativasStyle";
 import { culturalRoutesStyle as c } from "../../styles/usuario/culturalRoutesStyle";
 import { VERDE } from "../../styles/rutas/crearRutaStyle";
+import IconoCategoria from "../../components/common/IconoCategoria";
 
 // Alto de la barra de tabs: la barra flota sobre la pantalla.
 const ALTO_BARRA_TABS = 68;
@@ -133,8 +134,8 @@ export default function CulturalRoutes() {
               resizeMode="cover"
             />
           ) : (
-            <Ionicons
-              name={iconoDeCategoria(p.categoria)}
+            <IconoCategoria
+              categoria={p.categoria}
               size={30}
               color={VERDE}
             />

@@ -34,6 +34,7 @@ import {
 import { iconoDeCategoria } from "../../services/Categoriasexperiencias";
 import { misRutasStyle as s } from "../../styles/rutas/misRutasCreativasStyle";
 import { VERDE } from "../../styles/rutas/crearRutaStyle";
+import IconoCategoria from "../../components/common/IconoCategoria";
 
 const ETIQUETA_ESTADO = {
   [ESTADO_RUTA.PUBLICADA]: { texto: "Publicada", estilo: "estadoPublicada" },
@@ -176,8 +177,8 @@ export default function MisRutasCreativas() {
               resizeMode="cover"
             />
           ) : (
-            <Ionicons
-              name={iconoDeCategoria(p.categoria)}
+            <IconoCategoria
+              categoria={p.categoria}
               size={30}
               color={VERDE}
             />
