@@ -12,17 +12,38 @@ const porId = (id) => ITEMS.find((i) => i.id === id);
  * Mientras carga el atuendo muestra la imagen por defecto.
  *
  * @param {object} style  Estilo del contenedor (tamaño, bordes...).
+ * @param {number} acercar  Zoom sobre Pinolito (1 = cuerpo completo; 1.7 =
+ *   se ve la cabeza, ideal para fotos de perfil redondas). El zoom se ancla
+ *   arriba y al centro, así la cabeza (y el sombrero) nunca se cortan.
+ * @param {number} ajusteVertical  Mueve a Pinolito, en % del alto del círculo
+ *   (negativo = sube, positivo = baja). Afina el encuadre si hace falta.
  */
-export default function PinolitoAvatar({ style }) {
+export default function PinolitoAvatar({
+  style,
+  acercar = 1,
+  ajusteVertical = 0,
+}) {
   const { equipadoGuardado, cargando } = usePinolito();
+
+  // Capa interna más grande que el círculo, centrada horizontalmente y
+  // pegada arriba; el contenedor recorta (overflow: hidden).
+  const zoomStyle = {
+    position: "absolute",
+    width: `${acercar * 100}%`,
+    height: `${acercar * 100}%`,
+    left: `${-(acercar - 1) * 50}%`,
+    top: `${ajusteVertical}%`,
+  };
 
   if (cargando || !equipadoGuardado) {
     return (
-      <Image
-        source={require("../assets/images/pinolito.png")}
-        style={style}
-        resizeMode="cover"
-      />
+      <View style={[style, styles.contenedor]}>
+        <Image
+          source={require("../assets/images/pinolito.png")}
+          style={zoomStyle}
+          resizeMode="contain"
+        />
+      </View>
     );
   }
 
@@ -36,13 +57,23 @@ export default function PinolitoAvatar({ style }) {
 
   return (
     <View style={[style, styles.contenedor]}>
-      <Image source={cuerpo.capa} style={styles.capa} resizeMode="contain" />
-      {accesorio && (
-        <Image source={accesorio.capa} style={styles.capa} resizeMode="contain" />
-      )}
-      {sombrero && (
-        <Image source={sombrero.capa} style={styles.capa} resizeMode="contain" />
-      )}
+      <View style={zoomStyle}>
+        <Image source={cuerpo.capa} style={styles.capa} resizeMode="contain" />
+        {accesorio && (
+          <Image
+            source={accesorio.capa}
+            style={styles.capa}
+            resizeMode="contain"
+          />
+        )}
+        {sombrero && (
+          <Image
+            source={sombrero.capa}
+            style={styles.capa}
+            resizeMode="contain"
+          />
+        )}
+      </View>
     </View>
   );
 }

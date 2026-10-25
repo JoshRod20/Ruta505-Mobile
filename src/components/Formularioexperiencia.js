@@ -341,6 +341,7 @@ export default function FormularioExperiencia({
                           style={[
                             { width: 15, height: 15 },
                             s.chipCategoriaIcono,
+                            { tintColor: activa ? "#FFFFFF" : VERDE }, // Comenta esta línea si tu PNG ya tiene su propio color y no quieres que cambie
                           ]}
                           resizeMode="contain"
                         />

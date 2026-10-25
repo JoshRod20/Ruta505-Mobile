@@ -117,7 +117,15 @@ export default function Home() {
             onPress={() => navigation.navigate("PinolitoDrawer")}
           >
             {/* Pinolito con el atuendo que el usuario guardó */}
-            <PinolitoAvatar style={homeStyle.pinolitoImagen} />
+            {/* Zoom: en la foto de perfil se ve la cabeza de Pinolito, no el cuerpo
+                completo. Ajusta acercar (más grande = más cerca) y
+                ajusteVertical (negativo sube, positivo baja) si lo quieres
+                encuadrar distinto. */}
+            <PinolitoAvatar
+              style={homeStyle.pinolitoImagen}
+              acercar={1.2}
+              ajusteVertical={5}
+            />
           </TouchableOpacity>
         )}
       </View>
