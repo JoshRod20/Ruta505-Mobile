@@ -385,6 +385,11 @@ export const publicacionCardStyle = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  comentarioAvatarFoto: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+  },
   comentarioAvatarTexto: {
     fontFamily: "Poppins-SemiBold",
     fontSize: 13,

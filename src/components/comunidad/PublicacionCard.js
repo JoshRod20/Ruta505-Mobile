@@ -276,6 +276,7 @@ export default function PublicacionCard({ experiencia }) {
       await guardarComentario(experiencia.id, {
         autorId: user.uid,
         autorNombre: profile?.nombreCompleto ?? "Usuario",
+        autorFoto: profile?.fotoPerfil ?? "",
         calificacion,
         texto,
         imagenes: fotosComentario,
@@ -412,14 +413,9 @@ export default function PublicacionCard({ experiencia }) {
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.menuBoton}
-          onPress={() => setMenuVisible(true)}
-          activeOpacity={0.8}
-          accessibilityLabel="Más opciones"
-        >
-          <Ionicons name="ellipsis-horizontal" size={18} color="#4D4D4D" />
-        </TouchableOpacity>
+        {/* Botón de tres puntos (menú Editar / Eliminar / Reportar) quitado.
+            Para volver a mostrarlo, restaura aquí el TouchableOpacity con
+            style={styles.menuBoton} y onPress={() => setMenuVisible(true)}. */}
       </View>
 
       <Modal
@@ -683,12 +679,25 @@ export default function PublicacionCard({ experiencia }) {
               renderItem={({ item }) => {
                 const puedeBorrar =
                   !!user?.uid && (item.autorId === user.uid || esAutor);
+                // Foto de perfil del autor del comentario. Si es mi comentario
+                // uso mi foto actual; si no, la que se guardó al comentar.
+                const fotoAutor =
+                  item.autorId === user?.uid
+                    ? profile?.fotoPerfil || item.autorFoto
+                    : item.autorFoto;
                 return (
                   <View style={styles.comentarioFila}>
                     <View style={styles.comentarioAvatar}>
-                      <Text style={styles.comentarioAvatarTexto}>
-                        {iniciales(item.autorNombre)}
-                      </Text>
+                      {fotoAutor ? (
+                        <Image
+                          source={{ uri: fotoAutor }}
+                          style={styles.comentarioAvatarFoto}
+                        />
+                      ) : (
+                        <Text style={styles.comentarioAvatarTexto}>
+                          {iniciales(item.autorNombre)}
+                        </Text>
+                      )}
                     </View>
                     <View style={styles.comentarioCuerpo}>
                       <View style={styles.comentarioEncabezado}>

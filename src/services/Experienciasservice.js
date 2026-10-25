@@ -224,13 +224,15 @@ export function escucharComentarios(experienciaId, callback, onError) {
  */
 export async function guardarComentario(
   experienciaId,
-  { autorId, autorNombre, calificacion, texto, imagenes }
+  { autorId, autorNombre, autorFoto = "", calificacion, texto, imagenes }
 ) {
   const ref = doc(db, COLECCION, experienciaId, "comentarios", autorId);
   const existente = await getDoc(ref);
 
   if (existente.exists()) {
     return updateDoc(ref, {
+      autorNombre,
+      autorFoto,
       calificacion,
       texto,
       imagenes,
@@ -241,6 +243,7 @@ export async function guardarComentario(
   return setDoc(ref, {
     autorId,
     autorNombre,
+    autorFoto,
     calificacion,
     texto,
     imagenes,
