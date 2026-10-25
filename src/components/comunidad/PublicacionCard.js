@@ -497,6 +497,7 @@ export default function PublicacionCard({ experiencia }) {
               value={tituloEditado}
               onChangeText={setTituloEditado}
               placeholder="Título de la experiencia"
+              placeholderTextColor="#9A9A9A"
               maxLength={120}
             />
 
@@ -509,6 +510,7 @@ export default function PublicacionCard({ experiencia }) {
               value={descripcionEditada}
               onChangeText={setDescripcionEditada}
               placeholder="Describe tu experiencia"
+              placeholderTextColor="#9A9A9A"
               multiline
               maxLength={500}
             />

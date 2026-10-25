@@ -33,10 +33,8 @@ export const barraBusquedaStyle = StyleSheet.create({
   barra: {
     flexDirection: "row",
     alignItems: "center",
-    height: 42,
-    borderWidth: 1.5,
-    borderColor: VERDE,
-    borderRadius: 21,
+    height: 48,
+    borderRadius: 12,
     backgroundColor: "#FFFFFF",
     paddingHorizontal: 14,
   },

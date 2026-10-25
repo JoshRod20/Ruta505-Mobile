@@ -608,7 +608,7 @@ const RegistroTuristaScreen = ({
                   .inputInvalido,
             ]}
             placeholder="Nombre completo"
-            placeholderTextColor="#000000"
+            placeholderTextColor="#a8a8a8"
             value={
               form.nombreCompleto
             }
@@ -651,7 +651,7 @@ const RegistroTuristaScreen = ({
                   .inputInvalido,
             ]}
             placeholder="Correo electrónico"
-            placeholderTextColor="#000000"
+            placeholderTextColor="#a8a8a8"
             autoCapitalize="none"
             keyboardType="email-address"
             value={form.email}
@@ -703,7 +703,7 @@ const RegistroTuristaScreen = ({
                   .inputInvalido,
             ]}
             placeholder="Teléfono"
-            placeholderTextColor="#000000"
+            placeholderTextColor="#a8a8a8"
             keyboardType="phone-pad"
             value={form.telefono}
             onChangeText={(texto) =>
@@ -763,7 +763,7 @@ const RegistroTuristaScreen = ({
                     .inputInvalido,
               ]}
               placeholder="Contraseña"
-              placeholderTextColor="#000000"
+              placeholderTextColor="#a8a8a8"
               secureTextEntry={
                 !mostrarPassword
               }
@@ -845,7 +845,7 @@ const RegistroTuristaScreen = ({
                     .inputInvalido,
               ]}
               placeholder="Confirmar contraseña"
-              placeholderTextColor="#000000"
+              placeholderTextColor="#a8a8a8"
               secureTextEntry={
                 !mostrarConfirmPassword
               }
@@ -920,7 +920,7 @@ const RegistroTuristaScreen = ({
                   .inputInvalido,
             ]}
             placeholder="Edad"
-            placeholderTextColor="#000000"
+            placeholderTextColor="#a8a8a8"
             keyboardType="number-pad"
             value={form.edad}
             onChangeText={(texto) =>

@@ -457,7 +457,7 @@ const RegistroActorScreen = ({ navigation, route }) => {
           <TextInput
             style={[S.input, !!err("nombreCompleto") && S.inputInvalido]}
             placeholder="Nombre completo/Negocio"
-            placeholderTextColor="#000000"
+            placeholderTextColor="#a8a8a8"
             value={form.nombreCompleto}
             onChangeText={(t) => handleChange("nombreCompleto", t)}
             onFocus={alEnfocar}
@@ -473,7 +473,7 @@ const RegistroActorScreen = ({ navigation, route }) => {
               !!err("descripcion") && S.inputInvalido,
             ]}
             placeholder="Descripción del negocio"
-            placeholderTextColor="#000000"
+            placeholderTextColor="#a8a8a8"
             multiline
             scrollEnabled={false}
             maxLength={500}
@@ -488,7 +488,7 @@ const RegistroActorScreen = ({ navigation, route }) => {
           <TextInput
             style={[S.input, !!err("direccion") && S.inputInvalido]}
             placeholder="Dirección del negocio"
-            placeholderTextColor="#000000"
+            placeholderTextColor="#a8a8a8"
             value={form.direccion}
             onChangeText={(t) => handleChange("direccion", t)}
             onFocus={alEnfocar}
@@ -519,7 +519,7 @@ const RegistroActorScreen = ({ navigation, route }) => {
           <TextInput
             style={[S.input, !!err("email") && S.inputInvalido]}
             placeholder="Correo electrónico"
-            placeholderTextColor="#000000"
+            placeholderTextColor="#a8a8a8"
             autoCapitalize="none"
             keyboardType="email-address"
             value={form.email}
@@ -533,7 +533,7 @@ const RegistroActorScreen = ({ navigation, route }) => {
           <TextInput
             style={[S.input, !!err("cedula") && S.inputInvalido]}
             placeholder="Cédula de identidad"
-            placeholderTextColor="#000000"
+            placeholderTextColor="#a8a8a8"
             autoCapitalize="characters"
             keyboardType="default"
             maxLength={16}
@@ -561,7 +561,7 @@ const RegistroActorScreen = ({ navigation, route }) => {
           <TextInput
             style={[S.input, !!err("telefono") && S.inputInvalido]}
             placeholder="Teléfono"
-            placeholderTextColor="#000000"
+            placeholderTextColor="#a8a8a8"
             keyboardType="phone-pad"
             value={form.telefono}
             onChangeText={(t) => handleChange("telefono", t)}
@@ -579,7 +579,7 @@ const RegistroActorScreen = ({ navigation, route }) => {
                 !!err("password") && S.inputInvalido,
               ]}
               placeholder="Contraseña"
-              placeholderTextColor="#000000"
+              placeholderTextColor="#a8a8a8"
               secureTextEntry={!mostrarPassword}
               value={form.password}
               onChangeText={(t) => handleChange("password", t)}
@@ -613,7 +613,7 @@ const RegistroActorScreen = ({ navigation, route }) => {
                 !!err("confirmPassword") && S.inputInvalido,
               ]}
               placeholder="Confirmar contraseña"
-              placeholderTextColor="#000000"
+              placeholderTextColor="#a8a8a8"
               secureTextEntry={!mostrarConfirmPassword}
               value={form.confirmPassword}
               onChangeText={(t) => handleChange("confirmPassword", t)}
