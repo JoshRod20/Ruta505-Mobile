@@ -12,6 +12,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import useTabBarHeight from "../../hooks/useTabBarHeight";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -33,9 +34,6 @@ import {
   LIMA,
 } from "../../styles/rutas/crearRutaStyle";
 
-// Alto de la barra de tabs: la barra flota sobre la pantalla.
-const ALTO_BARRA_TABS = 68;
-
 const nombreDeCategoria = (id) =>
   CATEGORIAS_EXPERIENCIA.find((c) => c.id === id)?.label ?? "";
 
@@ -45,6 +43,7 @@ const nombreDeCategoria = (id) =>
  */
 export default function CrearRutaInicio() {
   const insets = useSafeAreaInsets();
+  const tabBarHeight = useTabBarHeight();
   const navigation = useNavigation();
   const { user } = useAuth();
   const { puede } = usePermisos();
@@ -65,7 +64,7 @@ export default function CrearRutaInicio() {
 
   const padding = {
     paddingTop: insets.top + 16,
-    paddingBottom: ALTO_BARRA_TABS + insets.bottom + 24,
+    paddingBottom: tabBarHeight + 24,
   };
 
   if (!puede(PERMISOS.PUBLICAR_EXPERIENCIA)) {

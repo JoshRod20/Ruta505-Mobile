@@ -3,6 +3,9 @@
  */
 
 import { View, Text, TouchableOpacity } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useWindowDimensions } from "react-native";
+import { padLateralTablet } from "../../utils/layout";
 import { useAuth } from "../../context/AuthContext";
 import LogoutButton from "../../components/common/LogoutButton";
 import PendienteAprobacionScreenStyle from "../../styles/auth/PendienteAprobacionScreenStyle";
@@ -18,9 +21,17 @@ import PendienteAprobacionScreenStyle from "../../styles/auth/PendienteAprobacio
 // desbloquea solo, sin volver a pasar por aquí.
 const PendienteAprobacionScreen = ({ onExplorar }) => {
   const { profile } = useAuth();
+  const insets = useSafeAreaInsets();
+  const { width: ancho } = useWindowDimensions();
 
   return (
-    <View style={PendienteAprobacionScreenStyle.contenedor}>
+    <View
+      style={[
+        PendienteAprobacionScreenStyle.contenedor,
+        { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 },
+        padLateralTablet(ancho),
+      ]}
+    >
       <Text style={PendienteAprobacionScreenStyle.titulo}>Tu cuenta está en revisión</Text>
       <Text style={PendienteAprobacionScreenStyle.subtitulo}>
         El equipo de soporte de Ruta 505 está revisando tu perfil. Te notificaremos por correo cuando sea aprobado.

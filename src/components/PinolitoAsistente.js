@@ -60,7 +60,7 @@ export default function PinolitoAsistente() {
   };
 
   return (
-    <Modal
+    <Modal statusBarTranslucent navigationBarTranslucent
       visible={!!recomendacion}
       transparent
       animationType="fade"

@@ -18,6 +18,8 @@ import {
   Easing,
   PanResponder,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useWindowDimensions } from "react-native";
 
 import styles from "../../styles/onboarding/OnboardingStyle";
 
@@ -74,6 +76,12 @@ const SWIPE_THRESHOLD = 60;
 // ==================================================
 
 const Onboarding = ({ onComplete }) => {
+  const insets = useSafeAreaInsets();
+  // Ancho/alto reales de la ventana (tablet, plegable, pantalla dividida).
+  // El PanResponder se crea una sola vez, por eso el ancho se lee desde un ref.
+  const { width: anchoVentana, height: altoVentana } = useWindowDimensions();
+  const anchoRef = useRef(anchoVentana);
+  anchoRef.current = anchoVentana;
   const [step, setStep] = useState(0);
 
   // ==================================================
@@ -127,7 +135,7 @@ const Onboarding = ({ onComplete }) => {
   const setCarouselPosition = useCallback(
     (index, animated = true) => {
       const targetX =
-        -index * styles.screenWidth;
+        -index * anchoRef.current;
 
       if (!animated) {
         translateX.setValue(targetX);
@@ -246,7 +254,7 @@ const Onboarding = ({ onComplete }) => {
       ) => {
         const current =
           -currentStepRef.current *
-          styles.screenWidth;
+          anchoRef.current;
 
         let position =
           current + gesture.dx;
@@ -333,6 +341,12 @@ const Onboarding = ({ onComplete }) => {
       },
     })
   ).current;
+
+  // Si cambia el ancho de la ventana (rotación, plegable, pantalla dividida),
+  // se vuelve a alinear el carrusel con la pantalla actual.
+  useEffect(() => {
+    translateX.setValue(-currentStepRef.current * anchoVentana);
+  }, [anchoVentana, translateX]);
 
   // ==================================================
   // ANIMACIÓN DEL CONTENIDO
@@ -795,6 +809,7 @@ const Onboarding = ({ onComplete }) => {
         style={[
           styles.slidesContainer,
           {
+            width: anchoVentana * TOTAL_SLIDES,
             transform: [
               {
                 translateX,
@@ -815,9 +830,10 @@ const Onboarding = ({ onComplete }) => {
             return (
               <View
                 key={slide.id}
-                style={
-                  styles.slide
-                }
+                style={[
+                  styles.slide,
+                  { width: anchoVentana },
+                ]}
               >
                 {/* ==========================================
                     CIELO
@@ -915,9 +931,10 @@ const Onboarding = ({ onComplete }) => {
                       ======================================== */}
 
                   <View
-                    style={
-                      styles.footer
-                    }
+                    style={[
+                      styles.footer,
+                      { minHeight: altoVentana * 0.2 },
+                    ]}
                   />
 
                   {/* ========================================
@@ -925,9 +942,13 @@ const Onboarding = ({ onComplete }) => {
                       ======================================== */}
 
                   <View
-                    style={
-                      styles.footerControls
-                    }
+                    style={[
+                      styles.footerControls,
+                      {
+                        minHeight: altoVentana * 0.2,
+                        paddingBottom: 25 + insets.bottom,
+                      },
+                    ]}
                   >
                     {/* ======================================
                         DOTS
@@ -1053,9 +1074,10 @@ const Onboarding = ({ onComplete }) => {
 
       <Pressable
         onPress={skip}
-        style={
-          styles.skipButton
-        }
+        style={[
+          styles.skipButton,
+          { top: insets.top + 12 },
+        ]}
         android_ripple={{
           color:
             "rgba(255,255,255,0.15)",

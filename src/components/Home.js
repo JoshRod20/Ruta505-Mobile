@@ -13,6 +13,8 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import useTabBarHeight from "../hooks/useTabBarHeight";
+import { MAX_ANCHO_FEED } from "../utils/layout";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -36,6 +38,7 @@ const CATEGORIAS = CATEGORIAS_EXPERIENCIA;
 
 export default function Home() {
   const insets = useSafeAreaInsets();
+  const tabBarHeight = useTabBarHeight();
   const navigation = useNavigation();
   const { user, role, estadoVerificacion } = useAuth();
   const { puede } = usePermisos();
@@ -270,9 +273,14 @@ export default function Home() {
         renderItem={({ item }) => <PublicacionCard experiencia={item} />}
         ListHeaderComponent={esTurista ? encabezadoTurista : encabezadoOriginal}
         ListEmptyComponent={vacio}
-        // 68 = altura de CustomTabBar (BAR_HEIGHT en CustomTabBar.js), que está
-        // en position:"absolute" y por eso no empuja el contenido.
-        contentContainerStyle={{ paddingBottom: 68 + insets.bottom + 7 }}
+        // La barra de tabs es position:"absolute" y no empuja el contenido:
+        // tabBarHeight = alto de la barra + inset (3 botones o gestos).
+        contentContainerStyle={{
+          paddingBottom: tabBarHeight + 7,
+          width: "100%",
+          maxWidth: MAX_ANCHO_FEED,
+          alignSelf: "center",
+        }}
         showsVerticalScrollIndicator={false}
       />
     </View>

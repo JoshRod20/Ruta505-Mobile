@@ -17,6 +17,9 @@ const VerificarCodigoScreenStyle = StyleSheet.create({
   },
 
   card: {
+    width: "100%",
+    maxWidth: 480,
+    alignSelf: "center",
     paddingHorizontal: 28,
   },
 

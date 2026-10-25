@@ -7,6 +7,10 @@
  * Formatos de QR soportados:
  *   ruta505://lugar/<lugarId>   -> registra la visita y desbloquea su insignia
  *   ruta505://nivel/<nivelId>   -> desbloquea una insignia de nivel de perfil
+ *   ruta505://sello/<actorId>   -> QR que genera el actor cultural (pantalla
+ *                                  "Generar QR"); su insignia sale de
+ *                                  negocios/{actorId}.insigniaId o, si no la
+ *                                  tiene, del departamento en negocios/{actorId}.lugar
  */
 
 import {
@@ -21,7 +25,31 @@ import {
 import { INSIGNIAS, LUGARES, NIVELES } from "../constants/passportCatalog";
 import { db } from "./firebase";
 
-const QR_REGEX = /^ruta505:\/\/(lugar|nivel)\/([a-z0-9-_]+)$/i;
+const QR_REGEX = /^ruta505:\/\/(lugar|nivel|sello)\/([a-z0-9-_]+)$/i;
+
+// Insignia que gana el turista al escanear el QR de un actor, según el
+// departamento de su negocio. Se busca en el texto `lugar` del negocio
+// ("Localidad, Departamento", ya normalizado sin tildes ni mayúsculas).
+// Un negocio puede forzar otra insignia con un campo `insigniaId`.
+const INSIGNIA_POR_LUGAR = [
+  ["granada", "granada"],
+  ["ometepe", "ometepe"],
+  ["rivas", "ometepe"],
+  ["matagalpa", "matagalpa"],
+  ["bluefields", "bluefields"],
+  ["caribe sur", "bluefields"],
+  ["leon", "leon"],
+  ["masaya", "masaya"],
+  ["managua", "managua"],
+  ["esteli", "esteli"],
+  ["chontales", "chontales"],
+];
+
+const sinTildes = (t) =>
+  String(t ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
 
 export const EMPTY_PASSPORT = { lugares: [], insignias: [], niveles: [] };
 
@@ -109,7 +137,32 @@ export async function claimFromQr(uid, data) {
       };
     }
 
-    const lugar = LUGARES[id];
+    // "lugar": id fijo del catálogo. "sello": se lee el perfil del actor.
+    let lugar;
+    let visitaId = id;
+    if (tipo.toLowerCase() === "sello") {
+      // El negocio del actor es público (id = uid del actor); su perfil en
+      // "users" no lo puede leer un turista. Que exista prueba que es un
+      // actor aprobado: las reglas solo les dejan crear su negocio.
+      const negocioSnap = await getDoc(doc(db, "negocios", id));
+      const negocio = negocioSnap.exists() ? negocioSnap.data() : null;
+      if (!negocio) {
+        return {
+          ok: false,
+          status: "invalida",
+          message: "Este lugar aún no tiene su negocio publicado.",
+        };
+      }
+      const texto = sinTildes(negocio.lugar);
+      const insigniaId = INSIGNIAS.some((i) => i.id === negocio.insigniaId)
+        ? negocio.insigniaId
+        : (INSIGNIA_POR_LUGAR.find(([clave]) => texto.includes(clave))?.[1] ??
+          null);
+      lugar = { name: negocio.titulo || "este lugar", insigniaId };
+      visitaId = `sello-${id}`;
+    } else {
+      lugar = LUGARES[id];
+    }
     if (!lugar)
       return {
         ok: false,
@@ -117,7 +170,7 @@ export async function claimFromQr(uid, data) {
         message: "No reconocemos este lugar.",
       };
 
-    const yaVisitado = state.lugares.includes(id);
+    const yaVisitado = state.lugares.includes(visitaId);
     const insignia = lugar.insigniaId
       ? INSIGNIAS.find((i) => i.id === lugar.insigniaId)
       : null;
@@ -134,7 +187,7 @@ export async function claimFromQr(uid, data) {
     }
 
     const cambios = { actualizado: serverTimestamp() };
-    if (!yaVisitado) cambios.lugares = arrayUnion(id);
+    if (!yaVisitado) cambios.lugares = arrayUnion(visitaId);
     if (insigniaNueva) cambios.insignias = arrayUnion(insignia.id);
     await setDoc(passportRef(uid), cambios, { merge: true });
 

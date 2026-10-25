@@ -42,7 +42,7 @@ export const navegacionStyle = StyleSheet.create({
 
   panelInstruccion: {
     position: "absolute",
-    top: 80,
+    // `top` se calcula en NavegacionRuta (inset superior + margen).
     left: 16,
     right: 16,
     backgroundColor: "#123B63",
@@ -67,7 +67,7 @@ export const navegacionStyle = StyleSheet.create({
 
   panelInferior: {
     position: "absolute",
-    bottom: 90,
+    // `bottom` se calcula en NavegacionRuta (alto de la barra de tabs + aire).
     left: 16,
     right: 16,
     backgroundColor: "#FFFFFF",

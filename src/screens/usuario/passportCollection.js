@@ -12,6 +12,7 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import QrScannerModal from "../../components/pasaporte/QrScannerModal";
 import StampCard from "../../components/pasaporte/StampCard";
@@ -26,6 +27,7 @@ import {
 export default function PassportCollection({ navigation }) {
   const { user } = useAuth();
   const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const { insignias, niveles, claim } = usePassport(user?.uid);
   const [scannerOpen, setScannerOpen] = useState(false);
 
@@ -33,7 +35,7 @@ export default function PassportCollection({ navigation }) {
 
   return (
     <View style={s.container}>
-      <View style={s.topBar}>
+      <View style={[s.topBar, { paddingTop: insets.top + 8 }]}>
         <Pressable
           onPress={() => navigation.goBack()}
           hitSlop={10}
@@ -51,7 +53,7 @@ export default function PassportCollection({ navigation }) {
       </View>
 
       <ScrollView
-        contentContainerStyle={s.content}
+        contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 24 }]}
         showsVerticalScrollIndicator={false}
       >
         <Text style={s.sectionTitle}>Niveles de Perfiles</Text>

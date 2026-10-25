@@ -124,7 +124,7 @@ export default function SelectorModal({
     : { paddingBottom: 16 + insets.bottom };
 
   return (
-    <Modal
+    <Modal statusBarTranslucent navigationBarTranslucent
       visible={visible}
       transparent
       animationType="fade"

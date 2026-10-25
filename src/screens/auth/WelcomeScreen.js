@@ -4,9 +4,11 @@
 
 import React from "react";
 import { View, Image, Text, TouchableOpacity } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import WelcomeScreenStyle from "../../styles/auth/WelcomeScreenStyle";
 
 const WelcomeScreen = ({ navigation }) => {
+  const insets = useSafeAreaInsets();
 
   const handleIniciarSesion = () => {
     navigation.navigate("Login");
@@ -17,7 +19,12 @@ const WelcomeScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={WelcomeScreenStyle.contenedor}>
+    <View
+      style={[
+        WelcomeScreenStyle.contenedor,
+        { paddingTop: insets.top, paddingBottom: insets.bottom },
+      ]}
+    >
 
       <Image
         source={require("../../assets/images/LogoRuta505.png")}

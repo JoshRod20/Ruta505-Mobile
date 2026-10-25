@@ -54,6 +54,7 @@ import {
 import { ROLES } from "../constants/roles";
 import { useAuth } from "../context/AuthContext";
 import { usePermisos } from "../hooks/usePermisos";
+import useTabBarHeight from "../hooks/useTabBarHeight";
 import { PERMISOS } from "../constants/permissions";
 import { formatearPrecio } from "../services/rutasService.js";
 
@@ -112,6 +113,7 @@ async function pedirPermisoUbicacion() {
  */
 export default function MapaNicaragua() {
   const insets = useSafeAreaInsets();
+  const tabBarHeight = useTabBarHeight();
   const mapRef = useRef(null);
   const cameraRef = useRef(null);
   const navigation = useNavigation();
@@ -1153,7 +1155,7 @@ export default function MapaNicaragua() {
             <TouchableOpacity
               style={[
                 mapaNicaraguaStyle.botonIniciarRutaCreativa,
-                { bottom: 140 + insets.bottom + 16 },
+                { bottom: tabBarHeight + 72 + 16 },
               ]}
               onPress={iniciarRutaCreativa}
               disabled={cargandoRuta}
@@ -1217,7 +1219,10 @@ export default function MapaNicaragua() {
           {/* Botón para agregar nueva experiencia */}
           {puedePublicar && (
             <TouchableOpacity
-              style={mapaNicaraguaStyle.botonAgregar}
+              style={[
+                mapaNicaraguaStyle.botonAgregar,
+                { bottom: tabBarHeight + 28 },
+              ]}
               onPress={abrirFormularioParaCrear}
             >
               <Text style={mapaNicaraguaStyle.botonAgregarTexto}>+</Text>

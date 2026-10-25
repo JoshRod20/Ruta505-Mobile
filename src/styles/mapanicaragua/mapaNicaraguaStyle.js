@@ -49,9 +49,7 @@ export const mapaNicaraguaStyle = StyleSheet.create({
   // Tarjeta inferior de detalle del punto
   tarjeta: {
     position: "absolute",
-    // 68 = alto de la barra de tabs custom (navigationTabsStyle.tabBar.height)
-    // + ~28 de aire para que no quede pegada.
-    bottom: 96,
+    // El `bottom` se calcula en MapaNicaragua (alto de la barra de tabs + aire).
     left: 16,
     right: 16,
     backgroundColor: "#FFFFFF",
@@ -203,7 +201,7 @@ export const mapaNicaraguaStyle = StyleSheet.create({
   botonAgregar: {
     position: "absolute",
     right: 16,
-    bottom: 96,
+    // `bottom` se calcula en MapaNicaragua (alto de la barra de tabs + aire).
     width: 52,
     height: 52,
     borderRadius: 26,

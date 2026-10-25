@@ -8,7 +8,6 @@ import { useState } from "react";
 
 import {
   ActivityIndicator,
-  Dimensions,
   ImageBackground,
   KeyboardAvoidingView,
   Platform,
@@ -22,6 +21,8 @@ import {
 
 import Svg, { Path } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useWindowDimensions } from "react-native";
+import { padLateralTablet } from "../../utils/layout";
 
 import {
   getMultiFactorResolver,
@@ -41,7 +42,6 @@ import LoginScreenStyle from "../../styles/auth/LoginScreenStyle";
 // DIMENSIONES
 // ==================================================
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const CURVE_HEIGHT = 130;
 
@@ -51,6 +51,7 @@ const CURVE_HEIGHT = 130;
 
 const LoginScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
+  const { width: SCREEN_WIDTH } = useWindowDimensions();
 
   // ==================================================
   // ESTADOS
@@ -341,7 +342,11 @@ const LoginScreen = ({ navigation }) => {
           style={{
             flex: 1,
           }}
-          contentContainerStyle={LoginScreenStyle.card}
+          contentContainerStyle={[
+            LoginScreenStyle.card,
+            { paddingBottom: 34 + insets.bottom },
+            padLateralTablet(SCREEN_WIDTH),
+          ]}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode={
             Platform.OS === "ios" ? "interactive" : "on-drag"

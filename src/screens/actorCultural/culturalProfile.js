@@ -13,6 +13,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import useTabBarHeight from "../../hooks/useTabBarHeight";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
@@ -50,6 +51,7 @@ const ETIQUETA_TIPO_ACTOR = {
  */
 export default function CulturalProfile() {
   const insets = useSafeAreaInsets();
+  const tabBarHeight = useTabBarHeight();
   const navigation = useNavigation();
   const { profile, user, estadoVerificacion } = useAuth();
   const { puede } = usePermisos();
@@ -162,7 +164,7 @@ export default function CulturalProfile() {
   return (
     <ScrollView
       style={s.container}
-      contentContainerStyle={{ paddingBottom: 68 + insets.bottom + 24 }}
+      contentContainerStyle={{ paddingBottom: tabBarHeight + 24 }}
       showsVerticalScrollIndicator={false}
     >
       {/* Portada */}

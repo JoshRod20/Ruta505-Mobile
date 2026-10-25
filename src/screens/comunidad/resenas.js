@@ -105,7 +105,7 @@ function ModalRespuesta({ resena, guardando, onCancelar, onEnviar }) {
   };
 
   return (
-    <Modal
+    <Modal statusBarTranslucent navigationBarTranslucent
       visible={!!resena}
       transparent
       animationType="slide"

@@ -7,6 +7,8 @@ import { View, Text, Image, TouchableOpacity, ActivityIndicator } from "react-na
 import * as Location from "expo-location";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useWindowDimensions } from "react-native";
+import { padLateralTablet } from "../../utils/layout";
 
 import InteresesUbicacionStyle from "../../styles/auth/InteresesUbicacionStyle";
 import { registrarUsuario } from "../../services/registro";
@@ -40,6 +42,7 @@ const TEXTOS_POR_ROL = {
 
 const SolicitarUbicacionScreen = ({ navigation, route }) => {
   const insets = useSafeAreaInsets();
+  const { width: ancho } = useWindowDimensions();
   const { datosRegistro, intereses } = route.params || {};
 
   const [cargando, setCargando] = useState(false);
@@ -107,7 +110,8 @@ const SolicitarUbicacionScreen = ({ navigation, route }) => {
     <View
       style={[
         InteresesUbicacionStyle.contenedor,
-        { paddingTop: insets.top + 16 },
+        { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 16 },
+        padLateralTablet(ancho),
       ]}
     >
       {/* ==================================================

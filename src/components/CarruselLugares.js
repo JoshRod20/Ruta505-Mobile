@@ -5,7 +5,7 @@
 
 import React from "react";
 import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import useTabBarHeight from "../hooks/useTabBarHeight";
 import { Ionicons } from "@expo/vector-icons";
 
 import {
@@ -19,8 +19,7 @@ import {
   ANCHO_TARJETA,
 } from "../styles/mapanicaragua/CarruselLugaresStyle";
 
-// Alto de la barra de tabs custom (CustomTabBar BASE.barHeight) + aire.
-const ALTO_TAB_BAR = 68;
+// Aire entre el carrusel y la barra de tabs custom.
 const AIRE = 12;
 
 function TarjetaLugar({ punto, origen, onPress }) {
@@ -90,12 +89,12 @@ function TarjetaLugar({ punto, origen, onPress }) {
  * @param {function} props.onSeleccionar - Se llama con el lugar tocado.
  */
 export default function CarruselLugares({ lugares, origen, onSeleccionar }) {
-  const insets = useSafeAreaInsets();
+  const tabBarHeight = useTabBarHeight();
   if (!lugares?.length) return null;
 
   return (
     <View
-      style={[s.contenedor, { bottom: ALTO_TAB_BAR + insets.bottom + AIRE }]}
+      style={[s.contenedor, { bottom: tabBarHeight + AIRE }]}
       pointerEvents="box-none"
     >
       <FlatList

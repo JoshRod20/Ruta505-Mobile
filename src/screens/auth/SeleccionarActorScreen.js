@@ -7,15 +7,15 @@ import {
   Text,
   TouchableOpacity,
   Image,
-  Dimensions,
   ScrollView,
   ImageBackground,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useWindowDimensions } from "react-native";
+import { padLateralTablet } from "../../utils/layout";
 import SeleccionarActorScreenStyle from "../../styles/auth/SeleccionarActorScreenStyle";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 // Altura de la banda donde vive la curva SVG (misma que Login y SeleccionarTipo).
 const CURVE_HEIGHT = 130;
@@ -47,6 +47,7 @@ const actoresCulturales = [
 
 const SeleccionarActorScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
+  const { width: SCREEN_WIDTH } = useWindowDimensions();
 
   const handleVolver = () => {
     navigation.goBack();
@@ -112,7 +113,11 @@ const SeleccionarActorScreen = ({ navigation }) => {
 
       <ScrollView
         style={SeleccionarActorScreenStyle.scroll}
-        contentContainerStyle={SeleccionarActorScreenStyle.card}
+        contentContainerStyle={[
+          SeleccionarActorScreenStyle.card,
+          { paddingBottom: insets.bottom + 24 },
+          padLateralTablet(SCREEN_WIDTH),
+        ]}
         showsVerticalScrollIndicator={false}
       >
 

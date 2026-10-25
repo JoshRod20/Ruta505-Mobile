@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { construirAssertionParaLogin } from "../../services/mfa";
 import { mapFirebaseError } from "../../utils/firebaseErrors";
@@ -22,6 +23,7 @@ import VerificarCodigoScreenStyle from "../../styles/auth/VerificarCodigoScreenS
 const VerificarCodigoScreen = ({ route, navigation }) => {
   // Resolver proveniente de getMultiFactorResolver en LoginScreen.
   const { resolver } = route.params;
+  const insets = useSafeAreaInsets();
 
   const [codigo, setCodigo] = useState("");
   const [error, setError] = useState("");
@@ -58,7 +60,10 @@ const VerificarCodigoScreen = ({ route, navigation }) => {
 
   return (
     <KeyboardAvoidingView
-      style={VerificarCodigoScreenStyle.contenedor}
+      style={[
+        VerificarCodigoScreenStyle.contenedor,
+        { paddingTop: insets.top, paddingBottom: insets.bottom },
+      ]}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <View style={VerificarCodigoScreenStyle.card}>

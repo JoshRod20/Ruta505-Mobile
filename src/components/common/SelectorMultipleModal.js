@@ -32,7 +32,7 @@ export default function SelectorMultipleModal({
   const insets = useSafeAreaInsets();
 
   return (
-    <Modal
+    <Modal statusBarTranslucent navigationBarTranslucent
       visible={visible}
       transparent
       animationType="fade"

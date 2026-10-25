@@ -7,12 +7,12 @@ import { StyleSheet } from "react-native";
 const VERDE = "#0E5A34";
 
 export const tarjetaUbicacionStyle = StyleSheet.create({
-  // Hoja inferior pegada a la barra de navegación (68 = alto de CustomTabBar)
+  // Hoja inferior sobre la barra de navegación. El `bottom` se calcula en el
+  // componente con useTabBarHeight() (alto de la barra + inset del sistema).
   hoja: {
     position: "absolute",
     left: 0,
     right: 0,
-    bottom: 100,
     backgroundColor: "#FFFFFF",
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,

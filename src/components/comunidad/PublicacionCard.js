@@ -17,6 +17,8 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useWindowDimensions } from "react-native";
+import { MAX_ANCHO_FEED } from "../../utils/layout";
 import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
@@ -24,7 +26,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 import {
   publicacionCardStyle as styles,
-  ANCHO_IMAGEN,
+  MARGEN_CARD,
 } from "../../styles/home/publicacionCardStyle";
 import { formatearTiempoRelativo } from "../../utils/tiempoRelativo";
 import {
@@ -99,6 +101,12 @@ const ETIQUETAS_ACTOR = {
  * PublicacionCard.
  */
 export default function PublicacionCard({ experiencia }) {
+  // La imagen ocupa el ancho de la tarjeta; en tablet el feed se limita a
+  // MAX_ANCHO_FEED y se centra, así que el ancho sale de la ventana actual.
+  const { width: anchoVentana } = useWindowDimensions();
+  const ANCHO_IMAGEN = Math.min(anchoVentana, MAX_ANCHO_FEED) - MARGEN_CARD * 2 - 2;
+  const ALTO_IMAGEN = Math.round(ANCHO_IMAGEN * 0.78);
+  const medidasImagen = { width: ANCHO_IMAGEN, height: ALTO_IMAGEN };
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const { user, profile, role } = useAuth();
@@ -422,7 +430,7 @@ export default function PublicacionCard({ experiencia }) {
         </TouchableOpacity>
       </View>
 
-      <Modal
+      <Modal statusBarTranslucent navigationBarTranslucent
         visible={menuVisible}
         transparent
         animationType="fade"
@@ -477,7 +485,7 @@ export default function PublicacionCard({ experiencia }) {
         </TouchableOpacity>
       </Modal>
 
-      <Modal
+      <Modal statusBarTranslucent navigationBarTranslucent
         visible={editando}
         transparent
         animationType="fade"
@@ -535,7 +543,7 @@ export default function PublicacionCard({ experiencia }) {
 
       {/* Carrusel de fotos */}
       {imagenes.length > 0 ? (
-        <View style={styles.carruselContenedor}>
+        <View style={[styles.carruselContenedor, medidasImagen]}>
           <FlatList
             data={imagenes}
             horizontal
@@ -544,7 +552,7 @@ export default function PublicacionCard({ experiencia }) {
             keyExtractor={(uri, index) => `${experiencia.id}-${index}`}
             onMomentumScrollEnd={handleScrollFin}
             renderItem={({ item }) => (
-              <Image source={{ uri: item }} style={styles.imagen} />
+              <Image source={{ uri: item }} style={[styles.imagen, medidasImagen]} />
             )}
           />
 
@@ -557,7 +565,7 @@ export default function PublicacionCard({ experiencia }) {
           )}
         </View>
       ) : (
-        <View style={styles.imagenPlaceholder}>
+        <View style={[styles.imagenPlaceholder, medidasImagen]}>
           <Ionicons name="image-outline" size={32} color="#8FA391" />
           <Text style={styles.imagenPlaceholderTexto}>Sin fotos</Text>
         </View>
@@ -645,7 +653,7 @@ export default function PublicacionCard({ experiencia }) {
       </Text>
 
       {/* Comentarios */}
-      <Modal
+      <Modal statusBarTranslucent navigationBarTranslucent
         visible={comentariosVisible}
         transparent
         animationType="slide"

@@ -17,6 +17,7 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   formularioExperienciaStyle as s,
   COLOR_VERDE_FORMULARIO as VERDE,
@@ -85,6 +86,7 @@ export default function FormularioExperiencia({
   valoresIniciales = null,
   sesionId = 0,
 }) {
+  const insets = useSafeAreaInsets();
   const [titulo, setTitulo] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [categoria, setCategoria] = useState(CATEGORIAS_EXPERIENCIA[0]);
@@ -227,13 +229,18 @@ export default function FormularioExperiencia({
   }
 
   return (
-    <Modal
+    <Modal statusBarTranslucent navigationBarTranslucent
       visible={visible}
       animationType="fade"
       transparent
       onRequestClose={limpiarYCerrar}
     >
-      <View style={s.fondoOscuro}>
+      <View
+        style={[
+          s.fondoOscuro,
+          { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 16 },
+        ]}
+      >
         <View style={s.hoja}>
           <ScrollView
             keyboardShouldPersistTaps="handled"

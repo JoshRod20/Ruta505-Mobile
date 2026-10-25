@@ -7,7 +7,7 @@ import { campo } from "../common/campoStyle";
 
 const { width: ANCHO_PANTALLA } = Dimensions.get("window");
 
-const MARGEN_CARD = 20;
+export const MARGEN_CARD = 20;
 const PADDING_CARD = 12;
 // La imagen ocupa todo el ancho de la tarjeta (sin padding lateral, como en el diseño)
 export const ANCHO_IMAGEN = ANCHO_PANTALLA - MARGEN_CARD * 2 - 2; // - borde

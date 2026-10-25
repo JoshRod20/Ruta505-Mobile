@@ -419,7 +419,7 @@ export default function PerfilPublico() {
       </ScrollView>
 
       {/* ¿Qué tipo de reseña quiere publicar? */}
-      <Modal visible={paso === "tipo"} transparent animationType="fade" onRequestClose={cerrarFlujo}>
+      <Modal statusBarTranslucent navigationBarTranslucent visible={paso === "tipo"} transparent animationType="fade" onRequestClose={cerrarFlujo}>
         <View style={s.centroFondo}>
           <View style={s.cajaCentro}>
             <TouchableOpacity
@@ -454,7 +454,7 @@ export default function PerfilPublico() {
       </Modal>
 
       {/* Nueva reseña */}
-      <Modal
+      <Modal statusBarTranslucent navigationBarTranslucent
         visible={paso === "buena" || paso === "mala"}
         transparent
         animationType="fade"

@@ -16,6 +16,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import useTabBarHeight from "../../hooks/useTabBarHeight";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
@@ -39,6 +40,7 @@ const MAX_PESO_FOTO_KB = 200;
  */
 export default function UserProfile() {
   const insets = useSafeAreaInsets();
+  const tabBarHeight = useTabBarHeight();
   const navigation = useNavigation();
   const { profile, user } = useAuth();
   const [subiendoFoto, setSubiendoFoto] = useState(false);
@@ -114,7 +116,7 @@ export default function UserProfile() {
       style={s.container}
       contentContainerStyle={{
         paddingTop: insets.top + 36,
-        paddingBottom: 68 + insets.bottom + 24,
+        paddingBottom: tabBarHeight + 24,
       }}
       showsVerticalScrollIndicator={false}
     >

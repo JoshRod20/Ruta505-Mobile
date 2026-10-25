@@ -17,6 +17,7 @@ import { useVideoPlayer, VideoView } from "expo-video";
 
 import { obtenerMultimedia } from "../services/Negociosservice";
 import { tarjetaUbicacionStyle as s } from "../styles/mapanicaragua/TarjetaUbicacionStyle";
+import useTabBarHeight from "../hooks/useTabBarHeight";
 
 const VERDE = "#0E5A34";
 
@@ -52,6 +53,7 @@ export default function TarjetaUbicacion({
   onCambiarOrigen,
 }) {
   const { width, height } = useWindowDimensions();
+  const tabBarHeight = useTabBarHeight();
 
   const fotos = punto.imagenes?.length ? punto.imagenes : punto.imagenUrls ?? [];
   // Fotos y videos del negocio (subcolección). Mientras cargan, o si no hay,
@@ -78,7 +80,7 @@ export default function TarjetaUbicacion({
   const anchoFoto = totalMedia > 1 ? width * 0.72 : width - 40;
 
   return (
-    <View style={s.hoja}>
+    <View style={[s.hoja, { bottom: tabBarHeight + 32 }]}>
       <ScrollView
         style={{ maxHeight: height * 0.5 }}
         contentContainerStyle={s.contenido}

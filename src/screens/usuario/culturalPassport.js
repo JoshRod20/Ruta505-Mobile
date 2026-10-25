@@ -14,7 +14,9 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import useTabBarHeight from "../../hooks/useTabBarHeight";
 import QrScannerModal from "../../components/pasaporte/QrScannerModal";
 import StampCard from "../../components/pasaporte/StampCard";
 import { useAuth } from "../../context/AuthContext";
@@ -34,6 +36,8 @@ const AVATAR_POR_DEFECTO = require("../../assets/insignias/Granada.png");
 export default function CulturalPassport({ navigation }) {
   const { user, profile } = useAuth();
   const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const tabBarHeight = useTabBarHeight();
   const { rutas, totalInsignias, insignias, niveles, claim } = usePassport(
     user?.uid,
   );
@@ -61,7 +65,10 @@ export default function CulturalPassport({ navigation }) {
   return (
     <View style={s.container}>
       <ScrollView
-        contentContainerStyle={s.content}
+        contentContainerStyle={[
+          s.content,
+          { paddingTop: insets.top + 8, paddingBottom: tabBarHeight + 24 },
+        ]}
         showsVerticalScrollIndicator={false}
       >
         <Text style={s.title}>Mi Pasaporte</Text>

@@ -21,6 +21,8 @@ import {
   ViewAnnotation,
 } from "@maplibre/maplibre-react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import useTabBarHeight from "../hooks/useTabBarHeight";
 import { describirManiobra, obtenerRuta } from "../services/osrmservice.js";
 import {
   iconoDeCategoria,
@@ -59,6 +61,8 @@ export default function NavegacionRuta({
   tramoActual, // índice de la parada a la que vamos ahora
   rutaCompleta, // línea de toda la ruta creativa: [[lat, lon], ...] (opcional)
 }) {
+  const insets = useSafeAreaInsets();
+  const tabBarHeight = useTabBarHeight();
   const [ruta, setRuta] = useState(rutaInicial);
   const [pasoActualIndex, setPasoActualIndex] = useState(0);
   const [tiempoRestanteMin, setTiempoRestanteMin] = useState(
@@ -347,7 +351,12 @@ export default function NavegacionRuta({
 
   if (llegado) {
     return (
-      <View style={navegacionStyle.llegadaContainer}>
+      <View
+        style={[
+          navegacionStyle.llegadaContainer,
+          { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 },
+        ]}
+      >
         <Text style={navegacionStyle.llegadaIcono}>🎉</Text>
         <Text style={navegacionStyle.llegadaTitulo}>
           {tituloLlegada ?? "¡Has llegado a tu destino!"}
@@ -498,7 +507,9 @@ export default function NavegacionRuta({
         )}
       </Map>
 
-      <View style={navegacionStyle.panelInstruccion}>
+      <View
+        style={[navegacionStyle.panelInstruccion, { top: insets.top + 32 }]}
+      >
         {recalculando ? (
           <Text style={navegacionStyle.instruccionTexto}>
             Recalculando ruta…
@@ -529,7 +540,9 @@ export default function NavegacionRuta({
         )}
       </View>
 
-      <View style={navegacionStyle.panelInferior}>
+      <View
+        style={[navegacionStyle.panelInferior, { bottom: tabBarHeight + 22 }]}
+      >
         <View>
           <Text style={navegacionStyle.etaTiempo}>{tiempoRestanteMin} min</Text>
           <Text style={navegacionStyle.etaDistancia}>

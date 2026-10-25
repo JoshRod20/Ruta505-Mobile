@@ -77,7 +77,7 @@ export default function CampoHorario({ valor, onChange, estiloCampo }) {
         </View>
       </TouchableOpacity>
 
-      <Modal
+      <Modal statusBarTranslucent navigationBarTranslucent
         visible={abierto}
         transparent
         animationType="slide"

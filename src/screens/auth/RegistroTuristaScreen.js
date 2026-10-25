@@ -8,7 +8,6 @@ import {
 } from "react";
 
 import {
-  Dimensions,
   FlatList,
   ImageBackground,
   KeyboardAvoidingView,
@@ -24,6 +23,8 @@ import {
 import Svg, { Path } from "react-native-svg";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useWindowDimensions } from "react-native";
+import { padLateralTablet } from "../../utils/layout";
 
 import {
   useRegistroForm,
@@ -47,8 +48,6 @@ import RegistroTuristaScreenStyle
 // DIMENSIONES
 // ==================================================
 
-const { width: SCREEN_WIDTH } =
-  Dimensions.get("window");
 
 const CURVE_HEIGHT = 130;
 
@@ -105,6 +104,7 @@ const RegistroTuristaScreen = ({
 }) => {
   const insets =
     useSafeAreaInsets();
+  const { width: SCREEN_WIDTH } = useWindowDimensions();
 
   // ==================================================
   // FORMULARIO
@@ -579,10 +579,12 @@ const RegistroTuristaScreen = ({
           style={{
             flex: 1,
           }}
-          contentContainerStyle={
+          contentContainerStyle={[
             RegistroTuristaScreenStyle
-              .card
-          }
+              .card,
+            { paddingBottom: 34 + insets.bottom },
+            padLateralTablet(SCREEN_WIDTH),
+          ]}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode={
             Platform.OS === "ios"
@@ -1092,7 +1094,7 @@ const RegistroTuristaScreen = ({
           MODAL IDIOMA
           ================================================== */}
 
-      <Modal
+      <Modal statusBarTranslucent navigationBarTranslucent
         visible={
           modalIdiomaVisible
         }
@@ -1126,10 +1128,11 @@ const RegistroTuristaScreen = ({
           />
 
           <View
-            style={
+            style={[
               RegistroTuristaScreenStyle
-                .modalCaja
-            }
+                .modalCaja,
+              { paddingBottom: 16 + insets.bottom },
+            ]}
           >
             <Text
               style={
@@ -1241,7 +1244,7 @@ const RegistroTuristaScreen = ({
           MODAL PAÍS
           ================================================== */}
 
-      <Modal
+      <Modal statusBarTranslucent navigationBarTranslucent
         visible={
           modalPaisVisible
         }
@@ -1275,10 +1278,11 @@ const RegistroTuristaScreen = ({
           />
 
           <View
-            style={
+            style={[
               RegistroTuristaScreenStyle
-                .modalCaja
-            }
+                .modalCaja,
+              { paddingBottom: 16 + insets.bottom },
+            ]}
           >
             <Text
               style={

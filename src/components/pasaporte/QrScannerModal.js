@@ -14,10 +14,12 @@ import {
 } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { culturalPassportStyle as s } from "../../styles/usuario/culturalPassportStyle";
 
 export default function QrScannerModal({ visible, onClose, onClaim }) {
+  const insets = useSafeAreaInsets();
   const [permission, requestPermission] = useCameraPermissions();
   const [result, setResult] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -51,7 +53,13 @@ export default function QrScannerModal({ visible, onClose, onClaim }) {
   const reward = result?.reward?.item;
 
   return (
-    <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      onRequestClose={onClose}
+      statusBarTranslucent
+      navigationBarTranslucent
+    >
       <View style={s.scannerRoot}>
         {permission?.granted ? (
           <CameraView
@@ -73,7 +81,7 @@ export default function QrScannerModal({ visible, onClose, onClaim }) {
         )}
 
         <Pressable
-          style={s.scannerClose}
+          style={[s.scannerClose, { top: insets.top + 12 }]}
           onPress={onClose}
           accessibilityLabel="Cerrar escáner"
         >
@@ -83,7 +91,7 @@ export default function QrScannerModal({ visible, onClose, onClaim }) {
         {permission?.granted && !result ? (
           <>
             <View style={s.scannerFrame} />
-            <Text style={s.scannerHint}>
+            <Text style={[s.scannerHint, { bottom: insets.bottom + 48 }]}>
               Apunta al código QR del lugar que estás visitando
             </Text>
           </>

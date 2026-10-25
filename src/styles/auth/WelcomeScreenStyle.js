@@ -28,6 +28,7 @@ const WelcomeScreenStyle = StyleSheet.create({
 
   boton: {
     width: "100%",
+    maxWidth: 420,
     height: 52,
 
     backgroundColor: COLOR_HEADER,

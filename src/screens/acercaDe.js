@@ -4,6 +4,7 @@
 
 import React from "react";
 import { Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import FloatingNavButton from "../components/common/FloatingNavButton";
 import { homeStyle } from "../styles/home/homeStyle";
@@ -12,8 +13,18 @@ import { homeStyle } from "../styles/home/homeStyle";
  * AcercaDe.
  */
 export default function AcercaDe({ navigation }) {
+  const insets = useSafeAreaInsets();
   return (
-    <View style={homeStyle.container}>
+    <View
+      style={[
+        homeStyle.container,
+        {
+          paddingTop: insets.top + 56,
+          paddingBottom: insets.bottom + 24,
+          paddingHorizontal: 24,
+        },
+      ]}
+    >
       <FloatingNavButton
         icon="arrow-back-outline"
         onPress={() =>

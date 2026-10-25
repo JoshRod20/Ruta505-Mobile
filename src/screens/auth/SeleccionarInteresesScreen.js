@@ -6,12 +6,15 @@ import { useState } from "react";
 import { View, Text, TouchableOpacity, FlatList, Image} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useWindowDimensions } from "react-native";
+import { padLateralTablet } from "../../utils/layout";
 
 import InteresesUbicacionStyle from "../../styles/auth/InteresesUbicacionStyle";
 import { INTERESES_TURISTA } from "../../constants/intereses";
 
 const SeleccionarInteresesScreen = ({ navigation, route }) => {
   const insets = useSafeAreaInsets();
+  const { width: ancho } = useWindowDimensions();
   const { datosRegistro } = route.params || {};
 
   const [seleccionados, setSeleccionados] = useState([]);
@@ -46,7 +49,8 @@ const SeleccionarInteresesScreen = ({ navigation, route }) => {
     <View
       style={[
         InteresesUbicacionStyle.contenedor,
-        { paddingTop: insets.top + 16 },
+        { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 16 },
+        padLateralTablet(ancho),
       ]}
     >
 

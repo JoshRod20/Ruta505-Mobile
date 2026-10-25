@@ -2,11 +2,10 @@
  * Estilos de RegistroFormStyle.
  */
 
-import { StyleSheet, Dimensions } from "react-native";
+import { StyleSheet } from "react-native";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 import { boton } from "../common/botonStyle";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 // ==================================================
 // PALETA (consistente con Login y demás pantallas)

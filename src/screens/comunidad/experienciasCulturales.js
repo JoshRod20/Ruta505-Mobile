@@ -430,6 +430,7 @@ export default function ExperienciasCulturales() {
         visible={selectorVisible}
         animationType="slide"
         statusBarTranslucent
+        navigationBarTranslucent
         onRequestClose={() => setSelectorVisible(false)}
       >
         <SeleccionarUbicacionMapa
