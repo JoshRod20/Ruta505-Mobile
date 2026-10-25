@@ -8,7 +8,6 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { ROLES } from "../constants/roles";
 
@@ -20,8 +19,13 @@ import { VERDE } from "../styles/home/homeStyle";
 
 const porId = (id) => ITEMS.find((i) => i.id === id);
 
+// Césped estático: va pegado abajo a la derecha, detrás de Pinolito. Pinolito
+// (con la skin que el usuario eligió) cambia; el césped no.
+const CESPED = require("../assets/pinolito/cesped.png");
+const ANCHO_CESPED = 0.62; // ancho del césped, como fracción del ancho de pantalla
+const SUBIDA_PINOLITO = 0.45; // qué tanto sube Pinolito sobre el césped (0 = al ras del borde)
+
 export default function PinolitoAsistente() {
-  const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const { width } = useWindowDimensions();
   const { isLoggedIn, profile, role } = useAuth();
@@ -48,6 +52,13 @@ export default function PinolitoAsistente() {
 
   const tam = width * 0.5;
 
+  // Césped: se calcula su alto con la proporción real de la imagen.
+  const { width: cW, height: cH } = Image.resolveAssetSource(CESPED);
+  const cespedAncho = width * ANCHO_CESPED;
+  const cespedAlto = cespedAncho * (cH / cW);
+  // Pinolito se centra sobre el césped y sus pies quedan sobre él.
+  const centrado = Math.max((cespedAncho - tam) / 2 - 16, 0);
+
   const onVerMapa = () => {
     const lugar = recomendacion?.lugar;
     cerrar();
@@ -67,7 +78,20 @@ export default function PinolitoAsistente() {
       statusBarTranslucent
       onRequestClose={() => {}} // bloquea el botón "atrás" de Android
     >
-      <View style={[styles.overlay, { paddingBottom: insets.bottom + 24 }]}>
+      <View style={styles.overlay}>
+        {/* Césped estático (detrás de todo, pegado abajo a la derecha) */}
+        <Image
+          source={CESPED}
+          style={{
+            position: "absolute",
+            right: 0,
+            bottom: 0,
+            width: cespedAncho,
+            height: cespedAlto,
+          }}
+          resizeMode="contain"
+        />
+
         {/* Nube de pensamiento */}
         <View style={styles.nube}>
           <Text style={styles.texto}>{recomendacion?.mensaje}</Text>
@@ -83,14 +107,27 @@ export default function PinolitoAsistente() {
 
         {/* Burbujas de pensamiento */}
         <View
-          style={[styles.burbuja, { width: 22, height: 22, marginRight: tam * 0.55 }]}
+          style={[
+            styles.burbuja,
+            { width: 22, height: 22, marginRight: tam * 0.55 + centrado },
+          ]}
         />
         <View
-          style={[styles.burbuja, { width: 14, height: 14, marginRight: tam * 0.5 }]}
+          style={[
+            styles.burbuja,
+            { width: 14, height: 14, marginRight: tam * 0.5 + centrado },
+          ]}
         />
 
         {/* Pinolito con su atuendo guardado */}
-        <View style={{ width: tam, height: tam }}>
+        <View
+          style={{
+            width: tam,
+            height: tam,
+            marginRight: centrado,
+            marginBottom: cespedAlto * SUBIDA_PINOLITO,
+          }}
+        >
           <Image source={cuerpo.capa} style={styles.capa} resizeMode="contain" />
           {accesorio && (
             <Image source={accesorio.capa} style={styles.capa} resizeMode="contain" />

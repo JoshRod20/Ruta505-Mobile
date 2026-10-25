@@ -33,14 +33,20 @@ export default function usePassport(uid) {
   const claim = useCallback((data) => claimFromQr(uid, data), [uid]);
 
   // Las desbloqueadas van primero, en el orden en que se obtuvieron.
-  const withState = (catalog, ids) =>
-    catalog
-      .map((item) => ({ ...item, unlocked: ids.includes(item.id) }))
+  // Los ítems con porDefecto (nivel 1) están desbloqueados desde el inicio
+  // y siempre van de primeros.
+  const withState = (catalog, ids) => {
+    const orden = (item) => (item.porDefecto ? -1 : ids.indexOf(item.id));
+    return catalog
+      .map((item) => ({
+        ...item,
+        unlocked: Boolean(item.porDefecto) || ids.includes(item.id),
+      }))
       .sort(
         (a, b) =>
-          Number(b.unlocked) - Number(a.unlocked) ||
-          ids.indexOf(a.id) - ids.indexOf(b.id),
+          Number(b.unlocked) - Number(a.unlocked) || orden(a) - orden(b),
       );
+  };
 
   return {
     loading,

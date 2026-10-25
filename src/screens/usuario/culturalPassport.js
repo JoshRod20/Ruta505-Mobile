@@ -26,7 +26,8 @@ import {
 } from "../../styles/usuario/culturalPassportStyle";
 
 const PREVIEW_COUNT = 6;
-const AVATAR_POR_DEFECTO = require("../../assets/insignias/Granada.png");
+// Imagen de perfil por defecto: la del nivel 1 (Viajero novato).
+const AVATAR_POR_DEFECTO = require("../../assets/niveles/Viajero novato.png");
 
 /**
  * CulturalPassport.
