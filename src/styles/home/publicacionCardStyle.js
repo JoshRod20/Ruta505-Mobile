@@ -426,6 +426,21 @@ export const publicacionCardStyle = StyleSheet.create({
   comentarioBorrar: {
     marginLeft: 8,
   },
+  comentarioEditandoAviso: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 6,
+  },
+  comentarioEditandoTexto: {
+    fontSize: 12,
+    color: "#8A8A8A",
+  },
+  comentarioEditandoCancelar: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#C1443C",
+  },
   comentarioEstrellas: {
     flexDirection: "row",
     marginTop: 2,

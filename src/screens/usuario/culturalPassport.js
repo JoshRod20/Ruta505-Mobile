@@ -49,15 +49,21 @@ export default function CulturalPassport({ navigation }) {
     user?.displayName ||
     user?.email?.split("@")[0] ||
     "Turista";
-  const fotoUrl =
-    profile?.fotoPerfil || profile?.photoURL || profile?.foto || user?.photoURL;
 
-  const cardSize = (width - SCREEN_PADDING * 2 - GRID_GAP * 2) / 3;
+  // Math.floor evita que la suma de 3 sellos + separaciones se pase del ancho
+  // por una fracción y el tercer sello salte a la fila de abajo (2 columnas).
+  const cardSize = Math.floor(
+    (width - SCREEN_PADDING * 2 - GRID_GAP * 2) / 3,
+  );
   const nivelesDesbloqueados = niveles.filter((n) => n.unlocked);
   const nivelActual = Math.max(nivelesDesbloqueados.length, 1);
-  const nivelTitulo = nivelesDesbloqueados.length
-    ? nivelesDesbloqueados[nivelesDesbloqueados.length - 1].title
-    : niveles[0].title;
+  // Nivel actual = el último desbloqueado (por defecto, el nivel 1).
+  const nivelActualItem = nivelesDesbloqueados.length
+    ? nivelesDesbloqueados[nivelesDesbloqueados.length - 1]
+    : niveles[0];
+  const nivelTitulo = nivelActualItem.title;
+  // La imagen de arriba es la del nivel actual, NO la foto de perfil del usuario.
+  const imagenNivel = nivelActualItem.image || AVATAR_POR_DEFECTO;
 
   return (
     <View style={s.container}>
@@ -70,7 +76,7 @@ export default function CulturalPassport({ navigation }) {
         <View style={s.profileRow}>
           <View style={s.avatarWrap}>
             <Image
-              source={fotoUrl ? { uri: fotoUrl } : AVATAR_POR_DEFECTO}
+              source={imagenNivel}
               style={s.avatar}
               resizeMode="cover"
             />

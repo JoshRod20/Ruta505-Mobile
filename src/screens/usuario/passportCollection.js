@@ -29,7 +29,11 @@ export default function PassportCollection({ navigation }) {
   const { insignias, niveles, claim } = usePassport(user?.uid);
   const [scannerOpen, setScannerOpen] = useState(false);
 
-  const cardSize = (width - SCREEN_PADDING * 2 - GRID_GAP * 2) / 3;
+  // Math.floor evita que la suma de 3 sellos + separaciones se pase del ancho
+  // por una fracción y el tercer sello salte a la fila de abajo (2 columnas).
+  const cardSize = Math.floor(
+    (width - SCREEN_PADDING * 2 - GRID_GAP * 2) / 3,
+  );
 
   return (
     <View style={s.container}>
