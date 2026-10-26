@@ -7,10 +7,13 @@ import React from "react";
 import { Image, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-import { culturalPassportStyle as s } from "../../styles/usuario/culturalPassportStyle";
+import {
+  culturalPassportStyle as s,
+  STAMP_ASPECT,
+} from "../../styles/usuario/culturalPassportStyle";
 
 export default function StampCard({ item, size }) {
-  const dims = { width: size, height: size * 1.32 };
+  const dims = { width: size, height: size * STAMP_ASPECT };
   const caption = item.location ? (
     <View style={s.stampCaption}>
       <Text style={s.stampTitle} numberOfLines={2}>

@@ -120,7 +120,15 @@ export default function Home() {
             onPress={() => navigation.navigate("PinolitoDrawer")}
           >
             {/* Pinolito con el atuendo que el usuario guardó */}
-            <PinolitoAvatar style={homeStyle.pinolitoImagen} />
+            {/* Zoom: en la foto de perfil se ve la cabeza de Pinolito, no el cuerpo
+                completo. Ajusta acercar (más grande = más cerca) y
+                ajusteVertical (negativo sube, positivo baja) si lo quieres
+                encuadrar distinto. */}
+            <PinolitoAvatar
+              style={homeStyle.pinolitoImagen}
+              acercar={1.2}
+              ajusteVertical={5}
+            />
           </TouchableOpacity>
         )}
       </View>
@@ -143,11 +151,24 @@ export default function Home() {
               accessibilityRole="button"
               accessibilityState={{ selected: activa }}
             >
-              <Ionicons
-                name={cat.icono}
-                size={18}
-                color={activa ? "#FFFFFF" : VERDE}
-              />
+              {/* ICONO_CATEGORIA: ícono personalizado o de respaldo */}
+              {typeof cat.icono === "string" ? (
+                <Ionicons
+                  name={cat.icono}
+                  size={18}
+                  color={activa ? "#FFFFFF" : VERDE}
+                />
+              ) : (
+                <Image
+                  source={cat.icono}
+                  style={{
+                    width: 24,
+                    height: 24,
+                    tintColor: activa ? "#FFFFFF" : VERDE, // Pinta el PNG si tiene fondo transparente
+                  }}
+                  resizeMode="contain"
+                />
+              )}
               <Text
                 style={[
                   homeStyle.chipTexto,

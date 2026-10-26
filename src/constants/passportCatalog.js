@@ -74,7 +74,9 @@ export const NIVELES = [
   {
     id: "lv1",
     title: "Explorador Principiante",
-    image: require("../assets/niveles/Granada.png"),
+    // Nivel inicial: todo turista lo tiene desbloqueado desde que empieza.
+    porDefecto: true,
+    image: require("../assets/niveles/Viajero novato.png"),
   },
   {
     id: "lv2",

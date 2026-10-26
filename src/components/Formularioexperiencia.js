@@ -334,12 +334,25 @@ export default function FormularioExperiencia({
                       onPress={() => setCategoria(cat)}
                       activeOpacity={0.8}
                     >
-                      <Ionicons
-                        name={cat.icono}
-                        size={15}
-                        color={activa ? "#FFFFFF" : VERDE}
-                        style={s.chipCategoriaIcono}
-                      />
+                      {/* ICONO_CATEGORIA: ícono personalizado o de respaldo */}
+                      {typeof cat.icono === "string" ? (
+                        <Ionicons
+                          name={cat.icono}
+                          size={15}
+                          color={activa ? "#FFFFFF" : VERDE}
+                          style={s.chipCategoriaIcono}
+                        />
+                      ) : (
+                        <Image
+                          source={cat.icono}
+                          style={[
+                            { width: 15, height: 15 },
+                            s.chipCategoriaIcono,
+                            { tintColor: activa ? "#FFFFFF" : VERDE }, // Comenta esta línea si tu PNG ya tiene su propio color y no quieres que cambie
+                          ]}
+                          resizeMode="contain"
+                        />
+                      )}
                       <Text
                         style={[
                           s.chipCategoriaTexto,

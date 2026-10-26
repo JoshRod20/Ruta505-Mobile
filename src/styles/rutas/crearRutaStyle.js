@@ -305,37 +305,34 @@ export const crearRutaStyle = StyleSheet.create({
   buscador: {
     flexDirection: "row",
     alignItems: "center",
-    borderWidth: 1.2,
-    borderColor: VERDE,
+    height: 48,
     borderRadius: 14,
-    height: 50,
-    overflow: "hidden",
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 16,
     marginBottom: 14,
   },
   buscadorIcono: {
-    width: 58,
-    height: "100%",
-    backgroundColor: VERDE,
-    alignItems: "center",
-    justifyContent: "center",
-    borderTopRightRadius: 14,
-    borderBottomRightRadius: 14,
+    width: 22,
+    height: 22,
   },
   buscadorInput: {
     flex: 1,
-    paddingHorizontal: 14,
+    height: "100%",
+    marginLeft: 12,
     fontFamily: "Inter-Regular",
     fontSize: 14,
-    color: "#1A1A1A",
+    color: "#1F2A24",
+    paddingVertical: 0,
+  },
+  buscadorLimpiar: {
+    marginLeft: 6,
   },
   miNegocio: {
     flexDirection: "row",
     alignItems: "center",
-    borderWidth: 1.2,
-    borderColor: LIMA,
+    backgroundColor: "#FFFFFF",
     borderRadius: 16,
     padding: 12,
-    marginBottom: 16,
   },
   miNegocioCategoria: {
     fontFamily: "Poppins-Bold",
@@ -484,4 +481,35 @@ export const crearRutaStyle = StyleSheet.create({
     textAlign: "center",
     marginBottom: 8,
   },
+  zonaGris: {
+    backgroundColor: "#F4F4F4",
+    // Se sale del margen de 20 px de la pantalla para llegar de borde a borde.
+    marginHorizontal: -20,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    marginBottom: 16,
+  },
+  zonaGrisCarrusel: {
+  backgroundColor: "#F4F4F4",
+  // Se sale del margen de 20 px de la pantalla para llegar de borde a borde.
+  marginHorizontal: -20,
+  paddingVertical: 16,
+  marginBottom: 16,
+},
+avisoEnGris: {
+  paddingHorizontal: 20,
+  marginBottom: 0,
+},
+carrusel: {
+  // El margen va aquí y no en la zona gris, para que el carrusel
+  // se deslice de borde a borde y no se corte a los 20 px.
+  paddingHorizontal: 20,
+},
+tarjetaAliado: {
+  width: 176,
+  borderRadius: 18,
+  padding: 10,
+  marginRight: 12,
+  backgroundColor: "#FFFFFF",
+},
 });

@@ -196,15 +196,28 @@ export default function PublicacionCard({ experiencia }) {
 
   // Comenta cualquier usuario con sesión, menos el autor de la publicación.
   const puedeComentar = !!user?.uid && !esAutor;
-  // Cada persona tiene un solo comentario por publicación: si ya comentó, edita.
-  const miComentario = comentarios.find((c) => c.id === user?.uid) ?? null;
+  // Id del comentario que se está editando (null = comentario nuevo).
+  const [comentarioEditandoId, setComentarioEditandoId] = useState(null);
 
+  const limpiarComposer = () => {
+    setComentarioEditandoId(null);
+    setCalificacion(0);
+    setTextoComentario("");
+    setFotosComentario([]);
+  };
+
+  // El cuadro siempre empieza vacío al abrir o cerrar los comentarios.
   useEffect(() => {
-    if (!comentariosVisible) return;
-    setCalificacion(miComentario?.calificacion ?? 0);
-    setTextoComentario(miComentario?.texto ?? "");
-    setFotosComentario(miComentario?.imagenes ?? []);
+    limpiarComposer();
   }, [comentariosVisible]);
+
+  // Carga uno de mis comentarios en el cuadro para editarlo.
+  const handleEditarComentario = (comentario) => {
+    setComentarioEditandoId(comentario.id);
+    setCalificacion(Number(comentario.calificacion) || 0);
+    setTextoComentario(comentario.texto ?? "");
+    setFotosComentario(comentario.imagenes ?? []);
+  };
 
   const agregarFotos = async () => {
     if (fotosComentario.length >= MAX_FOTOS) {
@@ -282,17 +295,15 @@ export default function PublicacionCard({ experiencia }) {
     try {
       setEnviandoComentario(true);
       await guardarComentario(experiencia.id, {
+        comentarioId: comentarioEditandoId ?? undefined,
         autorId: user.uid,
         autorNombre: profile?.nombreCompleto ?? "Usuario",
+        autorFoto: profile?.fotoPerfil ?? "",
         calificacion,
         texto,
         imagenes: fotosComentario,
       });
-      if (!miComentario) {
-        setTextoComentario("");
-        setCalificacion(0);
-        setFotosComentario([]);
-      }
+      limpiarComposer();
     } catch (error) {
       console.warn("Error al comentar:", error);
       Alert.alert(
@@ -420,14 +431,9 @@ export default function PublicacionCard({ experiencia }) {
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.menuBoton}
-          onPress={() => setMenuVisible(true)}
-          activeOpacity={0.8}
-          accessibilityLabel="Más opciones"
-        >
-          <Ionicons name="ellipsis-horizontal" size={18} color="#4D4D4D" />
-        </TouchableOpacity>
+        {/* Botón de tres puntos (menú Editar / Eliminar / Reportar) quitado.
+            Para volver a mostrarlo, restaura aquí el TouchableOpacity con
+            style={styles.menuBoton} y onPress={() => setMenuVisible(true)}. */}
       </View>
 
       <Modal statusBarTranslucent navigationBarTranslucent
@@ -509,6 +515,7 @@ export default function PublicacionCard({ experiencia }) {
               value={tituloEditado}
               onChangeText={setTituloEditado}
               placeholder="Título de la experiencia"
+              placeholderTextColor="#9A9A9A"
               maxLength={120}
             />
 
@@ -521,6 +528,7 @@ export default function PublicacionCard({ experiencia }) {
               value={descripcionEditada}
               onChangeText={setDescripcionEditada}
               placeholder="Describe tu experiencia"
+              placeholderTextColor="#9A9A9A"
               multiline
               maxLength={500}
             />
@@ -691,12 +699,25 @@ export default function PublicacionCard({ experiencia }) {
               renderItem={({ item }) => {
                 const puedeBorrar =
                   !!user?.uid && (item.autorId === user.uid || esAutor);
+                // Foto de perfil del autor del comentario. Si es mi comentario
+                // uso mi foto actual; si no, la que se guardó al comentar.
+                const fotoAutor =
+                  item.autorId === user?.uid
+                    ? profile?.fotoPerfil || item.autorFoto
+                    : item.autorFoto;
                 return (
                   <View style={styles.comentarioFila}>
                     <View style={styles.comentarioAvatar}>
-                      <Text style={styles.comentarioAvatarTexto}>
-                        {iniciales(item.autorNombre)}
-                      </Text>
+                      {fotoAutor ? (
+                        <Image
+                          source={{ uri: fotoAutor }}
+                          style={styles.comentarioAvatarFoto}
+                        />
+                      ) : (
+                        <Text style={styles.comentarioAvatarTexto}>
+                          {iniciales(item.autorNombre)}
+                        </Text>
+                      )}
                     </View>
                     <View style={styles.comentarioCuerpo}>
                       <View style={styles.comentarioEncabezado}>
@@ -706,6 +727,20 @@ export default function PublicacionCard({ experiencia }) {
                         <Text style={styles.comentarioTiempo}>
                           {formatearTiempoRelativo(item.createdAt)}
                         </Text>
+                        {item.autorId === user?.uid && (
+                          <TouchableOpacity
+                            style={styles.comentarioBorrar}
+                            onPress={() => handleEditarComentario(item)}
+                            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                            accessibilityLabel="Editar comentario"
+                          >
+                            <Ionicons
+                              name="create-outline"
+                              size={16}
+                              color="#8A8A8A"
+                            />
+                          </TouchableOpacity>
+                        )}
                         {puedeBorrar && (
                           <TouchableOpacity
                             style={styles.comentarioBorrar}
@@ -755,10 +790,23 @@ export default function PublicacionCard({ experiencia }) {
                   { paddingBottom: insets.bottom + 10 },
                 ]}
               >
+                {!!comentarioEditandoId && (
+                  <View style={styles.comentarioEditandoAviso}>
+                    <Text style={styles.comentarioEditandoTexto}>
+                      Editando tu comentario
+                    </Text>
+                    <TouchableOpacity
+                      onPress={limpiarComposer}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <Text style={styles.comentarioEditandoCancelar}>
+                        Cancelar
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
                 <View style={styles.comentarioSelectorEstrellas}>
-                  <Text style={styles.comentarioSelectorTexto}>
-                    {miComentario ? "Tu calificación:" : "Califica:"}
-                  </Text>
+                  <Text style={styles.comentarioSelectorTexto}>Califica:</Text>
                   <Estrellas
                     valor={calificacion}
                     size={26}
@@ -832,14 +880,16 @@ export default function PublicacionCard({ experiencia }) {
                       procesandoFoto
                     }
                     accessibilityLabel={
-                      miComentario ? "Guardar comentario" : "Enviar comentario"
+                      comentarioEditandoId
+                        ? "Guardar cambios"
+                        : "Enviar comentario"
                     }
                   >
                     {enviandoComentario ? (
                       <ActivityIndicator color="#FFFFFF" />
                     ) : (
                       <Ionicons
-                        name={miComentario ? "checkmark" : "send"}
+                        name={comentarioEditandoId ? "checkmark" : "send"}
                         size={18}
                         color="#FFFFFF"
                       />

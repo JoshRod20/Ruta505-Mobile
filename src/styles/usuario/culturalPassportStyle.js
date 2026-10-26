@@ -4,8 +4,12 @@
 
 import { StyleSheet } from "react-native";
 
-export const SCREEN_PADDING = 20;
-export const GRID_GAP = 10;
+export const SCREEN_PADDING = 24;
+// Cuadrícula de 3 por fila: poca separación entre columnas y un poco más entre filas.
+export const GRID_GAP = 6; // entre columnas
+export const GRID_ROW_GAP = 10; // entre filas
+// Alto de cada sello = ancho x esta proporción (sellos más altos que anchos).
+export const STAMP_ASPECT = 1.56;
 
 const GREEN = "#0B5D2E";
 const ORANGE = "#F7931E";
@@ -95,7 +99,12 @@ export const culturalPassportStyle = StyleSheet.create({
   sectionTitle: { fontSize: 16, fontWeight: "700", color: "#111111" },
   seeAll: { fontSize: 12, fontWeight: "600", color: ORANGE },
 
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: GRID_GAP },
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    columnGap: GRID_GAP,
+    rowGap: GRID_ROW_GAP,
+  },
   gridSpaced: { marginTop: 12, marginBottom: 26 },
 
   stamp: { borderRadius: 6, overflow: "hidden", padding: 5 },

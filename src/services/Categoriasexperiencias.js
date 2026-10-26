@@ -1,37 +1,49 @@
 /**
  * Catálogo ÚNICO de categorías de la app (Home del turista, formularios,
- * mapa, búsqueda y rutas). Coincide con las categorías del diseño del turista.
- * Incluye id, etiqueta, ícono Ionicons y color para pins y formularios.
+ * mapa, búsqueda y rutas). Es la ÚNICA fuente: todo lo demás lee de aquí.
+ *
+ * Categorías finales: Rural, Gastronomía, Playa, Cultura, Agricultura.
+ * El id va en minúsculas, sin tildes ni signos.
+ *
+ * ICONOS PERSONALIZADOS: cada categoría tiene el campo `icono` (hoy un
+ * Ionicons temporal). Reemplázalo aquí cuando tengas tus íconos propios.
+ * Los lugares que dibujan el ícono están marcados con "ICONO_CATEGORIA"
+ * (busca ese texto en el proyecto).
  */
 export const CATEGORIAS_EXPERIENCIA = [
   {
-    id: "naturaleza",
-    label: "Naturaleza",
-    icono: "leaf-outline",
+    id: "rural",
+    label: "Rural",
+    // ICONO_CATEGORIA: reemplazar por ícono personalizado de Rural
+    icono: require("../assets/categorias/Turismo-rural.png"),
     color: "#2F6B4F",
   },
   {
     id: "gastronomia",
     label: "Gastronomía",
-    icono: "restaurant-outline",
+    // ICONO_CATEGORIA: reemplazar por ícono personalizado de Gastronomía
+    icono: require("../assets/categorias/Gastronomía.png"),
     color: "#C1443C",
   },
   {
-    id: "aventura",
-    label: "Aventura",
-    icono: "trail-sign-outline",
-    color: "#C97B4A",
+    id: "playa",
+    label: "Playa",
+    // ICONO_CATEGORIA: reemplazar por ícono personalizado de Playa
+    icono: require("../assets/categorias/Playa.png"),
+    color: "#2A8BA8",
   },
   {
     id: "cultura",
     label: "Cultura",
-    icono: "color-palette-outline",
+    // ICONO_CATEGORIA: reemplazar por ícono personalizado de Cultura
+    icono: require("../assets/categorias/cultura.png"),
     color: "#4A5C73",
   },
   {
-    id: "artesanias",
-    label: "Artesanías",
-    icono: "hammer-outline",
+    id: "agricola",
+    label: "Agrícola",
+    // ICONO_CATEGORIA: reemplazar por ícono personalizado de Agricultura
+    icono: require("../assets/categorias/Agricultura.png"),
     color: "#B8912E",
   },
 ];
@@ -41,10 +53,19 @@ export const CATEGORIAS_EXPERIENCIA = [
  * negocios creados antes de unificar las categorías) -> id actual.
  */
 const ALIAS_CATEGORIAS = {
+  // Anteriores a la unificación
   comunidad: "cultura",
   historia: "cultura",
   historico: "cultura",
-  artesania: "artesanias",
+  artesania: "cultura",
+  artesanias: "cultura",
+  // Catálogo anterior (naturaleza, aventura, artesanías)
+  naturaleza: "rural",
+  aventura: "rural",
+  // Variantes de las nuevas
+  agricultura: "agricola",
+  agroturismo: "agricola",
+  agro: "agricola",
 };
 
 /** Ícono Ionicons por defecto cuando la categoría no se encuentra. */
@@ -85,9 +106,12 @@ export function buscarCategoria(valor) {
 }
 
 /**
- * Devuelve el nombre de ícono Ionicons según el id de categoría.
+ * Devuelve el ícono de la categoría: un require() de imagen (ícono
+ * personalizado) o, si no se encuentra, el nombre de un Ionicons por defecto.
+ * OJO: no pasar este valor directo a <Ionicons name=...>; usar el componente
+ * <IconoCategoria categoria={...} /> de components/common/IconoCategoria.
  * @param {string} categoriaId - Identificador de la categoría.
- * @returns {string} Nombre del ícono.
+ * @returns {number|string} Imagen (require) o nombre de Ionicons.
  */
 export function iconoDeCategoria(categoriaId) {
   return buscarCategoria(categoriaId)?.icono ?? ICONO_POR_DEFECTO;

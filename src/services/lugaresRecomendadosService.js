@@ -17,12 +17,12 @@ const cache = new Map();
 
 /** Etiqueta OSM -> categoría del catálogo de la app + texto legible. */
 const TIPOS = [
-  { clave: "tourism", valor: "viewpoint", categoria: "naturaleza", etiqueta: "Mirador" },
-  { clave: "natural", valor: "volcano", categoria: "naturaleza", etiqueta: "Volcán" },
-  { clave: "natural", valor: "beach", categoria: "naturaleza", etiqueta: "Playa" },
-  { clave: "natural", valor: "hot_spring", categoria: "naturaleza", etiqueta: "Aguas termales" },
-  { clave: "leisure", valor: "nature_reserve", categoria: "naturaleza", etiqueta: "Reserva natural" },
-  { clave: "boundary", valor: "national_park", categoria: "naturaleza", etiqueta: "Parque nacional" },
+  { clave: "tourism", valor: "viewpoint", categoria: "rural", etiqueta: "Mirador" },
+  { clave: "natural", valor: "volcano", categoria: "rural", etiqueta: "Volcán" },
+  { clave: "natural", valor: "beach", categoria: "playa", etiqueta: "Playa" },
+  { clave: "natural", valor: "hot_spring", categoria: "rural", etiqueta: "Aguas termales" },
+  { clave: "leisure", valor: "nature_reserve", categoria: "rural", etiqueta: "Reserva natural" },
+  { clave: "boundary", valor: "national_park", categoria: "rural", etiqueta: "Parque nacional" },
   { clave: "tourism", valor: "museum", categoria: "cultura", etiqueta: "Museo" },
   { clave: "tourism", valor: "gallery", categoria: "cultura", etiqueta: "Galería" },
   { clave: "tourism", valor: "attraction", categoria: "cultura", etiqueta: "Atracción turística" },
@@ -30,8 +30,8 @@ const TIPOS = [
   { clave: "historic", valor: "ruins", categoria: "cultura", etiqueta: "Ruinas" },
   { clave: "historic", valor: "castle", categoria: "cultura", etiqueta: "Fortaleza" },
   { clave: "amenity", valor: "place_of_worship", categoria: "cultura", etiqueta: "Iglesia" },
-  { clave: "tourism", valor: "zoo", categoria: "aventura", etiqueta: "Zoológico" },
-  { clave: "tourism", valor: "theme_park", categoria: "aventura", etiqueta: "Parque temático" },
+  { clave: "tourism", valor: "zoo", categoria: "rural", etiqueta: "Zoológico" },
+  { clave: "tourism", valor: "theme_park", categoria: "rural", etiqueta: "Parque temático" },
 ];
 
 function clasificar(tags = {}) {

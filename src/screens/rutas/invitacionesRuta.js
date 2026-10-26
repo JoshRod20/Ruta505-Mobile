@@ -53,6 +53,7 @@ import {
   VERDE_OSCURO,
   AZUL_ACEPTO,
 } from "../../styles/rutas/invitacionesRutaStyle";
+import IconoCategoria from "../../components/common/IconoCategoria";
 
 // Imagen de la pantalla "¡Listo!" (la mascota). Para ponerla, importa el
 // archivo aquí, por ejemplo:
@@ -435,7 +436,7 @@ export default function InvitacionesRuta() {
     return (
       <View key={p.id} style={i.participante}>
         <View style={i.participanteIcono}>
-          <Ionicons name={iconoDeCategoria(p.categoria)} size={34} color={LIMA} />
+          <IconoCategoria categoria={p.categoria} size={34} color={LIMA} />
         </View>
         <View style={i.participanteCuerpo}>
           <Text style={i.participanteNombre} numberOfLines={2}>

@@ -57,6 +57,7 @@ import { usePermisos } from "../hooks/usePermisos";
 import useTabBarHeight from "../hooks/useTabBarHeight";
 import { PERMISOS } from "../constants/permissions";
 import { formatearPrecio } from "../services/rutasService.js";
+import IconoCategoria from "./common/IconoCategoria";
 
 // Estilo libre de OpenFreeMap (sin API key)
 const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
@@ -1022,8 +1023,8 @@ export default function MapaNicaragua() {
               >
                 <View style={mapaNicaraguaStyle.marcadorContenedor}>
                   <View style={mapaNicaraguaStyle.marcadorPunto}>
-                    <Ionicons
-                      name={iconoDeCategoria(punto.categoria)}
+                    <IconoCategoria
+                      categoria={punto.categoria}
                       size={18}
                       color={colorDeCategoria(punto.categoria)}
                     />
@@ -1049,8 +1050,8 @@ export default function MapaNicaragua() {
                         { borderColor: "#8A99A8", opacity: 0.9 },
                       ]}
                     >
-                      <Ionicons
-                        name={iconoDeCategoria(punto.categoria)}
+                      <IconoCategoria
+                        categoria={punto.categoria}
                         size={16}
                         color={colorDeCategoria(punto.categoria)}
                       />

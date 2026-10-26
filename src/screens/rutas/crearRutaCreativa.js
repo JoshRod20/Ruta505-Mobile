@@ -54,6 +54,7 @@ import {
   NARANJA,
   AZUL,
 } from "../../styles/rutas/crearRutaStyle";
+import IconoCategoria from "../../components/common/IconoCategoria";
 
 const MAX_FOTOS = 2;
 
@@ -104,8 +105,8 @@ function TarjetaParada({ parada, calificacion, mostrarPrecio = false }) {
   return (
     <View style={s.tarjeta}>
       <View style={s.tarjetaMiniatura}>
-        <Ionicons
-          name={iconoDeCategoria(parada.categoria)}
+        <IconoCategoria
+          categoria={parada.categoria}
           size={32}
           color={VERDE}
         />
@@ -552,42 +553,57 @@ function AsistenteRutaCreativa() {
         Debe invitar al menos a {MINIMO_ALIADOS} actores culturales para crear
         una ruta creativa.
       </Text>
-
-      <View style={s.buscador}>
-        <View style={s.buscadorIcono}>
-          <Ionicons name="search" size={22} color="#FFFFFF" />
+      <View style={s.zonaGris}>
+        <View style={s.buscador}>
+          <Image
+            source={require("../../assets/icons/busqueda.png")}
+            style={s.buscadorIcono}
+          />
+          <TextInput
+            style={s.buscadorInput}
+            placeholder="Buscar"
+            placeholderTextColor="#8A8A8A"
+            value={busqueda}
+            onChangeText={setBusqueda}
+            returnKeyType="search"
+            autoCorrect={false}
+          />
+          {busqueda.length > 0 && (
+            <TouchableOpacity
+              style={s.buscadorLimpiar}
+              onPress={() => setBusqueda("")}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              accessibilityLabel="Borrar búsqueda"
+            >
+              <Ionicons name="close-circle" size={18} color="#8A8A8A" />
+            </TouchableOpacity>
+          )}
         </View>
-        <TextInput
-          style={s.buscadorInput}
-          placeholder="Buscar"
-          placeholderTextColor="#9A9A9A"
-          value={busqueda}
-          onChangeText={setBusqueda}
-        />
+
+        {negocio && (
+          <View style={s.miNegocio}>
+            <View style={s.tarjetaMiniatura}>
+              <IconoCategoria
+                categoria={negocio.categoria}
+                size={32}
+                color={VERDE}
+              />
+            </View>
+            <View style={s.tarjetaCuerpo}>
+              <Text style={s.miNegocioCategoria}>
+                {nombreDeCategoria(negocio.categoria)}
+              </Text>
+              <Text style={s.tarjetaDetalle}>{negocio.titulo}</Text>
+            </View>
+            <View style={[s.insignia, { backgroundColor: LIMA }]}>
+              <Text style={[s.insigniaTexto, { color: "#1A1A1A" }]}>Tú</Text>
+            </View>
+          </View>
+        )}
       </View>
 
-      {negocio && (
-        <View style={s.miNegocio}>
-          <View style={s.tarjetaMiniatura}>
-            <Ionicons
-              name={iconoDeCategoria(negocio.categoria)}
-              size={32}
-              color={VERDE}
-            />
-          </View>
-          <View style={s.tarjetaCuerpo}>
-            <Text style={s.miNegocioCategoria}>
-              {nombreDeCategoria(negocio.categoria)}
-            </Text>
-            <Text style={s.tarjetaDetalle}>{negocio.titulo}</Text>
-          </View>
-          <View style={[s.insignia, { backgroundColor: LIMA }]}>
-            <Text style={[s.insigniaTexto, { color: "#1A1A1A" }]}>Tú</Text>
-          </View>
-        </View>
-      )}
-
       <Text style={s.seccionTitulo}>Lugares cerca de tí</Text>
+      <View style={s.zonaGrisCarrusel}>
       {candidatos.length === 0 ? (
         <Text style={s.aviso}>
           {busqueda
@@ -595,6 +611,7 @@ function AsistenteRutaCreativa() {
             : "Aún no hay otros negocios registrados para invitar."}
         </Text>
       ) : (
+        
         <FlatList
           data={candidatos}
           horizontal
@@ -609,8 +626,8 @@ function AsistenteRutaCreativa() {
                   {foto ? (
                     <Image source={{ uri: foto }} style={s.aliadoImagen} />
                   ) : (
-                    <Ionicons
-                      name={iconoDeCategoria(item.categoria)}
+                    <IconoCategoria
+                      categoria={item.categoria}
                       size={44}
                       color={VERDE}
                     />
@@ -655,6 +672,7 @@ function AsistenteRutaCreativa() {
           }}
         />
       )}
+      </View> 
 
       <Text style={s.contadorInvitados}>
         Invitaciones enviadas: {numInvitados} (mínimo {MINIMO_ALIADOS})

@@ -376,7 +376,7 @@ const LoginScreen = ({ navigation }) => {
               emailInvalido && LoginScreenStyle.inputInvalido,
             ]}
             placeholder="Nombre de usuario o correo"
-            placeholderTextColor="#000000"
+            placeholderTextColor="#a8a8a8"
             autoCapitalize="none"
             keyboardType="email-address"
             value={email}
@@ -408,7 +408,7 @@ const LoginScreen = ({ navigation }) => {
                 passwordInvalida && LoginScreenStyle.inputInvalido,
               ]}
               placeholder="Contraseña"
-              placeholderTextColor="#000000"
+              placeholderTextColor="#a8a8a8"
               secureTextEntry={!mostrarPassword}
               value={password}
               onChangeText={handleChangePassword}

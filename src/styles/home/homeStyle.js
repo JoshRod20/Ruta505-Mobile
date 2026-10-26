@@ -125,19 +125,19 @@ export const homeStyle = StyleSheet.create({
 
   // ---- Botón de Pinolito (turista) ----
   botonPinolito: {
-    width: 36,
-    height: 36,
+    width: 37,
+    height: 37,
     marginLeft: wp("-2%"),
     justifyContent: "center",
     borderRadius: 22,
     overflow: "hidden",
     borderWidth: 2,
     borderColor: VERDE,
-  },
+  }, 
   pinolitoImagen: {
     width: "100%",
     height: "100%",
-    marginLeft: -3,
+    marginLeft: 3,
   },
 
   // ---- Descubrir + categorías (turista) ----

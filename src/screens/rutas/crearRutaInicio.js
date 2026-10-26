@@ -33,6 +33,7 @@ import {
   VERDE,
   LIMA,
 } from "../../styles/rutas/crearRutaStyle";
+import IconoCategoria from "../../components/common/IconoCategoria";
 
 const nombreDeCategoria = (id) =>
   CATEGORIAS_EXPERIENCIA.find((c) => c.id === id)?.label ?? "";
@@ -122,8 +123,8 @@ export default function CrearRutaInicio() {
                     style={s.tarjetaMiniaturaImagen}
                   />
                 ) : (
-                  <Ionicons
-                    name={iconoDeCategoria(negocio.categoria)}
+                  <IconoCategoria
+                    categoria={negocio.categoria}
                     size={32}
                     color={VERDE}
                   />

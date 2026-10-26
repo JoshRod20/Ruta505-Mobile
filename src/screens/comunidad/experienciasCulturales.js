@@ -34,6 +34,7 @@ import { obtenerUbicacionActual } from "../../utils/ubicacion";
 import { obtenerNombreLugar } from "../../services/geocodingservice";
 import { ESTADOS_VERIFICACION } from "../../constants/roles";
 import { CATEGORIAS_EXPERIENCIA } from "../../services/Categoriasexperiencias";
+import IconoCategoria from "../../components/common/IconoCategoria";
 import {
   experienciasCulturalesStyle as s,
   VERDE,
@@ -303,10 +304,11 @@ export default function ExperienciasCulturales() {
                 onPress={() => handleChange("categoria", categoria.id)}
                 activeOpacity={0.8}
               >
-                <Ionicons
-                  name={categoria.icono}
-                  size={16}
+                <IconoCategoria
+                  categoria={categoria.id}
+                  size={18}
                   color={activa ? "#FFFFFF" : VERDE}
+                  tintColor={activa ? "#FFFFFF" : VERDE}
                   style={s.chipCategoriaIcono}
                 />
                 <Text

@@ -30,6 +30,7 @@ import {
 } from "../services/Categoriasexperiencias.js";
 import { navegacionStyle } from "../styles/mapanicaragua/Navegacionstyle.js";
 import { mapaNicaraguaStyle } from "../styles/mapanicaragua/mapaNicaraguaStyle.js";
+import IconoCategoria from "./common/IconoCategoria";
 
 const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
 
@@ -497,8 +498,8 @@ export default function NavegacionRuta({
             lngLat={[ruta.destino.lng, ruta.destino.lat]}
           >
             <View style={navegacionStyle.marcadorDestino}>
-              <Ionicons
-                name={iconoDeCategoria(ruta.destino.categoria)}
+              <IconoCategoria
+                categoria={ruta.destino.categoria}
                 size={20}
                 color={colorDeCategoria(ruta.destino.categoria)}
               />
