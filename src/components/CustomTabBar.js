@@ -35,8 +35,8 @@ const CUSTOM_ICONS = {
   Inicio: require("../../src/assets/icons/hogar.png"),
   Mapa: require("../../src/assets/icons/mapa-interactivo.png"),
   Rutas: require("../../src/assets/icons/Ruta.png"),
-  Pasaporte: require("../../src/assets/icons/Pasaporte.png"),
-  Perfil: require("../../src/assets/icons/Perfil.png"),
+  Pasaporte: require("../../src/assets/icons/pasaporte.png"),
+  Perfil: require("../../src/assets/icons/usuario.png"),
 
   // Actor cultural
   "Perfil cultural": require("../../src/assets/icons/usuario.png"),
