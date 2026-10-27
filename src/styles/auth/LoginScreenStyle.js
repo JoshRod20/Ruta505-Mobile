@@ -4,6 +4,7 @@
 
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 import { StyleSheet } from "react-native";
+import { boton } from "../common/botonStyle";
 
 // ==================================================
 // PALETA
@@ -152,11 +153,11 @@ errorCampo: {
 
     borderRadius: hp("1.5%"),
 
-    backgroundColor: "#ffffff",
+    backgroundColor: "#F3F3F3",
 
-    borderWidth: 1.8,
+    borderWidth: 0,
 
-    borderColor: COLOR_TINTA,
+    borderColor: "transparent",
 
     color: COLOR_TINTA,
 
@@ -257,20 +258,15 @@ errorCampo: {
   // ==================================================
 
   boton: {
+    ...boton.primario,
     width: "100%",
 
-    height: hp("6%"),
 
-    backgroundColor: COLOR_TINTA,
 
-    borderRadius: hp("5%"),
 
-    alignItems: "center",
-    justifyContent: "center",
 
     marginTop: 26,
 
-    elevation: 3,
   },
 
   botonDeshabilitado: {
@@ -278,11 +274,9 @@ errorCampo: {
   },
 
   botonTexto: {
-    color: "#ffffff",
+    ...boton.primarioTexto,
 
-    fontFamily: "Poppins-Bold",
 
-    fontSize: 16,
   },
 
   // ==================================================

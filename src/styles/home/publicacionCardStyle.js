@@ -2,14 +2,15 @@
  * Estilos de publicacionCardStyle.
  */
 
-import { StyleSheet, Dimensions } from "react-native";
+import { StyleSheet, Dimensions, Platform } from "react-native";
+import { campo } from "../common/campoStyle";
 
 const { width: ANCHO_PANTALLA } = Dimensions.get("window");
 
-const MARGEN_CARD = 20;
+export const MARGEN_CARD = 20;
 const PADDING_CARD = 12;
-// Ancho útil de la imagen dentro de la tarjeta (descuenta márgenes, padding y borde)
-export const ANCHO_IMAGEN = ANCHO_PANTALLA - MARGEN_CARD * 2 - PADDING_CARD * 2 - 2;
+// La imagen ocupa todo el ancho de la tarjeta (sin padding lateral, como en el diseño)
+export const ANCHO_IMAGEN = ANCHO_PANTALLA - MARGEN_CARD * 2 - 2; // - borde
 export const ALTO_IMAGEN = Math.round(ANCHO_IMAGEN * 0.78);
 
 const VERDE = "#0E5A34";
@@ -17,17 +18,26 @@ const VERDE = "#0E5A34";
 export const publicacionCardStyle = StyleSheet.create({
   card: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 20,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: "#EAEFEA",
+    borderColor: "#E3E8E3",
     marginHorizontal: MARGEN_CARD,
     marginBottom: 20,
-    padding: PADDING_CARD,
-    shadowColor: "#0E5A34",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 3,
+    paddingBottom: PADDING_CARD,
+    // En Android la sombra por "elevation" se dibuja como un rectángulo y
+    // corta las esquinas redondeadas, así que ahí se usa solo borde fino.
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 0,
+        overflow: "hidden",
+      },
+    }),
   },
 
   // ---- Encabezado (avatar + título + ubicación) ----
@@ -35,7 +45,9 @@ export const publicacionCardStyle = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 12,
+    paddingHorizontal: PADDING_CARD,
+    paddingTop: PADDING_CARD,
+    marginBottom: 10,
   },
   headerContent: {
     flex: 1,
@@ -154,26 +166,18 @@ export const publicacionCardStyle = StyleSheet.create({
     color: VERDE,
   },
   modalEditarLabel: {
-    fontFamily: "Inter-SemiBold",
-    fontSize: 12,
-    color: "#4D4D4D",
-    marginBottom: 6,
-    marginTop: 8,
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 14,
+    color: VERDE,
+    marginBottom: 8,
+    marginTop: 12,
   },
   modalEditarInput: {
-    borderWidth: 1,
-    borderColor: "#D9E0DB",
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontFamily: "Inter-Regular",
-    fontSize: 14,
-    color: "#1F1F1F",
-    backgroundColor: "#FBFCFB",
+    ...campo.input,
   },
   modalEditarInputMultilinea: {
+    ...campo.inputMultilinea,
     minHeight: 90,
-    textAlignVertical: "top",
   },
   modalEditarGuardar: {
     backgroundColor: VERDE,
@@ -199,7 +203,7 @@ export const publicacionCardStyle = StyleSheet.create({
     flexShrink: 1,
     fontFamily: "Poppins-Bold",
     fontSize: 14,
-    color: VERDE,
+    color: "#000000",
   },
   verificado: {
     marginLeft: 5,
@@ -221,19 +225,16 @@ export const publicacionCardStyle = StyleSheet.create({
   carruselContenedor: {
     width: ANCHO_IMAGEN,
     height: ALTO_IMAGEN,
-    borderRadius: 16,
     overflow: "hidden",
     backgroundColor: "#EFF3EC",
   },
   imagen: {
     width: ANCHO_IMAGEN,
     height: ALTO_IMAGEN,
-    borderRadius: 16,
   },
   imagenPlaceholder: {
     width: ANCHO_IMAGEN,
     height: ALTO_IMAGEN,
-    borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#EFF3EC",
@@ -280,13 +281,19 @@ export const publicacionCardStyle = StyleSheet.create({
     fontSize: 12,
     color: "#1F1F1F",
     lineHeight: 17,
-    marginTop: 12,
+    marginTop: 8,
+    paddingHorizontal: PADDING_CARD,
+  },
+  descripcionTitulo: {
+    fontFamily: "Inter-SemiBold",
+    color: "#000000",
   },
   tiempoTexto: {
     fontFamily: "Inter-Regular",
     fontSize: 11,
     color: "#9A9A9A",
-    marginTop: 6,
+    marginTop: 8,
+    paddingHorizontal: PADDING_CARD,
   },
 
   // ---- Acciones (me gusta / guardar) ----
@@ -294,10 +301,23 @@ export const publicacionCardStyle = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    borderTopWidth: 1,
-    borderTopColor: "#ECEFEC",
-    marginTop: 12,
-    paddingTop: 10,
+    paddingHorizontal: PADDING_CARD,
+    marginTop: 6,
+  },
+  accionesIzquierda: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  accionBoton: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 16,
+  },
+  accionTexto: {
+    marginLeft: 6,
+    fontFamily: "Inter-Regular",
+    fontSize: 13,
+    color: "#1F1F1F",
   },
   pastilla: {
     flexDirection: "row",
@@ -365,6 +385,11 @@ export const publicacionCardStyle = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  comentarioAvatarFoto: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+  },
   comentarioAvatarTexto: {
     fontFamily: "Poppins-SemiBold",
     fontSize: 13,
@@ -400,6 +425,21 @@ export const publicacionCardStyle = StyleSheet.create({
   },
   comentarioBorrar: {
     marginLeft: 8,
+  },
+  comentarioEditandoAviso: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 6,
+  },
+  comentarioEditandoTexto: {
+    fontSize: 12,
+    color: "#8A8A8A",
+  },
+  comentarioEditandoCancelar: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#C1443C",
   },
   comentarioEstrellas: {
     flexDirection: "row",
@@ -523,5 +563,39 @@ export const publicacionCardStyle = StyleSheet.create({
     paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: "#ECEFEC",
+  },
+
+  // ---- Íconos propios de la tarjeta (carpeta assets/icons) ----
+  // Tamaños estimados: ajústalos al tamaño de tus imágenes.
+  iconoVerificado: {
+    width: 16,
+    height: 16,
+    marginLeft: 5,
+    resizeMode: "contain",
+  },
+  corazonLleno: {
+    width: 24,
+    height: 24,
+    resizeMode: "contain",
+  },
+  corazonVacio: {
+    width: 24,
+    height: 24,
+    resizeMode: "contain",
+  },
+  comentario: {
+    width: 22,
+    height: 22,
+    resizeMode: "contain",
+  },
+  iconoLleno: {
+    width: 24,
+    height: 24,
+    resizeMode: "contain",
+  },
+  iconoVacio: {
+    width: 24,
+    height: 24,
+    resizeMode: "contain",
   },
 });

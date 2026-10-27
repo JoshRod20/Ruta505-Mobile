@@ -1,8 +1,10 @@
 /**
  * MapaNicaragua: componente/pantalla de la aplicación Ruta505.
+ *
+ * Los cambios para la recomendación de Pinolito están marcados con [PINOLITO].
  */
 
-import React, { useState, useRef, useCallback, useEffect } from "react";
+import React, { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import {
   Text,
   View,
@@ -27,7 +29,6 @@ import {
 import Geolocation from "@react-native-community/geolocation";
 import { Ionicons } from "@expo/vector-icons";
 
-import FloatingNavButton from "./common/FloatingNavButton.js";
 import { mapaNicaraguaStyle } from "../styles/mapanicaragua/mapaNicaraguaStyle.js";
 import { obtenerRuta, obtenerRutaConParadas } from "../services/osrmservice.js";
 import {
@@ -45,13 +46,36 @@ import FormularioExperiencia from "../components/Formularioexperiencia.js";
 import SeleccionarUbicacionMapa from "../components/Seleccionarubicacionmapa.js";
 import BarraBusquedaMapa from "../components/BarraBusquedaMapa.js";
 import TarjetaUbicacion from "../components/TarjetaUbicacion.js";
+import CarruselLugares from "../components/CarruselLugares.js";
+import {
+  buscarLugaresDeInteres,
+  distanciaKm,
+} from "../services/lugaresRecomendadosService.js";
+import { ROLES } from "../constants/roles";
 import { useAuth } from "../context/AuthContext";
 import { usePermisos } from "../hooks/usePermisos";
+import useTabBarHeight from "../hooks/useTabBarHeight";
 import { PERMISOS } from "../constants/permissions";
 import { formatearPrecio } from "../services/rutasService.js";
+import IconoCategoria from "./common/IconoCategoria";
 
 // Estilo libre de OpenFreeMap (sin API key)
 const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
+
+// Si no hay GPS se recomiendan lugares alrededor de Masaya/Granada.
+const CENTRO_RECOMENDACIONES = { lat: 11.9744, lon: -86.0942 };
+// Cuánto esperar al GPS antes de usar el centro por defecto.
+const ESPERA_GPS_MS = 10000;
+// Radio (km) alrededor del usuario dentro del cual un lugar cuenta como "cercano".
+const RADIO_CERCANO_KM = 25;
+
+// [PINOLITO] Normaliza texto para comparar nombres sin tildes ni mayúsculas.
+const normalizarTexto = (t) =>
+  String(t ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
 
 // Configuración inicial de Geolocation para Android
 if (Platform.OS === "android") {
@@ -90,6 +114,7 @@ async function pedirPermisoUbicacion() {
  */
 export default function MapaNicaragua() {
   const insets = useSafeAreaInsets();
+  const tabBarHeight = useTabBarHeight();
   const mapRef = useRef(null);
   const cameraRef = useRef(null);
   const navigation = useNavigation();
@@ -101,6 +126,16 @@ export default function MapaNicaragua() {
   const puedePublicar = puede(PERMISOS.PUBLICAR_EXPERIENCIA) && !sancionVigente;
 
   const [puntos, setPuntos] = useState([]);
+  // Lugares de interés de OpenStreetMap que aún no están registrados en la app
+  const [lugaresExternos, setLugaresExternos] = useState([]);
+  const esTurista = role === ROLES.TURISTA;
+
+  // [PINOLITO] Lugar que Pinolito recomendó: se guarda aparte para que siempre tenga marcador
+  const [lugarRecomendadoExtra, setLugarRecomendadoExtra] = useState(null);
+  const [recomendadoPendiente, setRecomendadoPendiente] = useState(null);
+  const [negociosCargados, setNegociosCargados] = useState(false);
+  const seleccionRecomendadaRef = useRef(false);
+
   const [formularioVisible, setFormularioVisible] = useState(false);
   const [ubicacionParaGuardar, setUbicacionParaGuardar] = useState(null);
   const [selectorMapaVisible, setSelectorMapaVisible] = useState(false);
@@ -109,11 +144,35 @@ export default function MapaNicaragua() {
   const [puntoSeleccionado, setPuntoSeleccionado] = useState(null);
   const [epocaMarcadores, setEpocaMarcadores] = useState(0); // Forzar remount de ViewAnnotation
   const [lugarBuscado, setLugarBuscado] = useState(null); // { nombre, lat, lon } elegido en la barra de búsqueda
+  // Punto de partida elegido por el usuario (null = su ubicación GPS)
+  const [origenRuta, setOrigenRuta] = useState(null); // { lat, lon, nombre }
+  const [eligiendoOrigen, setEligiendoOrigen] = useState(false); // esperando que busque o toque un lugar
+  const [selectorParaOrigen, setSelectorParaOrigen] = useState(false); // el selector de mapa es para el origen
+  const [destinoPendiente, setDestinoPendiente] = useState(null); // destino que se recuerda mientras se elige el origen
 
   const cerrarTarjeta = useCallback(() => {
     setPuntoSeleccionado(null);
     setEpocaMarcadores((e) => e + 1);
   }, []);
+
+  // Un ViewAnnotation se convierte en imagen al crearse. Si el PNG de la
+  // categoría aún no terminó de cargar en ese momento, el ícono sale vacío
+  // (por eso aparecía solo después de abrir y cerrar un negocio). Cuando una
+  // categoría carga su ícono por primera vez, se re-crean los marcadores una
+  // sola vez (con un pequeño retraso para agrupar varias categorías).
+  const categoriasConIconoListo = useRef(new Set());
+  const temporizadorIconos = useRef(null);
+  const alCargarIconoMarcador = useCallback((categoria) => {
+    const clave = categoria ?? "_";
+    if (categoriasConIconoListo.current.has(clave)) return;
+    categoriasConIconoListo.current.add(clave);
+    clearTimeout(temporizadorIconos.current);
+    temporizadorIconos.current = setTimeout(
+      () => setEpocaMarcadores((e) => e + 1),
+      150
+    );
+  }, []);
+  useEffect(() => () => clearTimeout(temporizadorIconos.current), []);
 
   // Ruta creativa que se está mostrando en el mapa (viene del paso 6 de crear ruta)
   const [rutaCreativaPendiente, setRutaCreativaPendiente] = useState(null);
@@ -167,13 +226,100 @@ export default function MapaNicaragua() {
         }
 
         setPuntos(conCoordenadasValidas);
+        setNegociosCargados(true); // [PINOLITO]
       },
-      (error) =>
-        Alert.alert("No se pudieron cargar los negocios", error.message),
+      (error) => {
+        setNegociosCargados(true); // [PINOLITO] un fallo no debe dejar la selección esperando
+        Alert.alert("No se pudieron cargar los negocios", error.message);
+      },
     );
 
     return () => cancelarSuscripcion();
   }, []);
+
+  // Recomendaciones externas (solo turista): se buscan cerca del usuario; si el
+  // GPS tarda o no hay permiso, se usa el centro por defecto.
+  const origenLat = ubicacionOrigen?.lat;
+  const origenLon = ubicacionOrigen?.lon;
+  useEffect(() => {
+    if (!esTurista) return;
+    let vigente = true;
+
+    const cargar = (centro) =>
+      buscarLugaresDeInteres(centro).then((lugares) => {
+        if (vigente) setLugaresExternos(lugares);
+      });
+
+    if (origenLat != null && origenLon != null) {
+      cargar({ lat: origenLat, lon: origenLon });
+      return () => {
+        vigente = false;
+      };
+    }
+
+    const temporizador = setTimeout(
+      () => cargar(CENTRO_RECOMENDACIONES),
+      ESPERA_GPS_MS,
+    );
+    return () => {
+      vigente = false;
+      clearTimeout(temporizador);
+    };
+  }, [esTurista, origenLat, origenLon]);
+
+  // Lista del carrusel: primero los negocios registrados (con fotos y datos
+  // reales), luego los externos que no se repiten con ninguno registrado.
+  // [PINOLITO] Incluye el lugar recomendado por Pinolito aunque la consulta
+  // del mapa no lo haya traído.
+  const recomendados = useMemo(() => {
+    if (!esTurista) return [];
+    const nombres = new Set(puntos.map((p) => normalizarTexto(p.titulo)));
+
+    const externosBase =
+      lugarRecomendadoExtra &&
+      !lugaresExternos.some((l) => l.id === lugarRecomendadoExtra.id)
+        ? [lugarRecomendadoExtra, ...lugaresExternos]
+        : lugaresExternos;
+
+    const externosNuevos = externosBase.filter(
+      (l) =>
+        !nombres.has(normalizarTexto(l.titulo)) &&
+        !puntos.some(
+          (p) =>
+            distanciaKm(
+              { lat: p.lat, lon: p.lng },
+              { lat: l.lat, lon: l.lng },
+            ) < 0.1,
+        ),
+    );
+
+    const porCercania = (lista) =>
+      ubicacionOrigen
+        ? [...lista].sort(
+            (a, b) =>
+              distanciaKm(ubicacionOrigen, { lat: a.lat, lon: a.lng }) -
+              distanciaKm(ubicacionOrigen, { lat: b.lat, lon: b.lng }),
+          )
+        : lista;
+
+    // Solo lugares cercanos a la ubicación del usuario. Sin GPS no se puede
+    // medir la distancia, así que en ese caso se muestra todo como antes.
+    const soloCercanos = (lista) =>
+      ubicacionOrigen
+        ? lista.filter(
+            (p) =>
+              distanciaKm(ubicacionOrigen, { lat: p.lat, lon: p.lng }) <=
+              RADIO_CERCANO_KM,
+          )
+        : lista;
+
+    return [
+      ...porCercania(soloCercanos(puntos)),
+      ...porCercania(soloCercanos(externosNuevos)),
+    ];
+  }, [esTurista, puntos, lugaresExternos, ubicacionOrigen]);
+
+  const externosVisibles = recomendados.filter((p) => p.externo);
 
   // ---------- Ruta creativa en el mapa ----------
   // 1) Recibe la ruta desde el paso 6 ("Ver ruta en el mapa") por parámetros.
@@ -183,6 +329,46 @@ export default function MapaNicaragua() {
     setRutaCreativaPendiente(rutaCreativaParam);
     navigation.setParams({ rutaCreativa: undefined });
   }, [rutaCreativaParam, navigation]);
+
+  // Desde el perfil público: "Ver en el mapa" abre la tarjeta de ese negocio.
+  const puntoIdParam = route.params?.puntoId;
+  useEffect(() => {
+    if (!puntoIdParam || puntos.length === 0) return;
+    const punto = puntos.find((p) => p.id === puntoIdParam);
+    if (punto) handleSeleccionarPuntoBuscado(punto);
+    navigation.setParams({ puntoId: undefined });
+  }, [puntoIdParam, puntos]);
+
+  // [PINOLITO] Desde Pinolito: "Ver mapa" con el lugar recomendado.
+  const lugarRecomendadoParam = route.params?.lugarRecomendado;
+  useEffect(() => {
+    if (!lugarRecomendadoParam) return;
+    setLugarRecomendadoExtra(lugarRecomendadoParam);
+    setRecomendadoPendiente(lugarRecomendadoParam);
+    navigation.setParams({ lugarRecomendado: undefined, ts: undefined });
+  }, [lugarRecomendadoParam, navigation]);
+
+  // [PINOLITO] Cuando ya cargaron los negocios: si el lugar coincide con uno
+  // registrado se selecciona ese (con fotos y datos reales); si no, el externo
+  // de OpenStreetMap.
+  useEffect(() => {
+    if (!recomendadoPendiente || !negociosCargados) return;
+
+    const lugar = recomendadoPendiente;
+    setRecomendadoPendiente(null);
+
+    const registrado = puntos.find(
+      (p) =>
+        normalizarTexto(p.titulo) === normalizarTexto(lugar.titulo) ||
+        distanciaKm(
+          { lat: p.lat, lon: p.lng },
+          { lat: lugar.lat, lon: lugar.lng },
+        ) < 0.1,
+    );
+
+    seleccionRecomendadaRef.current = true; // evita que el GPS inicial pise la cámara
+    handleSeleccionarPuntoBuscado(registrado ?? lugar);
+  }, [recomendadoPendiente, negociosCargados, puntos]);
 
   // 2) Cuando ya están cargados los negocios, busca las coordenadas de cada
   //    parada, calcula la línea por carretera y encuadra la cámara.
@@ -290,13 +476,25 @@ export default function MapaNicaragua() {
         lat: ubicacion.lat,
         lng: ubicacion.lon,
         lugar,
+        // La referencia ya no se escribe en este formulario: se toma de la
+        // dirección que el actor puso al registrarse (perfil del actor).
+        ubicacionExacta: profile?.direccion ?? "",
       };
 
-      if (negocioEnEdicion) {
-        await actualizarNegocio(user.uid, datos);
+      // El negocio se guarda primero; sus fotos y videos van aparte. Si fallan
+      // las fotos, el negocio ya existe: se avisa de eso y no de "no se pudo guardar".
+      const resultado = negocioEnEdicion
+        ? await actualizarNegocio(user.uid, datos)
+        : await crearNegocio(user.uid, datos);
+
+      if (resultado?.fallidos > 0) {
+        Alert.alert(
+          "Negocio guardado",
+          `Tu negocio sí se guardó, pero no se pudieron subir ${resultado.fallidos} foto(s) o video(s).\n\nMotivo: ${resultado.motivo}\n\nAbre tu negocio con "Editar" para intentar agregarlos de nuevo.`,
+        );
+      } else if (negocioEnEdicion) {
         Alert.alert("Listo", "Tus cambios ya están guardados.");
       } else {
-        await crearNegocio(user.uid, datos);
         Alert.alert(
           "Listo",
           "Tu negocio ya está visible en el mapa para todos.",
@@ -342,18 +540,39 @@ export default function MapaNicaragua() {
   }
 
   function handleConfirmarUbicacionElegida(coordenadas) {
+    if (selectorParaOrigen) {
+      setSelectorParaOrigen(false);
+      setSelectorMapaVisible(false);
+      usarComoOrigen({
+        lat: coordenadas.lat,
+        lon: coordenadas.lon,
+        nombre: "Punto elegido en el mapa",
+      });
+      return;
+    }
     setUbicacionParaGuardar(coordenadas);
     setSelectorMapaVisible(false);
     setFormularioVisible(true);
   }
 
   function handleCancelarSelectorMapa() {
+    if (selectorParaOrigen) {
+      setSelectorParaOrigen(false);
+      setSelectorMapaVisible(false);
+      setPuntoSeleccionado(destinoPendiente);
+      setDestinoPendiente(null);
+      return;
+    }
     setSelectorMapaVisible(false);
     setFormularioVisible(true);
   }
 
   // Búsqueda: vuela a una ubicación guardada y abre su tarjeta
   function handleSeleccionarPuntoBuscado(punto) {
+    if (eligiendoOrigen) {
+      usarComoOrigen({ lat: punto.lat, lon: punto.lng, nombre: punto.titulo });
+      return;
+    }
     setLugarBuscado(null);
     setPuntoSeleccionado(punto);
     cameraRef.current?.setStop({
@@ -365,6 +584,10 @@ export default function MapaNicaragua() {
 
   // Búsqueda: vuela a un lugar/calle y deja un pin temporal
   function handleSeleccionarLugarBuscado(lugar) {
+    if (eligiendoOrigen) {
+      usarComoOrigen({ lat: lugar.lat, lon: lugar.lon, nombre: lugar.nombre });
+      return;
+    }
     cerrarTarjeta();
     setLugarBuscado(lugar);
     cameraRef.current?.setStop({
@@ -376,8 +599,13 @@ export default function MapaNicaragua() {
 
   function moverCamaraA(lat, lon) {
     setUbicacionOrigen({ lat, lon });
-    // Si hay una ruta creativa en pantalla, la cámara se queda encuadrada en ella.
-    if (cameraRef.current && !rutaCreativaActivaRef.current) {
+    // [PINOLITO] Si hay una ruta creativa en pantalla o Pinolito recomendó un
+    // lugar, la cámara se queda donde está.
+    if (
+      cameraRef.current &&
+      !rutaCreativaActivaRef.current &&
+      !seleccionRecomendadaRef.current
+    ) {
       cameraRef.current.setStop({
         center: [lon, lat],
         zoom: 15,
@@ -412,8 +640,11 @@ export default function MapaNicaragua() {
   }
 
   const handleTrazarRuta = useCallback(
-    async (destino) => {
-      if (!ubicacionOrigen) {
+    // origenElegido: undefined = el que haya guardado el usuario; null = su GPS.
+    async (destino, origenElegido) => {
+      const elegido = origenElegido !== undefined ? origenElegido : origenRuta;
+      const origen = elegido ?? ubicacionOrigen;
+      if (!origen) {
         Alert.alert(
           "Ubicación no disponible todavía",
           "Espera un momento a que se detecte tu posición antes de trazar una ruta.",
@@ -424,10 +655,10 @@ export default function MapaNicaragua() {
       setCargandoRuta(true);
       setRuta(null);
       try {
-        const resultado = await obtenerRuta(ubicacionOrigen, {
-          lat: destino.lat,
-          lon: destino.lng,
-        });
+        const resultado = await obtenerRuta(
+          { lat: origen.lat, lon: origen.lon },
+          { lat: destino.lat, lon: destino.lng },
+        );
         setRuta({ ...resultado, destino });
 
         // Encuadra la cámara en los límites de la ruta
@@ -447,8 +678,96 @@ export default function MapaNicaragua() {
         setCargandoRuta(false);
       }
     },
-    [ubicacionOrigen],
+    [ubicacionOrigen, origenRuta],
   );
+
+  // ---------- Punto de partida elegido (de A a B) ----------
+  // Guarda el origen y vuelve a trazar la ruta hacia el destino recordado.
+  function usarComoOrigen(origen) {
+    const destino = destinoPendiente ?? puntoSeleccionado;
+    setEligiendoOrigen(false);
+    setLugarBuscado(null);
+    setOrigenRuta(origen);
+    if (destino) {
+      setPuntoSeleccionado(destino);
+      setDestinoPendiente(null);
+      handleTrazarRuta(destino, origen);
+    }
+  }
+
+  function usarMiUbicacionComoOrigen() {
+    setOrigenRuta(null);
+    if (puntoSeleccionado && ruta?.destino?.id === puntoSeleccionado.id) {
+      handleTrazarRuta(puntoSeleccionado, null);
+    }
+  }
+
+  function cancelarEleccionOrigen() {
+    setEligiendoOrigen(false);
+    setPuntoSeleccionado(destinoPendiente);
+    setDestinoPendiente(null);
+  }
+
+  function pedirOrigen(destino) {
+    Alert.alert(
+      "Punto de partida",
+      "¿Desde dónde quieres salir?",
+      [
+        {
+          text: "Buscar un lugar",
+          onPress: () => {
+            setDestinoPendiente(destino);
+            cerrarTarjeta();
+            setEligiendoOrigen(true);
+          },
+        },
+        {
+          text: "Elegir en el mapa",
+          onPress: () => {
+            setDestinoPendiente(destino);
+            setSelectorParaOrigen(true);
+            setSelectorMapaVisible(true);
+          },
+        },
+        { text: "Mi ubicación", onPress: usarMiUbicacionComoOrigen },
+      ],
+      { cancelable: true },
+    );
+  }
+
+  // Tocar un marcador: abre su tarjeta, o lo usa de origen si se está eligiendo.
+  function manejarToqueMarcador(punto) {
+    if (eligiendoOrigen) {
+      usarComoOrigen({ lat: punto.lat, lon: punto.lng, nombre: punto.titulo });
+    } else {
+      setPuntoSeleccionado(punto);
+    }
+  }
+
+  // La navegación sigue el GPS: si el origen era otro punto, se parte de donde estás.
+  async function iniciarDesdeMiUbicacion(destino) {
+    if (!ubicacionOrigen) {
+      Alert.alert(
+        "Ubicación no disponible todavía",
+        "Espera un momento a que se detecte tu posición antes de iniciar.",
+      );
+      return;
+    }
+    setCargandoRuta(true);
+    try {
+      const resultado = await obtenerRuta(ubicacionOrigen, {
+        lat: destino.lat,
+        lon: destino.lng,
+      });
+      setOrigenRuta(null);
+      setRuta({ ...resultado, destino });
+      setNavegando(true);
+    } catch (error) {
+      Alert.alert("No se pudo calcular la ruta", error.message);
+    } finally {
+      setCargandoRuta(false);
+    }
+  }
 
   // ---------- Iniciar la ruta creativa (navegación parada por parada) ----------
   async function iniciarTramo(indice, origen) {
@@ -583,7 +902,11 @@ export default function MapaNicaragua() {
         />
       ) : selectorMapaVisible ? (
         <SeleccionarUbicacionMapa
-          centroInicial={ubicacionParaGuardar ?? ubicacionOrigen}
+          centroInicial={
+            selectorParaOrigen
+              ? (origenRuta ?? ubicacionOrigen)
+              : (ubicacionParaGuardar ?? ubicacionOrigen)
+          }
           onConfirmar={handleConfirmarUbicacionElegida}
           onCancelar={handleCancelarSelectorMapa}
         />
@@ -680,6 +1003,33 @@ export default function MapaNicaragua() {
               </ViewAnnotation>
             )}
 
+            {/* Punto de partida elegido (A) */}
+            {origenRuta && (
+              <ViewAnnotation
+                id="origen-ruta"
+                lngLat={[origenRuta.lon, origenRuta.lat]}
+              >
+                <View
+                  style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: 14,
+                    backgroundColor: "#1D7A46",
+                    borderWidth: 3,
+                    borderColor: "#FFFFFF",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Text
+                    style={{ color: "#FFFFFF", fontSize: 12, fontWeight: "700" }}
+                  >
+                    A
+                  </Text>
+                </View>
+              </ViewAnnotation>
+            )}
+
             {/* Marcadores de puntos de interés */}
             {puntos
               .filter((punto) => !idsParadasRuta.has(punto.id))
@@ -688,19 +1038,48 @@ export default function MapaNicaragua() {
                 key={`${punto.id}-${epocaMarcadores}`}
                 id={punto.id}
                 lngLat={[punto.lng, punto.lat]}
-                onSelect={() => setPuntoSeleccionado(punto)}
+                onSelect={() => manejarToqueMarcador(punto)}
               >
                 <View style={mapaNicaraguaStyle.marcadorContenedor}>
                   <View style={mapaNicaraguaStyle.marcadorPunto}>
-                    <Ionicons
-                      name={iconoDeCategoria(punto.categoria)}
+                    <IconoCategoria
+                      categoria={punto.categoria}
                       size={18}
                       color={colorDeCategoria(punto.categoria)}
+                      onLoad={() => alCargarIconoMarcador(punto.categoria)}
                     />
                   </View>
                 </View>
               </ViewAnnotation>
             ))}
+
+            {/* Lugares recomendados de OpenStreetMap (aún sin registrar) */}
+            {externosVisibles
+              .filter((punto) => !idsParadasRuta.has(punto.id))
+              .map((punto) => (
+                <ViewAnnotation
+                  key={`${punto.id}-${epocaMarcadores}`}
+                  id={punto.id}
+                  lngLat={[punto.lng, punto.lat]}
+                  onSelect={() => manejarToqueMarcador(punto)}
+                >
+                  <View style={mapaNicaraguaStyle.marcadorContenedor}>
+                    <View
+                      style={[
+                        mapaNicaraguaStyle.marcadorPunto,
+                        { borderColor: "#8A99A8", opacity: 0.9 },
+                      ]}
+                    >
+                      <IconoCategoria
+                        categoria={punto.categoria}
+                        size={16}
+                        color={colorDeCategoria(punto.categoria)}
+                        onLoad={() => alCargarIconoMarcador(punto.categoria)}
+                      />
+                    </View>
+                  </View>
+                </ViewAnnotation>
+              ))}
 
             {/* Pin temporal del lugar elegido en la barra de búsqueda */}
             {lugarBuscado && (
@@ -760,8 +1139,6 @@ export default function MapaNicaragua() {
             </GeoJSONSource>
           </Map>
 
-          <FloatingNavButton />
-
           {rutaCreativaMapa && (
             <View
               style={[mapaNicaraguaStyle.bannerRuta, { top: insets.top + 100 }]}
@@ -800,7 +1177,7 @@ export default function MapaNicaragua() {
             <TouchableOpacity
               style={[
                 mapaNicaraguaStyle.botonIniciarRutaCreativa,
-                { bottom: 140 + insets.bottom + 16 },
+                { bottom: tabBarHeight + 72 + 16 },
               ]}
               onPress={iniciarRutaCreativa}
               disabled={cargandoRuta}
@@ -819,6 +1196,29 @@ export default function MapaNicaragua() {
             </TouchableOpacity>
           )}
 
+          {eligiendoOrigen && (
+            <View
+              style={[mapaNicaraguaStyle.bannerRuta, { top: insets.top + 100 }]}
+            >
+              <View style={mapaNicaraguaStyle.bannerRutaTextos}>
+                <Text style={mapaNicaraguaStyle.bannerRutaTitulo} numberOfLines={1}>
+                  Elige el punto de partida
+                </Text>
+                <Text style={mapaNicaraguaStyle.bannerRutaDetalle} numberOfLines={2}>
+                  Busca un lugar arriba o toca un negocio del mapa.
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={mapaNicaraguaStyle.bannerRutaCerrar}
+                onPress={cancelarEleccionOrigen}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                accessibilityLabel="Cancelar"
+              >
+                <Ionicons name="close" size={16} color="#4A4A4A" />
+              </TouchableOpacity>
+            </View>
+          )}
+
           <BarraBusquedaMapa
             puntos={puntos}
             onSeleccionarPunto={handleSeleccionarPuntoBuscado}
@@ -826,10 +1226,25 @@ export default function MapaNicaragua() {
             onLimpiar={() => setLugarBuscado(null)}
           />
 
+          {/* Carrusel de lugares recomendados (turista) */}
+          {esTurista &&
+            !puntoSeleccionado &&
+            !rutaCreativaMapa &&
+            !ruta && (
+              <CarruselLugares
+                lugares={recomendados}
+                origen={ubicacionOrigen}
+                onSeleccionar={handleSeleccionarPuntoBuscado}
+              />
+            )}
+
           {/* Botón para agregar nueva experiencia */}
           {puedePublicar && (
             <TouchableOpacity
-              style={mapaNicaraguaStyle.botonAgregar}
+              style={[
+                mapaNicaraguaStyle.botonAgregar,
+                { bottom: tabBarHeight + 28 },
+              ]}
               onPress={abrirFormularioParaCrear}
             >
               <Text style={mapaNicaraguaStyle.botonAgregarTexto}>+</Text>
@@ -854,8 +1269,22 @@ export default function MapaNicaragua() {
               }
               onCerrar={cerrarTarjeta}
               onEditar={() => abrirFormularioParaEditar(puntoSeleccionado)}
+              onVerPerfil={
+                puntoSeleccionado.externo
+                  ? undefined
+                  : () =>
+                      navigation.navigate("PerfilPublicoDrawer", {
+                        actorId: puntoSeleccionado.id,
+                      })
+              }
               onTrazarRuta={() => handleTrazarRuta(puntoSeleccionado)}
-              onIniciarNavegacion={() => setNavegando(true)}
+              origenRuta={origenRuta}
+              onCambiarOrigen={() => pedirOrigen(puntoSeleccionado)}
+              onIniciarNavegacion={
+                origenRuta
+                  ? () => iniciarDesdeMiUbicacion(puntoSeleccionado)
+                  : () => setNavegando(true)
+              }
             />
           )}
         </View>

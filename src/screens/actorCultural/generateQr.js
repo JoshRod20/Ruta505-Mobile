@@ -10,8 +10,10 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Image,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import useTabBarHeight from "../../hooks/useTabBarHeight";
 import QRCode from "react-native-qrcode-svg";
 import { captureRef } from "react-native-view-shot";
 import * as Sharing from "expo-sharing";
@@ -49,14 +51,12 @@ export function leerCodigoSello(texto) {
   return actorId || null;
 }
 
-// Alto de la barra de tabs (68) más un margen: la barra flota sobre la pantalla.
-const ALTO_BARRA_TABS = 68;
-
 /**
  * GenerateQr.
  */
 export default function GenerateQr() {
   const insets = useSafeAreaInsets();
+  const tabBarHeight = useTabBarHeight();
   const { user, profile, role } = useAuth();
   const tarjetaRef = useRef(null);
 
@@ -71,7 +71,7 @@ export default function GenerateQr() {
 
   const padding = {
     paddingTop: insets.top + 16,
-    paddingBottom: ALTO_BARRA_TABS + insets.bottom + 24,
+    paddingBottom: tabBarHeight + 24,
   };
 
   if (!tienePermiso(role, PERMISOS.GENERAR_QR_EXPERIENCIA) || !user?.uid) {
@@ -153,8 +153,14 @@ export default function GenerateQr() {
               <Text style={s.botonTexto}>Generar código QR</Text>
             </TouchableOpacity>
 
-            {/* La mascota del diseño se agregará aquí cuando esté el PNG:
-                <Image source={require("../../../assets/mascota.png")} ... /> */}
+            {/* Ocupa el espacio que queda bajo el botón y centra a Pinolito */}
+            <View style={s.mascotaContenedor}>
+              <Image
+                source={require("../../assets/pinolito/Pinolito-Pose-Bailando.png")}
+                style={s.mascota}
+                resizeMode="contain"
+              />
+            </View>
           </>
         ) : (
           <>

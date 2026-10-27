@@ -4,6 +4,7 @@
 
 import { StyleSheet } from "react-native";
 import { heightPercentageToDP as hp } from "react-native-responsive-screen";
+import { boton } from "../common/botonStyle";
 
 const COLOR_HEADER = "#086338";
 const COLOR_TINTA = "#065F33";
@@ -16,6 +17,9 @@ const VerificarCodigoScreenStyle = StyleSheet.create({
   },
 
   card: {
+    width: "100%",
+    maxWidth: 480,
+    alignSelf: "center",
     paddingHorizontal: 28,
   },
 
@@ -39,9 +43,9 @@ const VerificarCodigoScreenStyle = StyleSheet.create({
     width: "100%",
     height: 60,
     borderRadius: hp("1.5%"),
-    backgroundColor: "#ffffff",
-    borderWidth: 1.8,
-    borderColor: COLOR_TINTA,
+    backgroundColor: "#F3F3F3",
+    borderWidth: 0,
+    borderColor: "transparent",
     color: COLOR_TINTA,
     fontSize: 24,
     textAlign: "center",
@@ -58,14 +62,9 @@ const VerificarCodigoScreenStyle = StyleSheet.create({
   },
 
   boton: {
+    ...boton.primario,
     width: "100%",
-    height: hp("6%"),
-    backgroundColor: COLOR_TINTA,
-    borderRadius: hp("5%"),
-    alignItems: "center",
-    justifyContent: "center",
     marginTop: 16,
-    elevation: 3,
   },
 
   botonDeshabilitado: {
@@ -73,9 +72,7 @@ const VerificarCodigoScreenStyle = StyleSheet.create({
   },
 
   botonTexto: {
-    color: "#ffffff",
-    fontFamily: "Poppins-Bold",
-    fontSize: 16,
+    ...boton.primarioTexto,
   },
 
   enlaceWrap: {

@@ -24,6 +24,9 @@ import {
   hasCompletedOnboarding,
 } from "../utils/onboardingStorage";
 
+
+
+
 import Onboarding from "../screens/onboarding/Onboarding";
 
 import WelcomeScreen from "../screens/auth/WelcomeScreen";
@@ -37,7 +40,23 @@ import PendienteAprobacionScreen from "../screens/auth/PendienteAprobacionScreen
 import SeleccionarInteresesScreen from "../screens/auth/SeleccionarInteresesScreen";
 import SolicitarUbicacionScreen from "../screens/auth/SolicitarUbicacionScreen";
 
-import NavigationDrawer from "./navigationDrawer";
+import NavigationTabs from "./navigationTabs";
+import PerfilUsuario from "../components/PerfilUsuario";
+import ActivarDobleFactorScreen from "../screens/perfil/ActivarDobleFactorScreen";
+import AcercaDe from "../screens/acercaDe";
+import ExperienciasCulturales from "../screens/comunidad/experienciasCulturales";
+import EditCulturalProfile from "../screens/actorCultural/editCulturalProfile";
+import Resenas from "../screens/comunidad/resenas";
+import CrearRutaCreativa from "../screens/rutas/crearRutaCreativa";
+import MisRutasCreativas from "../screens/rutas/misRutasCreativas";
+import InvitacionesRuta from "../screens/rutas/invitacionesRuta";
+import PerfilPublico from "../screens/actorCultural/perfilPublico";
+import Estadisticas from "../screens/actorCultural/estadisticas";
+import PinolitoScreen from "../screens/usuario/PinolitoScreen";
+import Guardados from "../screens/usuario/guardados";
+import EditUserProfile from "../screens/usuario/editUserProfile";
+import PassportCollection from "../screens/usuario/passportCollection";
+import PlanDestacado from "../screens/actorCultural/planDestacado";
 
 const Stack =
   createNativeStackNavigator();
@@ -157,6 +176,42 @@ const AuthStack = () => (
       } 
     />
 
+  </Stack.Navigator>
+);
+
+// Stack de la app con sesión iniciada: las pestañas son la base y las demás
+// pantallas se abren encima (sin barra inferior). Los nombres de ruta conservan
+// el sufijo "Drawer" solo para no cambiar los navigation.navigate(...) de la app.
+const AppStack = () => (
+  <Stack.Navigator
+    initialRouteName="MainDrawer"
+    screenOptions={{
+      headerShown: false,
+    }}
+  >
+    {/* getId evita que navigate("MainDrawer") apile otra copia de las pestañas */}
+    <Stack.Screen
+      name="MainDrawer"
+      component={NavigationTabs}
+      getId={() => "main"}
+    />
+
+    <Stack.Screen name="PublicarExperienciaDrawer" component={ExperienciasCulturales} />
+    <Stack.Screen name="EditarPerfilCulturalDrawer" component={EditCulturalProfile} />
+    <Stack.Screen name="CrearRutaDrawer" component={CrearRutaCreativa} />
+    <Stack.Screen name="MisRutasCreativasDrawer" component={MisRutasCreativas} />
+    <Stack.Screen name="InvitacionesRutaDrawer" component={InvitacionesRuta} />
+    <Stack.Screen name="PerfilPublicoDrawer" component={PerfilPublico} />
+    <Stack.Screen name="EstadisticasDrawer" component={Estadisticas} />
+    <Stack.Screen name="ResenasDrawer" component={Resenas} />
+    <Stack.Screen name="PinolitoDrawer" component={PinolitoScreen} />
+    <Stack.Screen name="EditarPerfilDrawer" component={EditUserProfile} />
+    <Stack.Screen name="GuardadosDrawer" component={Guardados} />
+    <Stack.Screen name="MiCuentaDrawer" component={PerfilUsuario} />
+    <Stack.Screen name="ActivarDobleFactorDrawer" component={ActivarDobleFactorScreen} />
+    <Stack.Screen name="AcercaDeDrawer" component={AcercaDe} />
+    <Stack.Screen name="PassportCollection" component={PassportCollection} />
+    <Stack.Screen name="PlanDestacado" component={PlanDestacado} />
   </Stack.Navigator>
 );
 
@@ -326,7 +381,7 @@ const RootNavigator = () => {
   }
 
   // Vista principal para usuarios autenticados y con permisos completos.
-  return <NavigationDrawer />;
+  return <AppStack />;
 };
 
 export default RootNavigator;

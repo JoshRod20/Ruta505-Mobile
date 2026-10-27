@@ -12,6 +12,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import useTabBarHeight from "../../hooks/useTabBarHeight";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -32,9 +33,7 @@ import {
   VERDE,
   LIMA,
 } from "../../styles/rutas/crearRutaStyle";
-
-// Alto de la barra de tabs: la barra flota sobre la pantalla.
-const ALTO_BARRA_TABS = 68;
+import IconoCategoria from "../../components/common/IconoCategoria";
 
 const nombreDeCategoria = (id) =>
   CATEGORIAS_EXPERIENCIA.find((c) => c.id === id)?.label ?? "";
@@ -45,8 +44,9 @@ const nombreDeCategoria = (id) =>
  */
 export default function CrearRutaInicio() {
   const insets = useSafeAreaInsets();
+  const tabBarHeight = useTabBarHeight();
   const navigation = useNavigation();
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const { puede } = usePermisos();
 
   const [negocio, setNegocio] = useState(null);
@@ -65,7 +65,7 @@ export default function CrearRutaInicio() {
 
   const padding = {
     paddingTop: insets.top + 16,
-    paddingBottom: ALTO_BARRA_TABS + insets.bottom + 24,
+    paddingBottom: tabBarHeight + 24,
   };
 
   if (!puede(PERMISOS.PUBLICAR_EXPERIENCIA)) {
@@ -104,7 +104,7 @@ export default function CrearRutaInicio() {
         contentContainerStyle={padding}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={s.tituloGrande}>Crear una Ruta Creativa</Text>
+        <Text style={s.tituloGrande}>Creación de una ruta</Text>
 
         <View style={s.subHeader}>
           <Text style={s.subHeaderTexto}>Mis servicios</Text>
@@ -123,8 +123,8 @@ export default function CrearRutaInicio() {
                     style={s.tarjetaMiniaturaImagen}
                   />
                 ) : (
-                  <Ionicons
-                    name={iconoDeCategoria(negocio.categoria)}
+                  <IconoCategoria
+                    categoria={negocio.categoria}
                     size={32}
                     color={VERDE}
                   />
@@ -145,12 +145,14 @@ export default function CrearRutaInicio() {
                     </Text>
                   </View>
                 )}
-                <Text style={s.tarjetaDetalle}>
-                  Propietario:{" "}
-                  <Text style={{ fontFamily: "Poppins-SemiBold" }}>
-                    {profile?.nombreCompleto ?? ""}
-                  </Text>
-                </Text>
+                {typeof negocio.calificacion === "number" && (
+                  <View style={s.estrellaFila}>
+                    <Ionicons name="star" size={13} color="#F5A623" />
+                    <Text style={s.estrellaTexto}>
+                      {negocio.calificacion.toFixed(1)}
+                    </Text>
+                  </View>
+                )}
               </View>
               <View style={[s.insignia, { backgroundColor: LIMA }]}>
                 <Text style={[s.insigniaTexto, { color: "#1A1A1A" }]}>Tú</Text>
@@ -173,18 +175,20 @@ export default function CrearRutaInicio() {
           )}
 
           <TouchableOpacity
-            style={[s.botonLima, !negocio && s.botonDeshabilitado]}
+            style={[s.botonVerde, !negocio && s.botonDeshabilitado]}
             onPress={nuevaRuta}
             disabled={!negocio}
             activeOpacity={0.85}
           >
-            <Text style={s.botonLimaTexto}>+ Nueva ruta creativa</Text>
+            <Text style={s.botonVerdeTexto}>+ Nueva ruta creativa</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={verRutasActivas}>
-            <Text style={[s.enlace, s.enlaceSubrayado]}>
-              Ver mis rutas activas
-            </Text>
+          <TouchableOpacity
+            style={s.botonLima}
+            onPress={verRutasActivas}
+            activeOpacity={0.85}
+          >
+            <Text style={s.botonLimaTexto}>Ver mis rutas activas</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

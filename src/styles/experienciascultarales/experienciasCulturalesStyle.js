@@ -3,6 +3,8 @@
  */
 
 import { StyleSheet } from "react-native";
+import { campo } from "../common/campoStyle";
+import { boton } from "../common/botonStyle";
 
 // Pantalla "Publicar Experiencia" (botón + de la barra de navegación).
 // Diseño verde de Ruta505, distinto al modal del mapa (Formularioexperienciastyle).
@@ -50,27 +52,13 @@ export const experienciasCulturalesStyle = StyleSheet.create({
 
   // ---- Campos ----
   etiqueta: {
-    fontFamily: "Inter-Regular",
-    fontSize: 12,
-    color: "#2D2D2D",
-    textTransform: "uppercase",
-    marginTop: 18,
-    marginBottom: 8,
+    ...campo.etiqueta,
   },
   input: {
-    borderWidth: 1.5,
-    borderColor: VERDE,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 11,
-    fontFamily: "Inter-Regular",
-    fontSize: 14,
-    color: "#1F2A24",
-    backgroundColor: "#FFFFFF",
+    ...campo.input,
   },
   inputMultilinea: {
-    minHeight: 100,
-    textAlignVertical: "top",
+    ...campo.inputMultilinea,
   },
 
   // ---- Categorías (chips en fila con scroll horizontal) ----
@@ -105,21 +93,17 @@ export const experienciasCulturalesStyle = StyleSheet.create({
 
   // ---- Ubicación ----
   tarjetaUbicacion: {
+    ...campo.caja,
     flexDirection: "row",
     alignItems: "center",
-    borderWidth: 1.5,
-    borderColor: VERDE,
-    borderRadius: 12,
     paddingVertical: 8,
     paddingHorizontal: 10,
-    backgroundColor: "#FFFFFF",
   },
   tarjetaUbicacionIcono: {
     width: 38,
     height: 38,
     borderRadius: 8,
-    borderWidth: 1.5,
-    borderColor: VERDE_CLARO,
+    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
@@ -145,14 +129,11 @@ export const experienciasCulturalesStyle = StyleSheet.create({
 
   // ---- Fotos / vídeos ----
   cajaMultimedia: {
-    borderWidth: 1.5,
-    borderColor: VERDE,
-    borderRadius: 12,
-    minHeight: 88,
+    ...campo.caja,
+    minHeight: 58,
     padding: 12,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#FFFFFF",
   },
   textoMultimedia: {
     fontFamily: "Inter-Regular",
@@ -190,29 +171,21 @@ export const experienciasCulturalesStyle = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: VERDE,
-    borderStyle: "dashed",
+    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
   },
 
   // ---- Publicar ----
   botonPublicar: {
+    ...boton.primario,
     marginTop: 40,
-    backgroundColor: VERDE,
-    borderRadius: 999,
-    height: 50,
-    alignItems: "center",
-    justifyContent: "center",
   },
   botonPublicarDeshabilitado: {
     opacity: 0.55,
   },
   botonPublicarTexto: {
-    fontFamily: "Poppins-Bold",
-    fontSize: 16,
-    color: "#FFFFFF",
+    ...boton.primarioTexto,
   },
   errorText: {
     fontFamily: "Inter-Regular",

@@ -17,16 +17,20 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useWindowDimensions } from "react-native";
+import { MAX_ANCHO_FEED } from "../../utils/layout";
+import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import { Ionicons } from "@expo/vector-icons";
 
 import {
   publicacionCardStyle as styles,
-  ANCHO_IMAGEN,
+  MARGEN_CARD,
 } from "../../styles/home/publicacionCardStyle";
 import { formatearTiempoRelativo } from "../../utils/tiempoRelativo";
 import {
+  alternarGuardado,
   alternarLike,
   actualizarExperiencia,
   eliminarComentario,
@@ -36,6 +40,7 @@ import {
   guardarComentario,
 } from "../../services/Experienciasservice";
 import { useAuth } from "../../context/AuthContext";
+import { PERMISOS, tienePermiso } from "../../constants/permissions";
 
 const VERDE = "#0E5A34";
 const NARANJA = "#F29100";
@@ -96,8 +101,15 @@ const ETIQUETAS_ACTOR = {
  * PublicacionCard.
  */
 export default function PublicacionCard({ experiencia }) {
+  // La imagen ocupa el ancho de la tarjeta; en tablet el feed se limita a
+  // MAX_ANCHO_FEED y se centra, así que el ancho sale de la ventana actual.
+  const { width: anchoVentana } = useWindowDimensions();
+  const ANCHO_IMAGEN = Math.min(anchoVentana, MAX_ANCHO_FEED) - MARGEN_CARD * 2 - 2;
+  const ALTO_IMAGEN = Math.round(ANCHO_IMAGEN * 0.78);
+  const medidasImagen = { width: ANCHO_IMAGEN, height: ALTO_IMAGEN };
   const insets = useSafeAreaInsets();
-  const { user, profile } = useAuth();
+  const navigation = useNavigation();
+  const { user, profile, role } = useAuth();
   const [indiceImagen, setIndiceImagen] = useState(0);
   // Comentarios de la publicación (se actualizan en vivo).
   const [comentarios, setComentarios] = useState([]);
@@ -109,8 +121,13 @@ export default function PublicacionCard({ experiencia }) {
   const [enviandoComentario, setEnviandoComentario] = useState(false);
   // Uids de quienes dieron "me gusta" (se actualiza en vivo).
   const [likes, setLikes] = useState([]);
-  // "Guardar" sigue siendo solo visual: todavía no se persiste en Firestore.
-  const [guardadoActivo, setGuardadoActivo] = useState(false);
+  // Quien tiene el permiso de favoritos (turista) guarda de verdad en su perfil;
+  // para los demás roles el marcador sigue siendo solo visual.
+  const puedeGuardar = tienePermiso(
+    role ?? profile?.role,
+    PERMISOS.GUARDAR_FAVORITOS
+  );
+  const [guardadoLocal, setGuardadoLocal] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const [editando, setEditando] = useState(false);
   const [tituloEditado, setTituloEditado] = useState("");
@@ -123,6 +140,26 @@ export default function PublicacionCard({ experiencia }) {
 
   const totalLikes = likes.length;
   const likeActivo = !!user?.uid && likes.includes(user.uid);
+  const guardadoActivo = puedeGuardar
+    ? (profile?.guardados ?? []).includes(experiencia.id)
+    : guardadoLocal;
+
+  const alternarGuardar = async () => {
+    if (!puedeGuardar) {
+      setGuardadoLocal((v) => !v);
+      return;
+    }
+    if (!user?.uid) return;
+    try {
+      await alternarGuardado(user.uid, experiencia.id, !guardadoActivo);
+    } catch (error) {
+      console.warn("Error al guardar la publicación:", error);
+      Alert.alert(
+        "No se pudo guardar",
+        "Revisa tu conexión e inténtalo de nuevo."
+      );
+    }
+  };
   // El autor ve el contador, pero no puede darse "me gusta" a sí mismo.
   const esAutor = !!user?.uid && experiencia.creadoPor === user.uid;
   const titulo =
@@ -159,15 +196,28 @@ export default function PublicacionCard({ experiencia }) {
 
   // Comenta cualquier usuario con sesión, menos el autor de la publicación.
   const puedeComentar = !!user?.uid && !esAutor;
-  // Cada persona tiene un solo comentario por publicación: si ya comentó, edita.
-  const miComentario = comentarios.find((c) => c.id === user?.uid) ?? null;
+  // Id del comentario que se está editando (null = comentario nuevo).
+  const [comentarioEditandoId, setComentarioEditandoId] = useState(null);
 
+  const limpiarComposer = () => {
+    setComentarioEditandoId(null);
+    setCalificacion(0);
+    setTextoComentario("");
+    setFotosComentario([]);
+  };
+
+  // El cuadro siempre empieza vacío al abrir o cerrar los comentarios.
   useEffect(() => {
-    if (!comentariosVisible) return;
-    setCalificacion(miComentario?.calificacion ?? 0);
-    setTextoComentario(miComentario?.texto ?? "");
-    setFotosComentario(miComentario?.imagenes ?? []);
+    limpiarComposer();
   }, [comentariosVisible]);
+
+  // Carga uno de mis comentarios en el cuadro para editarlo.
+  const handleEditarComentario = (comentario) => {
+    setComentarioEditandoId(comentario.id);
+    setCalificacion(Number(comentario.calificacion) || 0);
+    setTextoComentario(comentario.texto ?? "");
+    setFotosComentario(comentario.imagenes ?? []);
+  };
 
   const agregarFotos = async () => {
     if (fotosComentario.length >= MAX_FOTOS) {
@@ -245,17 +295,15 @@ export default function PublicacionCard({ experiencia }) {
     try {
       setEnviandoComentario(true);
       await guardarComentario(experiencia.id, {
+        comentarioId: comentarioEditandoId ?? undefined,
         autorId: user.uid,
         autorNombre: profile?.nombreCompleto ?? "Usuario",
+        autorFoto: profile?.fotoPerfil ?? "",
         calificacion,
         texto,
         imagenes: fotosComentario,
       });
-      if (!miComentario) {
-        setTextoComentario("");
-        setCalificacion(0);
-        setFotosComentario([]);
-      }
+      limpiarComposer();
     } catch (error) {
       console.warn("Error al comentar:", error);
       Alert.alert(
@@ -347,7 +395,16 @@ export default function PublicacionCard({ experiencia }) {
     <View style={styles.card}>
       {/* Encabezado */}
       <View style={styles.header}>
-        <View style={styles.headerContent}>
+        <TouchableOpacity
+          style={styles.headerContent}
+          activeOpacity={0.7}
+          disabled={!experiencia.creadoPor}
+          onPress={() =>
+            navigation.navigate("PerfilPublicoDrawer", {
+              actorId: experiencia.creadoPor,
+            })
+          }
+        >
           <View style={styles.avatarPlaceholder}>
             <Ionicons name="person-outline" size={20} color="#8C7B66" />
           </View>
@@ -357,11 +414,9 @@ export default function PublicacionCard({ experiencia }) {
                 {titulo}
               </Text>
               {experiencia.verificado === true && (
-                <Ionicons
-                  name="checkmark-circle"
-                  size={15}
-                  color="#1A1A1A"
-                  style={styles.verificado}
+                <Image
+                  source={require("../../assets/icons/Verificado.png")} // Ajusta el nombre según tu archivo
+                  style={styles.iconoVerificado}
                 />
               )}
             </View>
@@ -374,19 +429,14 @@ export default function PublicacionCard({ experiencia }) {
               </View>
             )}
           </View>
-        </View>
-
-        <TouchableOpacity
-          style={styles.menuBoton}
-          onPress={() => setMenuVisible(true)}
-          activeOpacity={0.8}
-          accessibilityLabel="Más opciones"
-        >
-          <Ionicons name="ellipsis-horizontal" size={18} color="#4D4D4D" />
         </TouchableOpacity>
+
+        {/* Botón de tres puntos (menú Editar / Eliminar / Reportar) quitado.
+            Para volver a mostrarlo, restaura aquí el TouchableOpacity con
+            style={styles.menuBoton} y onPress={() => setMenuVisible(true)}. */}
       </View>
 
-      <Modal
+      <Modal statusBarTranslucent navigationBarTranslucent
         visible={menuVisible}
         transparent
         animationType="fade"
@@ -397,17 +447,27 @@ export default function PublicacionCard({ experiencia }) {
           activeOpacity={1}
           onPress={() => setMenuVisible(false)}
         >
-          <View style={esAutor ? styles.menuSheetAutor : styles.menuSheetVisitante}>
+          <View
+            style={esAutor ? styles.menuSheetAutor : styles.menuSheetVisitante}
+          >
             {esAutor ? (
               <>
-                <TouchableOpacity style={styles.menuOpcion} onPress={abrirEdicion}>
+                <TouchableOpacity
+                  style={styles.menuOpcion}
+                  onPress={abrirEdicion}
+                >
                   <Ionicons name="create-outline" size={18} color="#1F1F1F" />
                   <Text style={styles.menuOpcionTexto}>Editar publicación</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.menuOpcion} onPress={eliminarPublicacion}>
+                <TouchableOpacity
+                  style={styles.menuOpcion}
+                  onPress={eliminarPublicacion}
+                >
                   <Ionicons name="trash-outline" size={18} color="#C1443C" />
-                  <Text style={[styles.menuOpcionTexto, { color: "#C1443C" }]}>Eliminar publicación</Text>
+                  <Text style={[styles.menuOpcionTexto, { color: "#C1443C" }]}>
+                    Eliminar publicación
+                  </Text>
                 </TouchableOpacity>
               </>
             ) : (
@@ -418,7 +478,7 @@ export default function PublicacionCard({ experiencia }) {
                     setMenuVisible(false);
                     Alert.alert(
                       "Publicación",
-                      "La opción de reportar está lista para ser conectada con tu flujo real de moderación."
+                      "La opción de reportar está lista para ser conectada con tu flujo real de moderación.",
                     );
                   }}
                 >
@@ -431,7 +491,7 @@ export default function PublicacionCard({ experiencia }) {
         </TouchableOpacity>
       </Modal>
 
-      <Modal
+      <Modal statusBarTranslucent navigationBarTranslucent
         visible={editando}
         transparent
         animationType="fade"
@@ -455,21 +515,29 @@ export default function PublicacionCard({ experiencia }) {
               value={tituloEditado}
               onChangeText={setTituloEditado}
               placeholder="Título de la experiencia"
+              placeholderTextColor="#9A9A9A"
               maxLength={120}
             />
 
             <Text style={styles.modalEditarLabel}>Descripción</Text>
             <TextInput
-              style={[styles.modalEditarInput, styles.modalEditarInputMultilinea]}
+              style={[
+                styles.modalEditarInput,
+                styles.modalEditarInputMultilinea,
+              ]}
               value={descripcionEditada}
               onChangeText={setDescripcionEditada}
               placeholder="Describe tu experiencia"
+              placeholderTextColor="#9A9A9A"
               multiline
               maxLength={500}
             />
 
             <TouchableOpacity
-              style={[styles.modalEditarGuardar, guardandoEdicion && styles.modalEditarGuardarDisabled]}
+              style={[
+                styles.modalEditarGuardar,
+                guardandoEdicion && styles.modalEditarGuardarDisabled,
+              ]}
               onPress={guardarEdicion}
               disabled={guardandoEdicion}
             >
@@ -483,7 +551,7 @@ export default function PublicacionCard({ experiencia }) {
 
       {/* Carrusel de fotos */}
       {imagenes.length > 0 ? (
-        <View style={styles.carruselContenedor}>
+        <View style={[styles.carruselContenedor, medidasImagen]}>
           <FlatList
             data={imagenes}
             horizontal
@@ -492,7 +560,7 @@ export default function PublicacionCard({ experiencia }) {
             keyExtractor={(uri, index) => `${experiencia.id}-${index}`}
             onMomentumScrollEnd={handleScrollFin}
             renderItem={({ item }) => (
-              <Image source={{ uri: item }} style={styles.imagen} />
+              <Image source={{ uri: item }} style={[styles.imagen, medidasImagen]} />
             )}
           />
 
@@ -505,7 +573,7 @@ export default function PublicacionCard({ experiencia }) {
           )}
         </View>
       ) : (
-        <View style={styles.imagenPlaceholder}>
+        <View style={[styles.imagenPlaceholder, medidasImagen]}>
           <Ionicons name="image-outline" size={32} color="#8FA391" />
           <Text style={styles.imagenPlaceholderTexto}>Sin fotos</Text>
         </View>
@@ -525,46 +593,75 @@ export default function PublicacionCard({ experiencia }) {
         </View>
       )}
 
-      {/* Descripción y tiempo */}
-      {!!experiencia.descripcion && (
-        <Text style={styles.descripcion}>{experiencia.descripcion}</Text>
-      )}
+      {/* Me gusta / comentarios / guardar */}
+      <View style={styles.accionesFila}>
+        <View style={styles.accionesIzquierda}>
+          <TouchableOpacity
+            style={[styles.accionBoton, esAutor && { opacity: 0.6 }]}
+            onPress={handleLike}
+            disabled={esAutor}
+            activeOpacity={0.7}
+            accessibilityLabel={
+              esAutor
+                ? "Me gusta (no puedes darte me gusta a ti mismo)"
+                : "Me gusta"
+            }
+          >
+            <Image
+              source={
+                likeActivo
+                  ? require("../../assets/icons/corazon.png") // Ícono relleno (naranja)
+                  : require("../../assets/icons/corazon-vacio.png") // Ícono vacío
+              }
+              style={[likeActivo ? styles.corazonLleno : styles.corazonVacio]}
+            />
+            <Text style={styles.accionTexto}>{totalLikes}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.accionBoton}
+            onPress={() => setComentariosVisible(true)}
+            activeOpacity={0.7}
+            accessibilityLabel="Ver comentarios"
+          >
+            <Image
+              source={require("../../assets/icons/puntos-de-comentario.png")}
+              style={styles.comentario}
+            />
+            <Text style={styles.accionTexto}>{comentarios.length}</Text>
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity
+          onPress={alternarGuardar}
+          activeOpacity={0.7}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          accessibilityLabel={
+            guardadoActivo ? "Quitar de guardados" : "Guardar"
+          }
+        >
+          <Image
+            source={
+              guardadoActivo
+                ? require("../../assets/icons/favorito.png") // Tu ícono guardado (lleno)
+                : require("../../assets/icons/Guardar.png") // Tu ícono sin guardar (vacío)
+            }
+            style={guardadoActivo ? styles.iconoLleno : styles.iconoVacio}
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* Título en negrita + descripción, y hora */}
+      <Text style={styles.descripcion}>
+        <Text style={styles.descripcionTitulo}>{titulo}</Text>
+        {experiencia.descripcion ? `  ${experiencia.descripcion}` : ""}
+      </Text>
       <Text style={styles.tiempoTexto}>
         {formatearTiempoRelativo(experiencia.createdAt)}
       </Text>
 
-      {/* Me gusta / Guardar */}
-      <View style={styles.accionesFila}>
-        <TouchableOpacity
-          style={[styles.pastilla, esAutor && { opacity: 0.6 }]}
-          onPress={handleLike}
-          disabled={esAutor}
-          activeOpacity={0.7}
-          accessibilityLabel={
-            esAutor ? "Me gusta (no puedes darte me gusta a ti mismo)" : "Me gusta"
-          }
-        >
-          <Ionicons
-            name={likeActivo ? "heart" : "heart-outline"}
-            size={18}
-            color={likeActivo ? "#C1443C" : "#1F1F1F"}
-          />
-          <Text style={styles.pastillaTexto}>{totalLikes}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.pastilla}
-          onPress={() => setComentariosVisible(true)}
-          activeOpacity={0.7}
-          accessibilityLabel="Ver comentarios"
-        >
-          <Ionicons name="chatbubble-outline" size={17} color="#1F1F1F" />
-          <Text style={styles.pastillaTexto}>{comentarios.length}</Text>
-        </TouchableOpacity>
-      </View>
-
       {/* Comentarios */}
-      <Modal
+      <Modal statusBarTranslucent navigationBarTranslucent
         visible={comentariosVisible}
         transparent
         animationType="slide"
@@ -602,12 +699,25 @@ export default function PublicacionCard({ experiencia }) {
               renderItem={({ item }) => {
                 const puedeBorrar =
                   !!user?.uid && (item.autorId === user.uid || esAutor);
+                // Foto de perfil del autor del comentario. Si es mi comentario
+                // uso mi foto actual; si no, la que se guardó al comentar.
+                const fotoAutor =
+                  item.autorId === user?.uid
+                    ? profile?.fotoPerfil || item.autorFoto
+                    : item.autorFoto;
                 return (
                   <View style={styles.comentarioFila}>
                     <View style={styles.comentarioAvatar}>
-                      <Text style={styles.comentarioAvatarTexto}>
-                        {iniciales(item.autorNombre)}
-                      </Text>
+                      {fotoAutor ? (
+                        <Image
+                          source={{ uri: fotoAutor }}
+                          style={styles.comentarioAvatarFoto}
+                        />
+                      ) : (
+                        <Text style={styles.comentarioAvatarTexto}>
+                          {iniciales(item.autorNombre)}
+                        </Text>
+                      )}
                     </View>
                     <View style={styles.comentarioCuerpo}>
                       <View style={styles.comentarioEncabezado}>
@@ -617,6 +727,20 @@ export default function PublicacionCard({ experiencia }) {
                         <Text style={styles.comentarioTiempo}>
                           {formatearTiempoRelativo(item.createdAt)}
                         </Text>
+                        {item.autorId === user?.uid && (
+                          <TouchableOpacity
+                            style={styles.comentarioBorrar}
+                            onPress={() => handleEditarComentario(item)}
+                            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                            accessibilityLabel="Editar comentario"
+                          >
+                            <Ionicons
+                              name="create-outline"
+                              size={16}
+                              color="#8A8A8A"
+                            />
+                          </TouchableOpacity>
+                        )}
                         {puedeBorrar && (
                           <TouchableOpacity
                             style={styles.comentarioBorrar}
@@ -666,10 +790,23 @@ export default function PublicacionCard({ experiencia }) {
                   { paddingBottom: insets.bottom + 10 },
                 ]}
               >
+                {!!comentarioEditandoId && (
+                  <View style={styles.comentarioEditandoAviso}>
+                    <Text style={styles.comentarioEditandoTexto}>
+                      Editando tu comentario
+                    </Text>
+                    <TouchableOpacity
+                      onPress={limpiarComposer}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <Text style={styles.comentarioEditandoCancelar}>
+                        Cancelar
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
                 <View style={styles.comentarioSelectorEstrellas}>
-                  <Text style={styles.comentarioSelectorTexto}>
-                    {miComentario ? "Tu calificación:" : "Califica:"}
-                  </Text>
+                  <Text style={styles.comentarioSelectorTexto}>Califica:</Text>
                   <Estrellas
                     valor={calificacion}
                     size={26}
@@ -692,7 +829,7 @@ export default function PublicacionCard({ experiencia }) {
                           style={styles.comentarioMiniaturaQuitar}
                           onPress={() =>
                             setFotosComentario((prev) =>
-                              prev.filter((_, i) => i !== indice)
+                              prev.filter((_, i) => i !== indice),
                             )
                           }
                           accessibilityLabel="Quitar foto"
@@ -743,14 +880,16 @@ export default function PublicacionCard({ experiencia }) {
                       procesandoFoto
                     }
                     accessibilityLabel={
-                      miComentario ? "Guardar comentario" : "Enviar comentario"
+                      comentarioEditandoId
+                        ? "Guardar cambios"
+                        : "Enviar comentario"
                     }
                   >
                     {enviandoComentario ? (
                       <ActivityIndicator color="#FFFFFF" />
                     ) : (
                       <Ionicons
-                        name={miComentario ? "checkmark" : "send"}
+                        name={comentarioEditandoId ? "checkmark" : "send"}
                         size={18}
                         color="#FFFFFF"
                       />
@@ -760,7 +899,10 @@ export default function PublicacionCard({ experiencia }) {
               </View>
             ) : (
               <Text
-                style={[styles.comentarioAviso, { paddingBottom: insets.bottom + 12 }]}
+                style={[
+                  styles.comentarioAviso,
+                  { paddingBottom: insets.bottom + 12 },
+                ]}
               >
                 {esAutor
                   ? "No puedes comentar tu propia publicación."

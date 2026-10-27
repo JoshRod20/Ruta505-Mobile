@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   ScrollView,
   Text,
+  Image,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -218,19 +219,26 @@ export default function Estadisticas() {
             <View style={s.balanceCajas}>
               <View style={[s.balanceCaja, s.balanceCajaIzquierda]}>
                 <View style={[s.balanceIcono, { backgroundColor: VERDE }]}>
-                  <Ionicons name="thumbs-up-outline" size={20} color="#FFFFFF" />
+                  <Image
+                    source={require("../../assets/icons/pulgares-hacia-arriba.png")}
+                    style={{ width: 20, height: 20 }}
+                  />
                 </View>
                 <View>
                   <Text style={s.balanceTexto}>Buenas</Text>
                   <Text style={s.balanceNumero}>{resumen.buenas}</Text>
                 </View>
               </View>
+
               <View style={s.balanceCaja}>
                 <View style={[s.balanceIcono, { backgroundColor: NARANJA }]}>
-                  <Ionicons
-                    name="thumbs-down-outline"
-                    size={20}
-                    color="#1A1A1A"
+                  <Image
+                    source={require("../../assets/icons/pulgares-hacia-arriba.png")}
+                    style={{
+                      width: 20,
+                      height: 20,
+                      transform: [{ rotate: "180deg" }],
+                    }}
                   />
                 </View>
                 <View>
@@ -252,6 +260,7 @@ export default function Estadisticas() {
                 </>
               )}
             </View>
+
             <View style={s.porcentajesFila}>
               <Text style={s.porcentajeTexto}>
                 {porcentajeFavorable}% favorables
@@ -266,15 +275,21 @@ export default function Estadisticas() {
           <Text style={s.seccionTitulo}>Reacciones e interacción</Text>
           <View style={s.metricasFila}>
             <View style={[s.metricaTarjeta, s.metricaIzquierda]}>
-              <View style={s.metricaIcono}>
-                <Ionicons name="heart" size={26} color="#111111" />
+            <View style={[s.metricaIcono, { backgroundColor: VERDE }]}>
+                <Image
+                  source={require("../../assets/icons/like.png")}
+                  style={{ width: 20, height: 20 }}
+                />
               </View>
               <Text style={s.metricaEtiqueta}>Me gusta totales</Text>
               <Text style={s.metricaValor}>{actividad.likesTotal}</Text>
             </View>
             <View style={s.metricaTarjeta}>
-              <View style={s.metricaIcono}>
-                <Ionicons name="calendar-outline" size={26} color="#111111" />
+              <View style={[s.metricaIcono, {  backgroundColor: VERDE }]}>
+                 <Image
+                  source={require("../../assets/icons/anuncio.png")}
+                  style={{ width: 20, height: 20 }}
+                />
               </View>
               <Text style={s.metricaEtiqueta}>Publicaciones activas</Text>
               <View style={s.metricaValorFila}>

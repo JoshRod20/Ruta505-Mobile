@@ -4,12 +4,14 @@
 
 import { StyleSheet } from "react-native";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+import { boton } from "../common/botonStyle";
 
 const COLOR_HEADER = "#086338";
 const COLOR_BORDE = "#0c8046";
 const COLOR_NARANJA = "#f5a623";
 const COLOR_TINTA = "#2b2b2b";
 const COLOR_GRIS_CLARO = "#e2e2e2";
+const COLOR_VERDE_CLARO = "#95C11F";
 
 const InteresesUbicacionStyle = StyleSheet.create({
   contenedor: {
@@ -21,7 +23,8 @@ const InteresesUbicacionStyle = StyleSheet.create({
   barraProgreso: {
     flexDirection: "row",
     gap: 8,
-    marginBottom: 40,
+    marginTop: hp("5%"),
+    marginBottom: hp("1%"),
   },
 
   segmentoProgreso: {
@@ -32,7 +35,7 @@ const InteresesUbicacionStyle = StyleSheet.create({
   },
 
   segmentoActivo: {
-    backgroundColor: COLOR_HEADER,
+    backgroundColor: COLOR_VERDE_CLARO,
   },
 
   titulo: {
@@ -110,37 +113,24 @@ const InteresesUbicacionStyle = StyleSheet.create({
   },
 
   botonNaranja: {
-    width: "60%",
-    height: hp("6%"),
+    ...boton.primario,
     backgroundColor: COLOR_NARANJA,
-    borderRadius: hp("2.5%"),
-    alignItems: "center",
-    justifyContent: "center",
-    elevation: 3,
+    width: "60%",
   },
 
   botonNaranjaTexto: {
-    color: "#ffffff",
-    fontFamily: "Poppins-SemiBold",
-    fontSize: 16,
+    ...boton.primarioTexto,
   },
 
   boton: {
+    ...boton.primario,
     width: "60%",
-    height: hp("6%"),
-    backgroundColor: COLOR_HEADER,
-    borderRadius: hp("2.5%"),
-    alignItems: "center",
-    justifyContent: "center",
-    elevation: 3,
     marginLeft: "20%",
     marginBottom: hp("12%"),
   },
 
   botonTexto: {
-    color: "#ffffff",
-    fontFamily: "Poppins-SemiBold",
-    fontSize: 16,
+    ...boton.primarioTexto,
   },
 
   botonDeshabilitado: {

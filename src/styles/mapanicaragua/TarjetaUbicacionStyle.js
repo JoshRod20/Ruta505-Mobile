@@ -5,15 +5,14 @@
 import { StyleSheet } from "react-native";
 
 const VERDE = "#0E5A34";
-const VERDE_CLARO = "#8CC219";
 
 export const tarjetaUbicacionStyle = StyleSheet.create({
-  // Hoja inferior pegada a la barra de navegación (68 = alto de CustomTabBar)
+  // Hoja inferior sobre la barra de navegación. El `bottom` se calcula en el
+  // componente con useTabBarHeight() (alto de la barra + inset del sistema).
   hoja: {
     position: "absolute",
     left: 0,
     right: 0,
-    bottom: 100,
     backgroundColor: "#FFFFFF",
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
@@ -29,73 +28,58 @@ export const tarjetaUbicacionStyle = StyleSheet.create({
     paddingBottom: 12,
   },
 
-  // ---- Categoría + cerrar ----
-  filaSuperior: {
+  // ---- Título + cerrar ----
+  filaTitulo: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     justifyContent: "space-between",
   },
-  badge: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: VERDE_CLARO,
-    borderRadius: 999,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-  },
-  badgeIcono: {
-    marginRight: 6,
-  },
-  badgeTexto: {
+  titulo: {
+    flex: 1,
     fontFamily: "Poppins-Bold",
-    fontSize: 15,
+    fontSize: 20,
+    lineHeight: 28,
     color: VERDE,
+    marginRight: 12,
   },
   botonCerrar: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: "#D9D9D9",
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#E3E3E3",
     alignItems: "center",
     justifyContent: "center",
+    marginTop: 2,
   },
   botonCerrarTexto: {
     fontFamily: "Inter-SemiBold",
-    fontSize: 12,
+    fontSize: 13,
     color: "#4A4A4A",
     marginTop: -1,
-  },
-
-  // ---- Título y calificación ----
-  titulo: {
-    fontFamily: "Poppins-Bold",
-    fontSize: 18,
-    color: VERDE,
-    marginTop: 14,
   },
   filaCalificacion: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 4,
+    marginTop: 2,
   },
   calificacionTexto: {
-    fontFamily: "Poppins-Bold",
-    fontSize: 15,
-    color: "#111111",
+    fontFamily: "Inter-Regular",
+    fontSize: 16,
+    color: "#2D2D2D",
     marginLeft: 6,
   },
 
-  // ---- Fotos ----
+  // ---- Fotos y videos ----
   filaFotos: {
-    marginTop: 14,
+    marginTop: 16,
     marginHorizontal: -20,
   },
   filaFotosContenido: {
     paddingHorizontal: 20,
   },
   foto: {
-    height: 132,
-    borderRadius: 14,
+    height: 140,
+    borderRadius: 16,
     marginRight: 10,
     backgroundColor: "#EEF2EE",
   },
@@ -104,46 +88,42 @@ export const tarjetaUbicacionStyle = StyleSheet.create({
   cajaReferencia: {
     flexDirection: "row",
     alignItems: "center",
-    borderWidth: 1.5,
-    borderColor: VERDE,
-    borderRadius: 14,
+    backgroundColor: "#F2F2F2",
+    borderRadius: 12,
     paddingVertical: 10,
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     marginTop: 16,
   },
   referenciaIcono: {
-    width: 40,
-    height: 40,
-    borderRadius: 8,
-    borderWidth: 1.5,
-    borderColor: VERDE_CLARO,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 12,
+    marginRight: 10,
   },
   referenciaTextos: {
     flex: 1,
   },
   referenciaEtiqueta: {
     fontFamily: "Poppins-SemiBold",
-    fontSize: 11,
-    color: "#6B6B6B",
-    textTransform: "uppercase",
+    fontSize: 13,
+    color: VERDE,
   },
   referenciaTexto: {
     fontFamily: "Inter-Regular",
     fontSize: 12,
     color: "#2D2D2D",
-    marginTop: 2,
+    marginTop: 1,
   },
 
   // ---- Sobre este lugar ----
   seccionTitulo: {
     fontFamily: "Poppins-Bold",
-    fontSize: 12,
+    fontSize: 14,
     color: VERDE,
-    textTransform: "uppercase",
-    marginTop: 16,
+    marginTop: 20,
   },
   descripcion: {
     fontFamily: "Inter-Regular",
@@ -173,6 +153,25 @@ export const tarjetaUbicacionStyle = StyleSheet.create({
     paddingBottom: 14,
     borderTopWidth: 1,
     borderTopColor: "#EEF2EE",
+  },
+  // Fila "Desde: Mi ubicación · Cambiar"
+  filaOrigen: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingBottom: 8,
+    gap: 6,
+  },
+  filaOrigenTexto: {
+    flex: 1,
+    fontFamily: "Inter-Regular",
+    fontSize: 12,
+    color: "#4A4A4A",
+  },
+  filaOrigenCambiar: {
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 12,
+    color: "#0E5A34",
+    textDecorationLine: "underline",
   },
   filaAcciones: {
     flexDirection: "row",

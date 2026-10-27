@@ -13,8 +13,9 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import useTabBarHeight from "../../hooks/useTabBarHeight";
 import { useNavigation } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
@@ -50,6 +51,7 @@ const ETIQUETA_TIPO_ACTOR = {
  */
 export default function CulturalProfile() {
   const insets = useSafeAreaInsets();
+  const tabBarHeight = useTabBarHeight();
   const navigation = useNavigation();
   const { profile, user, estadoVerificacion } = useAuth();
   const { puede } = usePermisos();
@@ -80,7 +82,7 @@ export default function CulturalProfile() {
   const ubicacion = [profile?.municipio, profile?.departamento]
     .filter(Boolean)
     .join(", ");
-  const subtitulo = [tipo, ubicacion].filter(Boolean).join(" • ");
+  const subtitulo = [tipo, ubicacion].filter(Boolean).join(" - ");
   const verificado = estadoVerificacion === ESTADOS_VERIFICACION.APROBADO;
   const tieneCalificacion = resumenResenas?.promedio != null;
 
@@ -139,9 +141,6 @@ export default function CulturalProfile() {
     }
   };
 
-  const proximamente = (mensaje) => () =>
-    Alert.alert("Próximamente", mensaje);
-
   const acciones = [
     {
       texto: "Editar perfil cultural",
@@ -154,7 +153,7 @@ export default function CulturalProfile() {
     },
     {
       texto: "Conocer Plan Destacado",
-      onPress: proximamente("Muy pronto podrás conocer el Plan Destacado."),
+      onPress: () => navigation.navigate("PlanDestacado"),
     },
     {
       texto: "Configuración",
@@ -165,7 +164,7 @@ export default function CulturalProfile() {
   return (
     <ScrollView
       style={s.container}
-      contentContainerStyle={{ paddingBottom: 68 + insets.bottom + 24 }}
+      contentContainerStyle={{ paddingBottom: tabBarHeight + 24 }}
       showsVerticalScrollIndicator={false}
     >
       {/* Portada */}
@@ -186,9 +185,9 @@ export default function CulturalProfile() {
           accessibilityLabel="Cambiar foto de portada"
         >
           {subiendoPortada ? (
-            <ActivityIndicator color={VERDE} />
+            <ActivityIndicator color="#FFFFFF" />
           ) : (
-            <Ionicons name="image-outline" size={22} color={VERDE} />
+            <Ionicons name="camera" size={24} color="#FFFFFF" />
           )}
         </TouchableOpacity>
       </View>
@@ -196,7 +195,7 @@ export default function CulturalProfile() {
       <View style={s.cuerpo}>
         {verificado && (
           <View style={s.insignia}>
-            <Ionicons name="shield-checkmark" size={14} color={VERDE} />
+            <MaterialCommunityIcons name="check-decagram" size={18} color="#F29100" />
             <Text style={s.insigniaTexto}>Experiencia Verificada</Text>
           </View>
         )}

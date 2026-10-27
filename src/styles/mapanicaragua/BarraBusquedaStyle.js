@@ -27,16 +27,14 @@ export const barraBusquedaStyle = StyleSheet.create({
   },
   contenedor: {
     position: "absolute",
-    left: 30, // deja libre el botón del menú
-    right: 30,
+    left: 16,
+    right: 16,
   },
   barra: {
     flexDirection: "row",
     alignItems: "center",
-    height: 42,
-    borderWidth: 1.5,
-    borderColor: VERDE,
-    borderRadius: 21,
+    height: 48,
+    borderRadius: 12,
     backgroundColor: "#FFFFFF",
     paddingHorizontal: 14,
   },
@@ -116,5 +114,9 @@ export const barraBusquedaStyle = StyleSheet.create({
   },
   cargando: {
     paddingVertical: 12,
+  },
+  iconoLupa: {
+    width: 18,
+    height: 18,
   },
 });

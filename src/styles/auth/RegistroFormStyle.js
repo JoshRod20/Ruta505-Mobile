@@ -2,10 +2,10 @@
  * Estilos de RegistroFormStyle.
  */
 
-import { StyleSheet, Dimensions } from "react-native";
+import { StyleSheet } from "react-native";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+import { boton } from "../common/botonStyle";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 // ==================================================
 // PALETA (consistente con Login y demás pantallas)
@@ -106,9 +106,9 @@ errorCampo: {
     paddingHorizontal: 22,
     paddingVertical: 0,
     borderRadius: hp("1.5%"),
-    backgroundColor: "#ffffff",
-    borderWidth: 1.8,
-    borderColor: COLOR_BORDE,
+    backgroundColor: "#F3F3F3",
+    borderWidth: 0,
+    borderColor: "transparent",
     color: COLOR_TINTA,
     fontSize: 14,
     marginBottom: 16,
@@ -266,13 +266,8 @@ errorCampo: {
   // BOTÓN REGISTRARSE
   // ==================================================
   boton: {
+    ...boton.primario,
     width: "100%",
-    height: hp("6%"),
-    backgroundColor: COLOR_HEADER,
-    borderRadius: hp("2.5%"),
-    alignItems: "center",
-    justifyContent: "center",
-    elevation: 3,
   },
 
   botonDeshabilitado: {
@@ -280,9 +275,7 @@ errorCampo: {
   },
 
   botonTexto: {
-    color: "#ffffff",
-    fontFamily: "Poppins-SemiBold",
-    fontSize: 16,
+    ...boton.primarioTexto,
   },
 });
 

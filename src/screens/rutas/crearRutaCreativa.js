@@ -19,9 +19,9 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import { Picker } from "@react-native-picker/picker";
 
 import { useAuth } from "../../context/AuthContext";
+import CampoHorario from "../../components/common/CampoHorario";
 import { escucharNegocios } from "../../services/Negociosservice";
 import {
   aliadosAceptados,
@@ -38,9 +38,12 @@ import {
   invitarActor,
   MINIMO_ALIADOS,
   publicarRuta,
+  DIAS_RUTA,
+  HORAS,
+  separarHorario,
 } from "../../services/rutasService";
 import {
-  CATEGORIAS_EXPERIENCIA,
+  buscarCategoria,
   iconoDeCategoria,
 } from "../../services/Categoriasexperiencias";
 import { elegirFotosBase64 } from "../../utils/imagenes";
@@ -51,19 +54,12 @@ import {
   NARANJA,
   AZUL,
 } from "../../styles/rutas/crearRutaStyle";
+import IconoCategoria from "../../components/common/IconoCategoria";
 
 const MAX_FOTOS = 2;
 
-const HORARIOS_DISPONIBLES = [
-  "Lunes a domingo, 8:00 am - 9:00 pm",
-  "Lunes a sábado, 9:00 am - 7:00 pm",
-  "Lunes a viernes, 8:00 am - 5:00 pm",
-  "Fines de semana, 9:00 am - 8:00 pm",
-  "Horario por confirmar",
-];
-
 const TITULOS = {
-  2: { pantalla: "Servicios que ofreces", seccion: "Completar datos" },
+  2: { pantalla: "Servicios que ofrece", seccion: "Completar datos" },
   3: { pantalla: "Nueva Ruta Creativa", seccion: "Buscar aliados" },
   4: { pantalla: "Ruta Creativa En Espera", seccion: "Invitaciones enviadas" },
   5: { pantalla: "Ruta Creativa", seccion: "Publicación de ruta" },
@@ -71,7 +67,7 @@ const TITULOS = {
 };
 
 const nombreDeCategoria = (id) =>
-  CATEGORIAS_EXPERIENCIA.find((c) => c.id === id)?.label ?? "";
+  buscarCategoria(id)?.label ?? "";
 
 const normalizar = (texto) =>
   (texto || "")
@@ -104,13 +100,13 @@ function insigniaDe(parada) {
 }
 
 // Tarjeta de una parada (pasos 4, 5 y 6).
-function TarjetaParada({ parada, mostrarPrecio = false }) {
+function TarjetaParada({ parada, calificacion, mostrarPrecio = false }) {
   const insignia = insigniaDe(parada);
   return (
     <View style={s.tarjeta}>
       <View style={s.tarjetaMiniatura}>
-        <Ionicons
-          name={iconoDeCategoria(parada.categoria)}
+        <IconoCategoria
+          categoria={parada.categoria}
           size={32}
           color={VERDE}
         />
@@ -126,6 +122,12 @@ function TarjetaParada({ parada, mostrarPrecio = false }) {
             <Text style={[s.tarjetaDetalle, { marginLeft: 4 }]}>
               {parada.lugar}
             </Text>
+          </View>
+        )}
+        {typeof calificacion === "number" && (
+          <View style={s.estrellaFila}>
+            <Ionicons name="star" size={13} color="#F5A623" />
+            <Text style={s.estrellaTexto}>{calificacion.toFixed(1)}</Text>
           </View>
         )}
         {mostrarPrecio && (
@@ -161,7 +163,9 @@ function AsistenteRutaCreativa() {
     servicio: "",
     precio: "",
     direccion: "",
-    horario: "",
+    dia: "",
+    horaInicio: "",
+    horaFin: "",
     imagenes: [],
   });
   const [formCargado, setFormCargado] = useState(false);
@@ -200,7 +204,8 @@ function AsistenteRutaCreativa() {
       servicio: miParada.servicio ?? "",
       precio: miParada.precio != null ? String(miParada.precio) : "",
       direccion: miParada.direccion ?? "",
-      horario: miParada.horario ?? "",
+      dia: miParada.dia != null ? String(miParada.dia) : "",
+      ...separarHorario(miParada.horario),
       imagenes: miParada.imagenes ?? [],
     });
     setFormCargado(true);
@@ -230,6 +235,9 @@ function AsistenteRutaCreativa() {
       }))
       .sort((a, b) => a.distancia - b.distancia);
   }, [negocios, paradas, busqueda, negocio, uid]);
+
+  const calificacionDe = (parada) =>
+    negocios.find((n) => n.id === parada.ubicacionId)?.calificacion;
 
   const numInvitados = aliadosInvitados(paradas).length;
   const numAceptados = aliadosAceptados(paradas).length;
@@ -286,9 +294,15 @@ function AsistenteRutaCreativa() {
       !form.nombre.trim() ||
       !form.servicio.trim() ||
       !form.direccion.trim() ||
-      !form.horario.trim()
+      !form.dia ||
+      !form.horaInicio ||
+      !form.horaFin
     ) {
       setError("Completa todos los campos.");
+      return;
+    }
+    if (HORAS.indexOf(form.horaFin) <= HORAS.indexOf(form.horaInicio)) {
+      setError("La hora de fin debe ser posterior a la hora de inicio.");
       return;
     }
     if (!Number.isFinite(precio) || precio <= 0) {
@@ -304,7 +318,8 @@ function AsistenteRutaCreativa() {
       servicio: form.servicio.trim(),
       precio,
       direccion: form.direccion.trim(),
-      horario: form.horario.trim(),
+      dia: Number(form.dia),
+      horario: `${form.horaInicio} - ${form.horaFin}`,
       imagenes: form.imagenes,
     };
 
@@ -312,7 +327,7 @@ function AsistenteRutaCreativa() {
       setGuardando(true);
       if (!rutaId) {
         const id = await crearRuta({
-          creador: { uid, nombre: nombreCreador },
+          creador: { uid, nombre: nombreCreador, telefono: profile?.telefono },
           nombre: form.nombre.trim(),
           negocio: {
             id: negocio.id,
@@ -443,7 +458,7 @@ function AsistenteRutaCreativa() {
         maxLength={80}
       />
 
-      <Text style={s.etiqueta}>Servicio que ofrece</Text>
+      <Text style={s.etiqueta}>Servicios que ofrece</Text>
       <TextInput
         style={s.input}
         placeholder="Escribir"
@@ -453,7 +468,7 @@ function AsistenteRutaCreativa() {
         maxLength={80}
       />
 
-      <Text style={s.etiqueta}>Precio (C$)</Text>
+      <Text style={s.etiqueta}>Precio</Text>
       <TextInput
         style={s.input}
         placeholder="Escribir"
@@ -464,7 +479,7 @@ function AsistenteRutaCreativa() {
         maxLength={9}
       />
 
-      <Text style={s.etiqueta}>Dirección breve</Text>
+      <Text style={s.etiqueta}>Descripción breve</Text>
       <TextInput
         style={[s.input, s.inputMultilinea]}
         placeholder="Escribir"
@@ -476,20 +491,14 @@ function AsistenteRutaCreativa() {
       />
 
       <Text style={s.etiqueta}>Horario disponible</Text>
-      <View style={[s.input, s.inputConIcono, { paddingRight: 0 }]}>
-        <Picker
-          selectedValue={form.horario || HORARIOS_DISPONIBLES[0]}
-          onValueChange={(value) => actualizarForm("horario", value)}
-          style={{ flex: 1, color: "#1A1A1A" }}
-          itemStyle={{ color: "#1A1A1A" }}
-          dropdownIconColor="#111111"
-        >
-          <Picker.Item label="Selecciona horario disponible" value="" />
-          {HORARIOS_DISPONIBLES.map((horario) => (
-            <Picker.Item key={horario} label={horario} value={horario} />
-          ))}
-        </Picker>
-      </View>
+      <CampoHorario
+        estiloCampo={s.input}
+        valor={{ dia: form.dia, horaInicio: form.horaInicio, horaFin: form.horaFin }}
+        onChange={(h) => {
+          setForm((prev) => ({ ...prev, ...h }));
+          if (error) setError("");
+        }}
+      />
 
       <Text style={s.etiqueta}>Fotos</Text>
       <TouchableOpacity
@@ -544,42 +553,57 @@ function AsistenteRutaCreativa() {
         Debe invitar al menos a {MINIMO_ALIADOS} actores culturales para crear
         una ruta creativa.
       </Text>
-
-      <View style={s.buscador}>
-        <View style={s.buscadorIcono}>
-          <Ionicons name="search" size={22} color="#FFFFFF" />
+      <View style={s.zonaGris}>
+        <View style={s.buscador}>
+          <Image
+            source={require("../../assets/icons/busqueda.png")}
+            style={s.buscadorIcono}
+          />
+          <TextInput
+            style={s.buscadorInput}
+            placeholder="Buscar"
+            placeholderTextColor="#8A8A8A"
+            value={busqueda}
+            onChangeText={setBusqueda}
+            returnKeyType="search"
+            autoCorrect={false}
+          />
+          {busqueda.length > 0 && (
+            <TouchableOpacity
+              style={s.buscadorLimpiar}
+              onPress={() => setBusqueda("")}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              accessibilityLabel="Borrar búsqueda"
+            >
+              <Ionicons name="close-circle" size={18} color="#8A8A8A" />
+            </TouchableOpacity>
+          )}
         </View>
-        <TextInput
-          style={s.buscadorInput}
-          placeholder="Buscar"
-          placeholderTextColor="#9A9A9A"
-          value={busqueda}
-          onChangeText={setBusqueda}
-        />
+
+        {negocio && (
+          <View style={s.miNegocio}>
+            <View style={s.tarjetaMiniatura}>
+              <IconoCategoria
+                categoria={negocio.categoria}
+                size={32}
+                color={VERDE}
+              />
+            </View>
+            <View style={s.tarjetaCuerpo}>
+              <Text style={s.miNegocioCategoria}>
+                {nombreDeCategoria(negocio.categoria)}
+              </Text>
+              <Text style={s.tarjetaDetalle}>{negocio.titulo}</Text>
+            </View>
+            <View style={[s.insignia, { backgroundColor: LIMA }]}>
+              <Text style={[s.insigniaTexto, { color: "#1A1A1A" }]}>Tú</Text>
+            </View>
+          </View>
+        )}
       </View>
 
-      {negocio && (
-        <View style={s.miNegocio}>
-          <View style={s.tarjetaMiniatura}>
-            <Ionicons
-              name={iconoDeCategoria(negocio.categoria)}
-              size={32}
-              color={VERDE}
-            />
-          </View>
-          <View style={s.tarjetaCuerpo}>
-            <Text style={s.miNegocioCategoria}>
-              {nombreDeCategoria(negocio.categoria)}
-            </Text>
-            <Text style={s.tarjetaDetalle}>{negocio.titulo}</Text>
-          </View>
-          <View style={[s.insignia, { backgroundColor: LIMA }]}>
-            <Text style={[s.insigniaTexto, { color: "#1A1A1A" }]}>Tú</Text>
-          </View>
-        </View>
-      )}
-
       <Text style={s.seccionTitulo}>Lugares cerca de tí</Text>
+      <View style={s.zonaGrisCarrusel}>
       {candidatos.length === 0 ? (
         <Text style={s.aviso}>
           {busqueda
@@ -587,6 +611,7 @@ function AsistenteRutaCreativa() {
             : "Aún no hay otros negocios registrados para invitar."}
         </Text>
       ) : (
+        
         <FlatList
           data={candidatos}
           horizontal
@@ -601,8 +626,8 @@ function AsistenteRutaCreativa() {
                   {foto ? (
                     <Image source={{ uri: foto }} style={s.aliadoImagen} />
                   ) : (
-                    <Ionicons
-                      name={iconoDeCategoria(item.categoria)}
+                    <IconoCategoria
+                      categoria={item.categoria}
                       size={44}
                       color={VERDE}
                     />
@@ -617,6 +642,14 @@ function AsistenteRutaCreativa() {
                     {item.lugar || nombreDeCategoria(item.categoria)}
                   </Text>
                 </View>
+                {typeof item.calificacion === "number" && (
+                  <View style={s.estrellaFila}>
+                    <Ionicons name="star" size={16} color="#F5A623" />
+                    <Text style={s.estrellaTexto}>
+                      {item.calificacion.toFixed(1)}
+                    </Text>
+                  </View>
+                )}
                 <TouchableOpacity
                   style={[
                     s.botonInvitar,
@@ -639,6 +672,7 @@ function AsistenteRutaCreativa() {
           }}
         />
       )}
+      </View> 
 
       <Text style={s.contadorInvitados}>
         Invitaciones enviadas: {numInvitados} (mínimo {MINIMO_ALIADOS})
@@ -665,7 +699,7 @@ function AsistenteRutaCreativa() {
   const renderPaso4o5 = () => (
     <>
       {paradas.map((p) => (
-        <TarjetaParada key={p.id} parada={p} />
+        <TarjetaParada key={p.id} parada={p} calificacion={calificacionDe(p)} />
       ))}
 
       {paso === 4 ? (
@@ -719,7 +753,12 @@ function AsistenteRutaCreativa() {
     <>
       <Text style={s.nombreRutaPublicada}>{ruta?.nombre ?? form.nombre}</Text>
       {paradas.map((p) => (
-        <TarjetaParada key={p.id} parada={p} mostrarPrecio />
+        <TarjetaParada
+          key={p.id}
+          parada={p}
+          calificacion={calificacionDe(p)}
+          mostrarPrecio
+        />
       ))}
       <View style={s.totalFila}>
         <Text style={s.totalEtiqueta}>Total de la ruta creativa:</Text>
@@ -779,9 +818,8 @@ function AsistenteRutaCreativa() {
   );
 }
 
-// El Drawer mantiene esta pantalla montada aunque salgas de ella, así que el
-// estado del asistente (paso, ruta y formulario) sobreviviría a la siguiente
-// visita y "Ver mis rutas activas" o "Nueva ruta" abrirían la ruta anterior.
+// Si se navega de nuevo a esta pantalla estando ya abierta, el estado del
+// asistente (paso, ruta y formulario) sobreviviría y "Ver mis rutas activas" o "Nueva ruta" abrirían la ruta anterior.
 // Cada navegación trae una "clave" nueva: al cambiar, el asistente se vuelve a
 // montar desde cero con los parámetros recibidos.
 /**

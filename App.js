@@ -6,6 +6,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from './src/context/AuthContext';
 import RootNavigator from './src/navigation/RootNavigator';
 
+import PinolitoAsistente from './src/components/PinolitoAsistente';
+
 import { useFonts } from "expo-font";
 import fonts from "./src/utils/fonts/fonts.js";
 
@@ -27,6 +29,7 @@ export default function App() {
       <AuthProvider>
         <NavigationContainer>
           <RootNavigator />
+          <PinolitoAsistente />
         </NavigationContainer>
       </AuthProvider>
     </SafeAreaProvider>

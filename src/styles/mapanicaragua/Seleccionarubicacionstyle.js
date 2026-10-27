@@ -3,6 +3,7 @@
  */
 
 import { StyleSheet } from "react-native";
+import { boton } from "../common/botonStyle";
 
 export const seleccionarUbicacionStyle = StyleSheet.create({
   container: {
@@ -78,30 +79,18 @@ export const seleccionarUbicacionStyle = StyleSheet.create({
     gap: 10,
   },
   botonCancelar: {
+    ...boton.secundario,
     flex: 1,
-    paddingVertical: 13,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#E4E9EF",
   },
   botonCancelarTexto: {
-    color: "#123B63",
-    fontWeight: "700",
-    fontSize: 15,
+    ...boton.secundarioTexto,
   },
   botonConfirmar: {
+    ...boton.primario,
     flex: 1.4,
-    paddingVertical: 13,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
     flexDirection: "row",
-    backgroundColor: "#1D7A46",
   },
   botonConfirmarTexto: {
-    color: "#FFFFFF",
-    fontWeight: "700",
-    fontSize: 15,
+    ...boton.primarioTexto,
   },
 });

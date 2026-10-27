@@ -14,6 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import Svg, { Path } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { navigationTabsStyle as styles } from "../styles/navigation/navigationTabsStyle";
+import { getMetrics } from "../utils/layout";
 
 // ── Iconos Ionicons (fallback) ───────────────
 const IONICONS = {
@@ -32,51 +33,21 @@ const IONICONS = {
 // ── Iconos personalizados ────────────────────
 const CUSTOM_ICONS = {
   // Turista
-  Inicio: require("../../src/assets/icons/InicioRelleno.png"),
-  Mapa: require("../../src/assets/icons/Mapa.png"),
+  Inicio: require("../../src/assets/icons/hogar.png"),
+  Mapa: require("../../src/assets/icons/mapa-interactivo.png"),
   Rutas: require("../../src/assets/icons/Ruta.png"),
   Pasaporte: require("../../src/assets/icons/Pasaporte.png"),
-  Perfil: require("../../src/assets/icons/Perfil.png"),
+  Perfil: require("../../src/assets/icons/usuario.png"),
 
   // Actor cultural
-  "Perfil cultural": require("../../src/assets/icons/Perfil.png"),
+  "Perfil cultural": require("../../src/assets/icons/usuario.png"),
   "Generar QR": require("../../src/assets/icons/QR.png"),
   "Crear ruta": require("../../src/assets/icons/CrearRuta.png"),
-};
-
-// ── Métricas base ────────────────────────────
-const BASE_WIDTH = 360;
-const MIN_SCALE = 0.85;
-const MAX_SCALE = 1.25;
-
-const BASE = {
-  barHeight: 68,
-  notchDepth: 50,
-  corner: 17,
-  edgeInset: -30,
-  circle: 52,
-  lift: -18,
-  iconActive: 26,
-  iconInactive: 26,
 };
 
 const INACTIVE_SCALE = 0.8;
 
 // ── Helpers ──────────────────────────────────
-function getMetrics(width) {
-  const s = Math.min(Math.max(width / BASE_WIDTH, MIN_SCALE), MAX_SCALE);
-  return {
-    barHeight: Math.round(BASE.barHeight * s),
-    notchDepth: BASE.notchDepth * s,
-    corner: BASE.corner * s,
-    edgeInset: BASE.edgeInset * s,
-    circle: Math.round(BASE.circle * s),
-    lift: BASE.lift * s,
-    iconActive: Math.round(BASE.iconActive * s),
-    iconInactive: Math.round(BASE.iconInactive * s),
-  };
-}
-
 function getBarPath(width, height, cx, m) {
   const { notchDepth, corner, edgeInset } = m;
   const maxHalf = notchDepth * 1.4;

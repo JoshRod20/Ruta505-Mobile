@@ -3,6 +3,7 @@
  */
 
 import { StyleSheet } from "react-native";
+import { campo } from "../common/campoStyle";
 
 const VERDE = "#086338";
 
@@ -37,16 +38,13 @@ export const editCulturalProfileStyle = StyleSheet.create({
     paddingTop: 10,
   },
   etiqueta: {
-    fontFamily: "Inter-Regular",
-    fontSize: 11,
-    color: "#2D2D2D",
-    textTransform: "uppercase",
+    ...campo.etiqueta,
     marginTop: 6,
     marginBottom: 6,
   },
   soloLectura: {
-    backgroundColor: "#F2F4F2",
+    backgroundColor: "#E6E8E6",
     color: "#6B6B6B",
-    borderColor: "#B9C9BE",
+    borderWidth: 0,
   },
 });

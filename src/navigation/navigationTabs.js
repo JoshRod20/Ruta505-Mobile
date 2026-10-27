@@ -8,7 +8,6 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Home from "../components/Home";
 import MapaNicaragua from "../components/MapaNicaragua";
 import CustomTabBar from "../components/CustomTabBar";
-import FloatingNavButton from "../components/common/FloatingNavButton";
 import CrearRutaInicio from "../screens/rutas/crearRutaInicio";
 import GenerateQr from "../screens/actorCultural/generateQr";
 import CulturalProfile from "../screens/actorCultural/culturalProfile";
@@ -84,6 +83,9 @@ export default function NavigationTabs({ route }) {
         )}
         {puedeVerPerfilCultural && (
           <Tab.Screen name="Perfil cultural" component={CulturalProfile} />
+        )}
+        {tienePermiso(role, PERMISOS.VER_RUTAS_CULTURALES) && (
+          <Tab.Screen name="Rutas" component={CulturalRoutes} />
         )}
         {puedeVerPasaporte && (
           <Tab.Screen name="Pasaporte" component={CulturalPassport} />

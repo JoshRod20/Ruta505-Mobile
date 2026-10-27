@@ -8,7 +8,6 @@ import {
   Text,
   TouchableOpacity,
   Image,
-  Dimensions,
   Animated,
   Easing,
   ScrollView,
@@ -17,9 +16,10 @@ import {
 import Svg, { Path } from "react-native-svg";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useWindowDimensions } from "react-native";
+import { padLateralTablet } from "../../utils/layout";
 import SeleccionarTipoScreenStyle from "../../styles/auth/SeleccionarTipoScreenStyle";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 // Altura de la banda donde vive la curva SVG (misma que LoginScreen).
 const CURVE_HEIGHT = 130;
@@ -41,6 +41,7 @@ const tiposUsuario = [
 
 const SeleccionarTipoScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
+  const { width: SCREEN_WIDTH } = useWindowDimensions();
 
   const handleVolver = () => {
     navigation.goBack();
@@ -77,10 +78,10 @@ const SeleccionarTipoScreen = ({ navigation }) => {
             onPress={handleVolver}
             activeOpacity={0.7}
           >
-            <Ionicons
-              name="chevron-back"
-              size={24}
-              color="#2b2b2b"
+            <Image
+              source={require("../../assets/icons/volver.png")}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
             />
           </TouchableOpacity>
 
@@ -114,7 +115,11 @@ const SeleccionarTipoScreen = ({ navigation }) => {
 
       <ScrollView
         style={SeleccionarTipoScreenStyle.scroll}
-        contentContainerStyle={SeleccionarTipoScreenStyle.card}
+        contentContainerStyle={[
+          SeleccionarTipoScreenStyle.card,
+          { paddingBottom: insets.bottom + 24 },
+          padLateralTablet(SCREEN_WIDTH),
+        ]}
         showsVerticalScrollIndicator={false}
       >
 

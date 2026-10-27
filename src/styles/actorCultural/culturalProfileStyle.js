@@ -2,10 +2,11 @@
  * Estilos de culturalProfileStyle.
  */
 
-import { StyleSheet } from "react-native";
+import { Platform, StyleSheet } from "react-native";
+import { boton } from "../common/botonStyle";
 
 const VERDE = "#086338";
-const VERDE_BORDE = "#0c8046";
+const NARANJA = "#F29100";
 
 export const culturalProfileStyle = StyleSheet.create({
   container: {
@@ -22,20 +23,13 @@ export const culturalProfileStyle = StyleSheet.create({
   botonPortada: {
     position: "absolute",
     right: 20,
-    bottom: -20,
-    width: 42,
-    height: 42,
-    borderRadius: 12,
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1.5,
-    borderColor: VERDE_BORDE,
+    bottom: -22,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: "#8CC219",
     alignItems: "center",
     justifyContent: "center",
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
   },
 
   // ---- Datos ----
@@ -48,44 +42,44 @@ export const culturalProfileStyle = StyleSheet.create({
     alignItems: "center",
     alignSelf: "flex-start",
     borderWidth: 1.5,
-    borderColor: VERDE_BORDE,
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    marginBottom: 10,
+    borderColor: NARANJA,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginBottom: 12,
   },
   insigniaTexto: {
     fontFamily: "Inter-SemiBold",
     fontSize: 12,
-    color: VERDE,
+    color: NARANJA,
     marginLeft: 6,
   },
   nombre: {
-    fontFamily: "Poppins-Bold",
+    fontFamily: "Poppins-SemiBold",
     fontSize: 19,
     color: VERDE,
   },
   subtitulo: {
     fontFamily: "Inter-Regular",
-    fontSize: 12,
-    color: "#6B6B6B",
+    fontSize: 12.5,
+    color: "#111111",
     marginTop: 2,
   },
   filaCalificacion: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 6,
+    marginTop: 10,
   },
   calificacionTexto: {
-    fontFamily: "Poppins-Bold",
-    fontSize: 16,
+    fontFamily: "Inter-Regular",
+    fontSize: 17,
     color: "#111111",
-    marginLeft: 6,
+    marginLeft: 8,
   },
   descripcion: {
     fontFamily: "Inter-Regular",
     fontSize: 13,
-    color: "#2D2D2D",
+    color: "#111111",
     lineHeight: 19,
     marginTop: 12,
   },
@@ -99,25 +93,28 @@ export const culturalProfileStyle = StyleSheet.create({
 
   // ---- Acciones ----
   seccion: {
-    fontFamily: "Poppins-Bold",
-    fontSize: 12,
+    fontFamily: "Inter-Regular",
+    fontSize: 13,
     color: VERDE,
-    marginTop: 26,
-    marginBottom: 10,
-  },
-  botonAccion: {
-    height: 46,
-    borderWidth: 1.5,
-    borderColor: VERDE_BORDE,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
+    marginTop: 28,
     marginBottom: 12,
   },
+  botonAccion: {
+    ...boton.primario,
+    marginBottom: 14,
+    // La sombra suave del diseño; en Android se omite porque "elevation"
+    // dibuja las esquinas redondeadas con cortes.
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+      },
+    }),
+  },
   botonAccionTexto: {
-    fontFamily: "Poppins-SemiBold",
-    fontSize: 14,
-    color: VERDE,
+    ...boton.primarioTexto,
   },
 
   // ---- Sin permiso ----

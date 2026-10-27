@@ -3,6 +3,8 @@
  */
 
 import { StyleSheet } from "react-native";
+import { campo } from "../common/campoStyle";
+import { boton } from "../common/botonStyle";
 
 // Estilos compartidos del flujo "Ruta Creativa": Mis servicios (tab +),
 // el asistente de 5 pasos y la pantalla de invitaciones.
@@ -127,6 +129,17 @@ export const crearRutaStyle = StyleSheet.create({
     color: "#1A1A1A",
     marginTop: 2,
   },
+  estrellaFila: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 2,
+  },
+  estrellaTexto: {
+    fontFamily: "Inter-Regular",
+    fontSize: 11.5,
+    color: "#444444",
+    marginLeft: 4,
+  },
   insignia: {
     borderRadius: 6,
     paddingHorizontal: 12,
@@ -140,57 +153,36 @@ export const crearRutaStyle = StyleSheet.create({
 
   // ---- Botones ----
   botonLima: {
-    height: 50,
-    borderRadius: 12,
+    ...boton.primario,
     backgroundColor: LIMA,
-    alignItems: "center",
-    justifyContent: "center",
     marginTop: 16,
   },
   botonLimaTexto: {
-    fontFamily: "Poppins-SemiBold",
-    fontSize: 15,
+    ...boton.primarioTexto,
     color: "#1A1A1A",
   },
   botonVerde: {
-    height: 50,
-    borderRadius: 12,
-    backgroundColor: VERDE,
-    alignItems: "center",
-    justifyContent: "center",
+    ...boton.primario,
     marginTop: 16,
   },
   botonVerdeTexto: {
-    fontFamily: "Poppins-SemiBold",
-    fontSize: 15,
-    color: "#FFFFFF",
+    ...boton.primarioTexto,
   },
   botonNaranja: {
-    height: 48,
-    borderRadius: 12,
+    ...boton.primario,
     backgroundColor: NARANJA,
-    alignItems: "center",
-    justifyContent: "center",
     marginTop: 20,
   },
   botonNaranjaTexto: {
-    fontFamily: "Poppins-Bold",
-    fontSize: 15,
+    ...boton.primarioTexto,
     color: "#1A1A1A",
   },
   botonContorno: {
-    height: 50,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: "#9E9E9E",
-    backgroundColor: "#FFFFFF",
-    alignItems: "center",
-    justifyContent: "center",
+    ...boton.contorno,
     marginTop: 16,
   },
   botonContornoTexto: {
-    fontFamily: "Poppins-SemiBold",
-    fontSize: 15,
+    ...boton.contornoTexto,
     color: "#7A7A7A",
   },
   botonDeshabilitado: {
@@ -226,28 +218,21 @@ export const crearRutaStyle = StyleSheet.create({
 
   // ---- Formulario (paso 2 e invitación) ----
   etiqueta: {
-    fontFamily: "Inter-Regular",
-    fontSize: 12,
-    color: "#2D2D2D",
-    textTransform: "uppercase",
+    ...campo.etiqueta,
     marginTop: 14,
     marginBottom: 6,
   },
-  input: {
-    borderWidth: 1.5,
-    borderColor: VERDE,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    height: 46,
+  etiquetaSecundaria: {
     fontFamily: "Inter-Regular",
-    fontSize: 14,
-    color: "#1A1A1A",
-    backgroundColor: "#FFFFFF",
+    fontSize: 11.5,
+    color: "#777777",
+    marginBottom: 4,
+  },
+  input: {
+    ...campo.input,
   },
   inputMultilinea: {
-    height: 92,
-    paddingTop: 10,
-    textAlignVertical: "top",
+    ...campo.inputMultilinea,
   },
   inputConIcono: {
     flexDirection: "row",
@@ -262,13 +247,11 @@ export const crearRutaStyle = StyleSheet.create({
     height: 44,
   },
   multimedia: {
-    borderWidth: 1.5,
-    borderColor: VERDE,
-    borderRadius: 10,
-    minHeight: 70,
+    ...campo.caja,
+    minHeight: 58,
+    padding: 12,
     alignItems: "center",
     justifyContent: "center",
-    padding: 10,
   },
   multimediaTexto: {
     fontFamily: "Inter-Regular",
@@ -322,37 +305,34 @@ export const crearRutaStyle = StyleSheet.create({
   buscador: {
     flexDirection: "row",
     alignItems: "center",
-    borderWidth: 1.2,
-    borderColor: VERDE,
+    height: 48,
     borderRadius: 14,
-    height: 50,
-    overflow: "hidden",
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 16,
     marginBottom: 14,
   },
   buscadorIcono: {
-    width: 58,
-    height: "100%",
-    backgroundColor: VERDE,
-    alignItems: "center",
-    justifyContent: "center",
-    borderTopRightRadius: 14,
-    borderBottomRightRadius: 14,
+    width: 22,
+    height: 22,
   },
   buscadorInput: {
     flex: 1,
-    paddingHorizontal: 14,
+    height: "100%",
+    marginLeft: 12,
     fontFamily: "Inter-Regular",
     fontSize: 14,
-    color: "#1A1A1A",
+    color: "#1F2A24",
+    paddingVertical: 0,
+  },
+  buscadorLimpiar: {
+    marginLeft: 6,
   },
   miNegocio: {
     flexDirection: "row",
     alignItems: "center",
-    borderWidth: 1.2,
-    borderColor: LIMA,
+    backgroundColor: "#FFFFFF",
     borderRadius: 16,
     padding: 12,
-    marginBottom: 16,
   },
   miNegocioCategoria: {
     fontFamily: "Poppins-Bold",
@@ -501,4 +481,35 @@ export const crearRutaStyle = StyleSheet.create({
     textAlign: "center",
     marginBottom: 8,
   },
+  zonaGris: {
+    backgroundColor: "#F4F4F4",
+    // Se sale del margen de 20 px de la pantalla para llegar de borde a borde.
+    marginHorizontal: -20,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    marginBottom: 16,
+  },
+  zonaGrisCarrusel: {
+  backgroundColor: "#F4F4F4",
+  // Se sale del margen de 20 px de la pantalla para llegar de borde a borde.
+  marginHorizontal: -20,
+  paddingVertical: 16,
+  marginBottom: 16,
+},
+avisoEnGris: {
+  paddingHorizontal: 20,
+  marginBottom: 0,
+},
+carrusel: {
+  // El margen va aquí y no en la zona gris, para que el carrusel
+  // se deslice de borde a borde y no se corte a los 20 px.
+  paddingHorizontal: 20,
+},
+tarjetaAliado: {
+  width: 176,
+  borderRadius: 18,
+  padding: 10,
+  marginRight: 12,
+  backgroundColor: "#FFFFFF",
+},
 });

@@ -2,7 +2,7 @@
  * TarjetaUbicacion: componente/pantalla de la aplicación Ruta505.
  */
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -13,11 +13,26 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useVideoPlayer, VideoView } from "expo-video";
 
-import { CATEGORIAS_EXPERIENCIA } from "../services/Categoriasexperiencias";
+import { obtenerMultimedia } from "../services/Negociosservice";
 import { tarjetaUbicacionStyle as s } from "../styles/mapanicaragua/TarjetaUbicacionStyle";
+import useTabBarHeight from "../hooks/useTabBarHeight";
 
 const VERDE = "#0E5A34";
+
+/** Reproductor de un video corto del negocio (requiere expo-video). */
+function VideoNegocio({ uri, style }) {
+  const player = useVideoPlayer(uri);
+  return (
+    <VideoView
+      player={player}
+      style={style}
+      nativeControls
+      contentFit="cover"
+    />
+  );
+}
 
 /**
  * Hoja "Detalles de la ubicación" que se abre al tocar un punto del mapa.
@@ -31,35 +46,51 @@ export default function TarjetaUbicacion({
   puedeEditar,
   onCerrar,
   onEditar,
+  onVerPerfil,
   onTrazarRuta,
   onIniciarNavegacion,
+  origenRuta, // { nombre } del punto de partida elegido; null = mi ubicación
+  onCambiarOrigen,
 }) {
   const { width, height } = useWindowDimensions();
+  const tabBarHeight = useTabBarHeight();
 
-  const categoria = CATEGORIAS_EXPERIENCIA.find((c) => c.id === punto.categoria);
   const fotos = punto.imagenes?.length ? punto.imagenes : punto.imagenUrls ?? [];
+  // Fotos y videos del negocio (subcolección). Mientras cargan, o si no hay,
+  // se usan las fotos antiguas guardadas en el propio documento.
+  const [multimedia, setMultimedia] = useState([]);
+  useEffect(() => {
+    let vigente = true;
+    setMultimedia([]);
+    // Los lugares externos (OpenStreetMap) no tienen documento en Firestore.
+    if (punto.externo) return undefined;
+    obtenerMultimedia(punto.id)
+      .then((items) => vigente && setMultimedia(items))
+      .catch(() => {});
+    return () => {
+      vigente = false;
+    };
+  }, [punto.id]);
   const tieneCalificacion = typeof punto.calificacion === "number";
   const hayRutaAqui = ruta && ruta.destino?.id === punto.id;
-  const anchoFoto = fotos.length > 1 ? width * 0.72 : width - 40;
+  const items = multimedia.length
+    ? multimedia
+    : fotos.map((uri) => ({ tipo: "imagen", uri }));
+  const totalMedia = items.length;
+  const anchoFoto = totalMedia > 1 ? width * 0.72 : width - 40;
 
   return (
-    <View style={s.hoja}>
+    <View style={[s.hoja, { bottom: tabBarHeight + 32 }]}>
       <ScrollView
         style={{ maxHeight: height * 0.5 }}
         contentContainerStyle={s.contenido}
         showsVerticalScrollIndicator={false}
         nestedScrollEnabled
       >
-        <View style={s.filaSuperior}>
-          <View style={s.badge}>
-            <Ionicons
-              name={categoria?.icono ?? "location-outline"}
-              size={18}
-              color={VERDE}
-              style={s.badgeIcono}
-            />
-            <Text style={s.badgeTexto}>{categoria?.label ?? "Lugar"}</Text>
-          </View>
+        <View style={s.filaTitulo}>
+          <Text style={s.titulo} numberOfLines={2}>
+            {punto.titulo}
+          </Text>
           <TouchableOpacity
             style={s.botonCerrar}
             onPress={onCerrar}
@@ -70,18 +101,16 @@ export default function TarjetaUbicacion({
           </TouchableOpacity>
         </View>
 
-        <Text style={s.titulo}>{punto.titulo}</Text>
-
         {tieneCalificacion && (
           <View style={s.filaCalificacion}>
-            <Ionicons name="star" size={20} color="#111111" />
+            <Ionicons name="star" size={20} color="#F5A623" />
             <Text style={s.calificacionTexto}>
               {punto.calificacion.toFixed(1)}
             </Text>
           </View>
         )}
 
-        {fotos.length > 0 && (
+        {totalMedia > 0 && (
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -89,21 +118,46 @@ export default function TarjetaUbicacion({
             contentContainerStyle={s.filaFotosContenido}
             nestedScrollEnabled
           >
-            {fotos.map((uri, index) => (
-              <Image
-                key={index}
-                source={{ uri }}
-                style={[s.foto, { width: anchoFoto }]}
-                resizeMode="cover"
-              />
-            ))}
+            {items.map((item, index) =>
+              item.tipo === "video" ? (
+                <VideoNegocio
+                  key={index}
+                  uri={item.uri}
+                  style={[s.foto, { width: anchoFoto }]}
+                />
+              ) : (
+                <Image
+                  key={index}
+                  source={{ uri: item.uri }}
+                  style={[s.foto, { width: anchoFoto }]}
+                  resizeMode="cover"
+                />
+              ),
+            )}
           </ScrollView>
+        )}
+
+        {punto.externo && (
+          <View style={s.cajaReferencia}>
+            <View style={s.referenciaIcono}>
+              <Ionicons name="information-circle" size={20} color={VERDE} />
+            </View>
+            <View style={s.referenciaTextos}>
+              <Text style={s.referenciaEtiqueta}>
+                {punto.etiquetaTipo ?? "Lugar de interés"}
+              </Text>
+              <Text style={s.referenciaTexto}>
+                Lugar tomado de OpenStreetMap. Todavía no está registrado en
+                Ruta505{punto.lugar ? ` · ${punto.lugar}` : ""}.
+              </Text>
+            </View>
+          </View>
         )}
 
         {!!punto.ubicacionExacta && (
           <View style={s.cajaReferencia}>
             <View style={s.referenciaIcono}>
-              <Ionicons name="location-sharp" size={22} color={VERDE} />
+              <Ionicons name="location-sharp" size={20} color={VERDE} />
             </View>
             <View style={s.referenciaTextos}>
               <Text style={s.referenciaEtiqueta}>Referencia registrada</Text>
@@ -122,6 +176,19 @@ export default function TarjetaUbicacion({
 
       {/* Acciones fijas (siempre visibles aunque la descripción sea larga) */}
       <View style={s.acciones}>
+        {!!onCambiarOrigen && (
+          <TouchableOpacity
+            style={s.filaOrigen}
+            onPress={onCambiarOrigen}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="radio-button-on" size={14} color={VERDE} />
+            <Text style={s.filaOrigenTexto} numberOfLines={1}>
+              Desde: {origenRuta ? origenRuta.nombre : "Mi ubicación"}
+            </Text>
+            <Text style={s.filaOrigenCambiar}>Cambiar</Text>
+          </TouchableOpacity>
+        )}
         {hayRutaAqui && (
           <View style={s.etaPill}>
             <Text style={s.etaPillTexto}>
@@ -130,6 +197,15 @@ export default function TarjetaUbicacion({
           </View>
         )}
         <View style={s.filaAcciones}>
+          {!puedeEditar && !!onVerPerfil && (
+            <TouchableOpacity
+              style={s.botonSecundario}
+              onPress={onVerPerfil}
+              activeOpacity={0.8}
+            >
+              <Text style={s.botonSecundarioTexto}>Ver perfil</Text>
+            </TouchableOpacity>
+          )}
           {puedeEditar && (
             <TouchableOpacity
               style={s.botonSecundario}
@@ -145,7 +221,9 @@ export default function TarjetaUbicacion({
               onPress={onIniciarNavegacion}
               activeOpacity={0.85}
             >
-              <Text style={s.botonPrimarioTexto}>Iniciar navegación</Text>
+              <Text style={s.botonPrimarioTexto}>
+                {origenRuta ? "Iniciar desde mi ubicación" : "Iniciar navegación"}
+              </Text>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity

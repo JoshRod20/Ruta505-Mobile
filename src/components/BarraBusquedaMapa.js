@@ -2,7 +2,7 @@
  * BarraBusquedaMapa: componente/pantalla de la aplicación Ruta505.
  */
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, } from "react";
 import {
   ActivityIndicator,
   Keyboard,
@@ -11,17 +11,19 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
+  Image
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
 import {
-  CATEGORIAS_EXPERIENCIA,
+  buscarCategoria,
   iconoDeCategoria,
   colorDeCategoria,
 } from "../services/Categoriasexperiencias";
 import { buscarLugares } from "../services/geocodingservice";
 import { barraBusquedaStyle as s } from "../styles/mapanicaragua/BarraBusquedaStyle";
+import IconoCategoria from "./common/IconoCategoria";
 
 const VERDE = "#0E5A34";
 const MAX_RESULTADOS_PROPIOS = 5;
@@ -33,7 +35,7 @@ const normalizar = (valor) =>
     .toLowerCase();
 
 const etiquetaCategoria = (id) =>
-  CATEGORIAS_EXPERIENCIA.find((c) => c.id === id)?.label ?? "";
+  buscarCategoria(id)?.label ?? "";
 
 /**
  * Barra de búsqueda del mapa.
@@ -127,9 +129,9 @@ export default function BarraBusquedaMapa({
         </TouchableWithoutFeedback>
       )}
 
-      <View style={[s.contenedor, { top: insets.top + 40 }]}>
+      <View style={[s.contenedor, { top: insets.top + 54 }]}>
         <View style={s.barra}>
-          <Ionicons name="search" size={18} color={VERDE} />
+          <Image source={require("../assets/icons/busqueda.png")} style={s.iconoLupa} />
           <TextInput
             style={s.input}
             value={texto}
@@ -166,8 +168,8 @@ export default function BarraBusquedaMapa({
                     activeOpacity={0.7}
                   >
                     <View style={s.filaIcono}>
-                      <Ionicons
-                        name={iconoDeCategoria(punto.categoria)}
+                      <IconoCategoria
+                        categoria={punto.categoria}
                         size={16}
                         color={colorDeCategoria(punto.categoria)}
                       />

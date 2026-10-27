@@ -39,7 +39,7 @@ function Fila({
   const contenido = (
     <View style={[s.fila, !ultima && s.filaConSeparador]}>
       <View style={s.iconoCaja}>
-        <Ionicons name={icono} size={21} color="#222222" />
+        <Ionicons name={icono} size={21} color="#FFFFFF" />
       </View>
       <View style={s.filaTextos}>
         <View style={s.filaTituloLinea}>
@@ -165,7 +165,7 @@ export default function PerfilUsuario({ navigation }) {
                 icono="sparkles-outline"
                 titulo="Suscripción actual"
                 subtitulo="Conoce el Plan Destacado"
-                onPress={proximamente("Suscripción")}
+                onPress={() => navigation.navigate("PlanDestacado")}
                 ultima
               />
             </>
@@ -204,7 +204,7 @@ export default function PerfilUsuario({ navigation }) {
         </View>
 
         {/* SOPORTE Y AYUDA */}
-        <Text style={s.seccionTitulo}>Soporte y ayuda</Text>
+        <Text style={s.seccionTitulo}>Soporte y Ayuda</Text>
         <View style={s.tarjeta}>
           <Fila
             icono="help-circle-outline"
@@ -228,7 +228,7 @@ export default function PerfilUsuario({ navigation }) {
         </View>
 
         {/* ACERCA DE & LEGAL */}
-        <Text style={s.seccionTitulo}>Acerca de & legal</Text>
+        <Text style={s.seccionTitulo}>Acerca de & Legal</Text>
         <View style={s.tarjeta}>
           <Fila
             icono="information-circle-outline"

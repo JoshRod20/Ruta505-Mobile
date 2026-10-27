@@ -33,6 +33,7 @@ export default function SelectorModal({
   visible,
   titulo,
   placeholderBusqueda = "Buscar...",
+  colorPlaceholderBusqueda = "#000000",
   opciones,
   valor,
   onSelect,
@@ -123,7 +124,7 @@ export default function SelectorModal({
     : { paddingBottom: 16 + insets.bottom };
 
   return (
-    <Modal
+    <Modal statusBarTranslucent navigationBarTranslucent
       visible={visible}
       transparent
       animationType="fade"
@@ -147,14 +148,14 @@ export default function SelectorModal({
             <Ionicons
               name="search-outline"
               size={18}
-              color="#8a8a8a"
+              color="#000000"
               style={styles.modalBusquedaIcono}
             />
             <TextInput
               ref={inputRef}
               style={styles.modalBusquedaInput}
               placeholder={placeholderBusqueda}
-              placeholderTextColor="#a8a8a8"
+              placeholderTextColor={colorPlaceholderBusqueda}
               value={busqueda}
               onChangeText={setBusqueda}
               autoCorrect={false}

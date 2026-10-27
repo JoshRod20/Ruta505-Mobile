@@ -19,6 +19,8 @@ import {
   orderBy,
   where,
   serverTimestamp,
+  arrayUnion,
+  arrayRemove,
 } from "firebase/firestore";
 
 /** Nombre de la colección de publicaciones en Firestore. */
@@ -173,10 +175,11 @@ export async function alternarLike(experienciaId, uid, yaLeDioLike) {
 // ==================================================
 // COMENTARIOS (= reseñas)
 // Cada publicación del Home tiene su sección de comentarios:
-// experiencias/{id}/comentarios/{uid del autor}. Cada comentario lleva
+// experiencias/{id}/comentarios/{id automático}. Cada comentario lleva
 // calificación (1 a 5 estrellas), texto y, opcionalmente, fotos en Base64.
-// El id es el uid de quien comenta, así que cada persona tiene un solo
-// comentario por publicación (si vuelve a enviar, edita el suyo).
+// Una persona puede hacer varios comentarios por publicación; el campo
+// autorId dice quién lo escribió. Los comentarios antiguos tienen como id el
+// uid del autor y siguen funcionando igual.
 // Pueden comentar turistas y actores culturales, excepto el autor de la
 // publicación (las reglas de Firestore también lo impiden). El dueño de la
 // publicación puede responder cada comentario.
@@ -211,34 +214,45 @@ export function escucharComentarios(experienciaId, callback, onError) {
   );
 }
 
-// Crea el comentario o, si la persona ya tenía uno, actualiza solo lo que
-// ella puede editar (calificación, texto y fotos).
 /**
- * Guarda o actualiza un comentario/reseña sobre una experiencia.
+ * Guarda un comentario/reseña sobre una experiencia.
+ * - Sin comentarioId: crea un comentario NUEVO (una persona puede hacer varios).
+ * - Con comentarioId: edita ese comentario (calificación, texto y fotos).
  * @param {string} experienciaId
- * @param {string} uid
- * @param {Object} datos - texto, calificacion, etc.
+ * @param {Object} datos - autorId, autorNombre, autorFoto, calificacion,
+ *   texto, imagenes y, al editar, comentarioId.
  * @returns {Promise<void>}
  */
 export async function guardarComentario(
   experienciaId,
-  { autorId, autorNombre, calificacion, texto, imagenes }
-) {
-  const ref = doc(db, COLECCION, experienciaId, "comentarios", autorId);
-  const existente = await getDoc(ref);
-
-  if (existente.exists()) {
-    return updateDoc(ref, {
-      calificacion,
-      texto,
-      imagenes,
-      updatedAt: serverTimestamp(),
-    });
-  }
-
-  return setDoc(ref, {
+  {
+    comentarioId,
     autorId,
     autorNombre,
+    autorFoto = "",
+    calificacion,
+    texto,
+    imagenes,
+  }
+) {
+  if (comentarioId) {
+    return updateDoc(
+      doc(db, COLECCION, experienciaId, "comentarios", comentarioId),
+      {
+        autorNombre,
+        autorFoto,
+        calificacion,
+        texto,
+        imagenes,
+        updatedAt: serverTimestamp(),
+      }
+    );
+  }
+
+  return addDoc(collection(db, COLECCION, experienciaId, "comentarios"), {
+    autorId,
+    autorNombre,
+    autorFoto,
     calificacion,
     texto,
     imagenes,
@@ -357,4 +371,26 @@ export function escucharActividadDeActor(actorId, callback, onError) {
     oyentes.clear();
     datos.clear();
   };
+}
+
+// ==================================================
+// GUARDADOS
+// Cada usuario guarda los ids de las publicaciones que marca con el marcador
+// en el arreglo "guardados" de su documento users/{uid}. Como el perfil se
+// escucha en vivo (AuthContext), el marcador y la pantalla Guardados se
+// actualizan solos.
+// ==================================================
+
+/**
+ * Guarda o quita una publicación de los guardados del usuario.
+ * @param {string} uid - Usuario que guarda.
+ * @param {string} experienciaId - Publicación.
+ * @param {boolean} guardar - true para guardar, false para quitar.
+ * @returns {Promise<void>}
+ */
+export async function alternarGuardado(uid, experienciaId, guardar) {
+  return updateDoc(doc(db, "users", uid), {
+    guardados: guardar ? arrayUnion(experienciaId) : arrayRemove(experienciaId),
+    updatedAt: serverTimestamp(),
+  });
 }

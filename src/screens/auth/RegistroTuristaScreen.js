@@ -8,7 +8,6 @@ import {
 } from "react";
 
 import {
-  Dimensions,
   FlatList,
   ImageBackground,
   KeyboardAvoidingView,
@@ -18,12 +17,14 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View,Image,
 } from "react-native";
 
 import Svg, { Path } from "react-native-svg";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useWindowDimensions } from "react-native";
+import { padLateralTablet } from "../../utils/layout";
 
 import {
   useRegistroForm,
@@ -38,6 +39,8 @@ import {
   TELEFONO_REGEX,
 } from "../../utils/validators";
 
+import { PAISES } from "../../constants/paises";
+
 import RegistroTuristaScreenStyle
   from "../../styles/auth/RegistroFormStyle";
 
@@ -45,8 +48,6 @@ import RegistroTuristaScreenStyle
 // DIMENSIONES
 // ==================================================
 
-const { width: SCREEN_WIDTH } =
-  Dimensions.get("window");
 
 const CURVE_HEIGHT = 130;
 
@@ -95,47 +96,6 @@ const IDIOMAS = [
 ];
 
 // ==================================================
-// PAÍSES
-// ==================================================
-
-const PAISES = [
-  "Nicaragua",
-  "Costa Rica",
-  "Honduras",
-  "El Salvador",
-  "Guatemala",
-  "Panamá",
-  "Belice",
-  "México",
-  "Estados Unidos",
-  "Canadá",
-  "Colombia",
-  "Venezuela",
-  "Ecuador",
-  "Perú",
-  "Bolivia",
-  "Chile",
-  "Argentina",
-  "Uruguay",
-  "Paraguay",
-  "Brasil",
-  "España",
-  "Francia",
-  "Alemania",
-  "Italia",
-  "Portugal",
-  "Reino Unido",
-  "Países Bajos",
-  "Suiza",
-  "China",
-  "Japón",
-  "Corea del Sur",
-  "India",
-  "Australia",
-  "Otro país",
-];
-
-// ==================================================
 // COMPONENTE
 // ==================================================
 
@@ -144,6 +104,7 @@ const RegistroTuristaScreen = ({
 }) => {
   const insets =
     useSafeAreaInsets();
+  const { width: SCREEN_WIDTH } = useWindowDimensions();
 
   // ==================================================
   // FORMULARIO
@@ -535,10 +496,10 @@ const RegistroTuristaScreen = ({
             onPress={handleVolver}
             activeOpacity={0.7}
           >
-            <Ionicons
-              name="chevron-back"
-              size={24}
-              color="#2b2b2b"
+            <Image
+              source={require("../../assets/icons/volver.png")}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
             />
           </TouchableOpacity>
         </ImageBackground>
@@ -618,10 +579,12 @@ const RegistroTuristaScreen = ({
           style={{
             flex: 1,
           }}
-          contentContainerStyle={
+          contentContainerStyle={[
             RegistroTuristaScreenStyle
-              .card
-          }
+              .card,
+            { paddingBottom: 34 + insets.bottom },
+            padLateralTablet(SCREEN_WIDTH),
+          ]}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode={
             Platform.OS === "ios"
@@ -833,14 +796,14 @@ const RegistroTuristaScreen = ({
               }
               activeOpacity={0.7}
             >
-              <Ionicons
-                name={
+              <Image
+                source={
                   mostrarPassword
-                    ? "eye-off-outline"
-                    : "eye-outline"
+                    ? require("../../assets/icons/ojo.png")
+                    : require("../../assets/icons/ojo.png")
                 }
-                size={22}
-                color="#086338"
+                style={{ width: 22, height: 22 }}
+                resizeMode="contain"
               />
             </TouchableOpacity>
           </View>
@@ -917,14 +880,14 @@ const RegistroTuristaScreen = ({
               }
               activeOpacity={0.7}
             >
-              <Ionicons
-                name={
-                  mostrarConfirmPassword
-                    ? "eye-off-outline"
-                    : "eye-outline"
+              <Image
+                source={
+                  mostrarPassword
+                    ? require("../../assets/icons/ojo.png")
+                    : require("../../assets/icons/ojo.png")
                 }
-                size={22}
-                color="#086338"
+                style={{ width: 22, height: 22 }}
+                resizeMode="contain"
               />
             </TouchableOpacity>
           </View>
@@ -1131,7 +1094,7 @@ const RegistroTuristaScreen = ({
           MODAL IDIOMA
           ================================================== */}
 
-      <Modal
+      <Modal statusBarTranslucent navigationBarTranslucent
         visible={
           modalIdiomaVisible
         }
@@ -1165,10 +1128,11 @@ const RegistroTuristaScreen = ({
           />
 
           <View
-            style={
+            style={[
               RegistroTuristaScreenStyle
-                .modalCaja
-            }
+                .modalCaja,
+              { paddingBottom: 16 + insets.bottom },
+            ]}
           >
             <Text
               style={
@@ -1280,7 +1244,7 @@ const RegistroTuristaScreen = ({
           MODAL PAÍS
           ================================================== */}
 
-      <Modal
+      <Modal statusBarTranslucent navigationBarTranslucent
         visible={
           modalPaisVisible
         }
@@ -1314,10 +1278,11 @@ const RegistroTuristaScreen = ({
           />
 
           <View
-            style={
+            style={[
               RegistroTuristaScreenStyle
-                .modalCaja
-            }
+                .modalCaja,
+              { paddingBottom: 16 + insets.bottom },
+            ]}
           >
             <Text
               style={

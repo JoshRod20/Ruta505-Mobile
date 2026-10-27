@@ -4,6 +4,7 @@
 
 import { StyleSheet } from "react-native";
 import { heightPercentageToDP as hp } from "react-native-responsive-screen";
+import { boton } from "../common/botonStyle";
 
 // ==================================================
 // PALETA
@@ -98,9 +99,9 @@ const RegistroActorFormStyle = StyleSheet.create({
     paddingHorizontal: 22,
     paddingVertical: 0,
     borderRadius: hp("1.5%"),
-    backgroundColor: "#ffffff",
-    borderWidth: 1.8,
-    borderColor: COLOR_BORDE,
+    backgroundColor: "#F3F3F3",
+    borderWidth: 0,
+    borderColor: "transparent",
     color: COLOR_TINTA,
     fontSize: 14,
     marginBottom: 16,
@@ -157,9 +158,9 @@ const RegistroActorFormStyle = StyleSheet.create({
     height: hp("6%"),
     paddingHorizontal: 22,
     borderRadius: hp("1.5%"),
-    backgroundColor: "#ffffff",
-    borderWidth: 1.8,
-    borderColor: COLOR_BORDE,
+    backgroundColor: "#F3F3F3",
+    borderWidth: 0,
+    borderColor: "transparent",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -223,13 +224,8 @@ const RegistroActorFormStyle = StyleSheet.create({
   // ==================================================
 
   boton: {
+    ...boton.primario,
     width: "100%",
-    height: hp("6%"),
-    backgroundColor: COLOR_HEADER,
-    borderRadius: hp("2.5%"),
-    alignItems: "center",
-    justifyContent: "center",
-    elevation: 3,
   },
 
   botonDeshabilitado: {
@@ -237,9 +233,7 @@ const RegistroActorFormStyle = StyleSheet.create({
   },
 
   botonTexto: {
-    color: "#ffffff",
-    fontFamily: "Poppins-SemiBold",
-    fontSize: 16,
+    ...boton.primarioTexto,
   },
 });
 

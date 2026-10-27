@@ -3,6 +3,8 @@
  */
 
 import { StyleSheet } from "react-native";
+import { campo } from "../common/campoStyle";
+import { boton } from "../common/botonStyle";
 
 // Modal "Agregar ubicación de mi negocio" (mapa interactivo).
 const VERDE = "#0E5A34";
@@ -31,27 +33,15 @@ export const formularioExperienciaStyle = StyleSheet.create({
     marginBottom: 6,
   },
   etiqueta: {
-    fontFamily: "Inter-Regular",
-    fontSize: 11,
-    color: "#2D2D2D",
-    textTransform: "uppercase",
+    ...campo.etiqueta,
     marginTop: 14,
     marginBottom: 6,
   },
   input: {
-    borderWidth: 1.5,
-    borderColor: VERDE,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontFamily: "Inter-Regular",
-    fontSize: 13,
-    color: "#1F2A24",
-    backgroundColor: "#FFFFFF",
+    ...campo.input,
   },
   inputMultilinea: {
-    minHeight: 86,
-    textAlignVertical: "top",
+    ...campo.inputMultilinea,
   },
 
   // ---- Categorías (chips con scroll horizontal + flecha) ----
@@ -93,11 +83,9 @@ export const formularioExperienciaStyle = StyleSheet.create({
 
   // ---- Fotos ----
   cajaMultimedia: {
-    borderWidth: 1.5,
-    borderColor: VERDE,
-    borderRadius: 10,
-    minHeight: 70,
-    padding: 10,
+    ...campo.caja,
+    minHeight: 58,
+    padding: 12,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -122,6 +110,13 @@ export const formularioExperienciaStyle = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
+  miniaturaVideo: {
+    width: "100%",
+    height: "100%",
+    backgroundColor: "#1F2A24",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   botonQuitarImagen: {
     position: "absolute",
     top: 2,
@@ -137,30 +132,24 @@ export const formularioExperienciaStyle = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: VERDE,
-    borderStyle: "dashed",
+    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
   },
 
   // ---- Ubicación en el mapa (tocable → abre el selector) ----
   tarjetaUbicacion: {
+    ...campo.caja,
     flexDirection: "row",
     alignItems: "center",
-    borderWidth: 1.5,
-    borderColor: VERDE,
-    borderRadius: 10,
     paddingVertical: 7,
     paddingHorizontal: 8,
-    backgroundColor: "#FFFFFF",
   },
   tarjetaUbicacionIcono: {
     width: 34,
     height: 34,
     borderRadius: 8,
-    borderWidth: 1.5,
-    borderColor: VERDE_CLARO,
+    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 10,
@@ -191,33 +180,21 @@ export const formularioExperienciaStyle = StyleSheet.create({
     gap: 12,
   },
   botonCancelar: {
+    ...boton.secundario,
     flex: 1,
-    height: 44,
-    borderRadius: 999,
-    backgroundColor: "#D2D2D2",
-    alignItems: "center",
-    justifyContent: "center",
   },
   botonCancelarTexto: {
-    fontFamily: "Poppins-Bold",
-    fontSize: 15,
-    color: "#7A7A7A",
+    ...boton.secundarioTexto,
   },
   botonGuardar: {
+    ...boton.primario,
     flex: 1,
-    height: 44,
-    borderRadius: 999,
-    backgroundColor: VERDE_CLARO,
-    alignItems: "center",
-    justifyContent: "center",
   },
   botonGuardarDeshabilitado: {
     opacity: 0.5,
   },
   botonGuardarTexto: {
-    fontFamily: "Poppins-Bold",
-    fontSize: 15,
-    color: "#FFFFFF",
+    ...boton.primarioTexto,
   },
 });
 

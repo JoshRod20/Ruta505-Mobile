@@ -142,6 +142,16 @@ export const generateQrStyle = StyleSheet.create({
     paddingHorizontal: 32,
     backgroundColor: "#FFFFFF",
   },
+ // Rellena el espacio libre bajo el botón y centra la mascota (vertical y horizontal).
+  mascotaContenedor: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  mascota: {
+    width: 240,
+    height: 240,
+  },
 });
 
 export const QR_TAMANO = LADO_MARCO - 56;

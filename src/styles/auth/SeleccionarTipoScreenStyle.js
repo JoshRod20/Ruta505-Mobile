@@ -2,11 +2,10 @@
  * Estilos de SeleccionarTipoScreenStyle.
  */
 
-import { StyleSheet, Dimensions } from "react-native";
+import { StyleSheet } from "react-native";
 
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 
-const { width, height } = Dimensions.get("window");
 
 // ==================================================
 // PALETA (exactamente la misma que LoginScreen)
@@ -98,7 +97,8 @@ const SeleccionarTipoScreenStyle = StyleSheet.create({
 
   opcion: {
     alignItems: "center",
-    width: (width - 80) / 2,
+    // ~47% del ancho útil (antes (ancho de pantalla - 80) / 2, fijo al arrancar)
+    width: "47%",
   },
 
   imagenContainer: {

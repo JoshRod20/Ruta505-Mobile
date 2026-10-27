@@ -17,7 +17,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore";
 
 import SelectorModal from "../../components/common/SelectorModal";
 import { db } from "../../services/firebase";
@@ -70,6 +70,7 @@ export default function EditCulturalProfile() {
     direccion: profile?.direccion ?? "",
     departamento: profile?.departamento ?? "",
     municipio: profile?.municipio ?? "",
+    matricula: profile?.matricula ?? "",
     telefono: profile?.telefono ?? "",
     tipoTurismo: profile?.tipoTurismo ?? "",
     idiomaPreferido: profile?.idiomaPreferido ?? "",
@@ -198,11 +199,24 @@ export default function EditCulturalProfile() {
         direccion: form.direccion.trim(),
         departamento: form.departamento,
         municipio: form.municipio,
+        matricula: form.matricula.trim(),
         telefono: form.telefono.trim(),
         tipoTurismo: form.tipoTurismo,
         idiomaPreferido: form.idiomaPreferido,
         updatedAt: serverTimestamp(),
       });
+      // Si ya tiene negocio en el mapa, su "Referencia registrada" es esta
+      // dirección: se actualiza para que no quede desfasada.
+      try {
+        const refNegocio = doc(db, "negocios", user.uid);
+        if ((await getDoc(refNegocio)).exists()) {
+          await updateDoc(refNegocio, {
+            ubicacionExacta: form.direccion.trim(),
+          });
+        }
+      } catch (errNegocio) {
+        console.warn("No se pudo sincronizar la referencia del negocio:", errNegocio);
+      }
       Alert.alert("Listo", "Tu perfil se actualizó correctamente.");
       volver();
     } catch (e) {
@@ -308,6 +322,16 @@ export default function EditCulturalProfile() {
             pointerEvents="none"
           />
         </TouchableOpacity>
+
+        <Text style={s.etiqueta}>Matrícula del negocio (opcional)</Text>
+        <TextInput
+          style={S.input}
+          value={form.matricula}
+          onChangeText={(t) => handleChange("matricula", t)}
+          autoCapitalize="characters"
+          autoCorrect={false}
+          maxLength={30}
+        />
 
         <Text style={s.etiqueta}>Teléfono</Text>
         <TextInput
