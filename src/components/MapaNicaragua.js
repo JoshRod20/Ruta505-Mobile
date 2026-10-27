@@ -155,6 +155,25 @@ export default function MapaNicaragua() {
     setEpocaMarcadores((e) => e + 1);
   }, []);
 
+  // Un ViewAnnotation se convierte en imagen al crearse. Si el PNG de la
+  // categoría aún no terminó de cargar en ese momento, el ícono sale vacío
+  // (por eso aparecía solo después de abrir y cerrar un negocio). Cuando una
+  // categoría carga su ícono por primera vez, se re-crean los marcadores una
+  // sola vez (con un pequeño retraso para agrupar varias categorías).
+  const categoriasConIconoListo = useRef(new Set());
+  const temporizadorIconos = useRef(null);
+  const alCargarIconoMarcador = useCallback((categoria) => {
+    const clave = categoria ?? "_";
+    if (categoriasConIconoListo.current.has(clave)) return;
+    categoriasConIconoListo.current.add(clave);
+    clearTimeout(temporizadorIconos.current);
+    temporizadorIconos.current = setTimeout(
+      () => setEpocaMarcadores((e) => e + 1),
+      150
+    );
+  }, []);
+  useEffect(() => () => clearTimeout(temporizadorIconos.current), []);
+
   // Ruta creativa que se está mostrando en el mapa (viene del paso 6 de crear ruta)
   const [rutaCreativaPendiente, setRutaCreativaPendiente] = useState(null);
   const [rutaCreativaMapa, setRutaCreativaMapa] = useState(null);
@@ -1027,6 +1046,7 @@ export default function MapaNicaragua() {
                       categoria={punto.categoria}
                       size={18}
                       color={colorDeCategoria(punto.categoria)}
+                      onLoad={() => alCargarIconoMarcador(punto.categoria)}
                     />
                   </View>
                 </View>
@@ -1054,6 +1074,7 @@ export default function MapaNicaragua() {
                         categoria={punto.categoria}
                         size={16}
                         color={colorDeCategoria(punto.categoria)}
+                        onLoad={() => alCargarIconoMarcador(punto.categoria)}
                       />
                     </View>
                   </View>

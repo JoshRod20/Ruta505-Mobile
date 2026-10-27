@@ -17,6 +17,7 @@
  * @param {string} [props.tintColor] - Pinta el PNG de un solo color (útil en
  *   chips activos). Si no se pasa, el PNG conserva sus colores.
  * @param {Object} [props.style] - Estilo extra.
+ * @param {Function} [props.onLoad] - Se llama cuando el PNG terminó de cargar.
  */
 import React from "react";
 import { Image } from "react-native";
@@ -29,6 +30,7 @@ export default function IconoCategoria({
   color,
   tintColor,
   style,
+  onLoad,
 }) {
   const icono = iconoDeCategoria(categoria);
 
@@ -46,6 +48,7 @@ export default function IconoCategoria({
       ]}
       resizeMode="contain"
       fadeDuration={0}
+      onLoad={onLoad}
     />
   );
 }
