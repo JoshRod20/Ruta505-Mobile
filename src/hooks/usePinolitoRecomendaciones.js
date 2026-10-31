@@ -12,14 +12,14 @@ import { distanciaKm } from "../services/lugaresRecomendadosService";
 
 const DEBUG = process.env.EXPO_PUBLIC_PINOLITO_DEBUG === "true";
 
-// En modo prueba: cada 30 s en vez de 10 min
-const INTERVALO_MS = DEBUG ? 30 * 1000 : 10 * 60 * 1000;
+// En modo prueba: cada 30 s en vez de 5 min
+const INTERVALO_MS = DEBUG ? 30 * 1000 : 5 * 60 * 1000;
 const REVISION_MS = DEBUG ? 5 * 1000 : 30 * 1000;
 
 // Distancia que debes moverte desde la última recomendación para que Pinolito
 // vuelva a aparecer, y espera mínima entre dos recomendaciones.
-const UMBRAL_KM = DEBUG ? 0.05 : 0.5;
-const MIN_ENTRE_MS = DEBUG ? 10 * 1000 : 2 * 60 * 1000;
+const UMBRAL_KM = DEBUG ? 0.05 : 0.3; // 300 m
+const MIN_ENTRE_MS = DEBUG ? 10 * 1000 : 3 * 60 * 1000;
 
 // Ids de los lugares ya recomendados. Se guardan en el dispositivo para que
 // la rotación continúe aunque se cierre la app por completo.
@@ -51,6 +51,7 @@ export function usePinolitoRecomendaciones({
   const visibleRef = useRef(false);
   const previasRef = useRef([]);
   const posUltimaRecRef = useRef(null); // dónde estabas en la última recomendación
+  const posActualRef = useRef(null); // última posición conocida (la actualiza el seguimiento)
 
   // nombre, rol e intereses van en un ref: así `lanzar` es estable y un cambio
   // en el perfil (por ejemplo, cuando termina de cargar) no dispara una
@@ -61,7 +62,7 @@ export function usePinolitoRecomendaciones({
   // Solo se llama desde los botones de la nube
   const cerrar = useCallback(() => {
     visibleRef.current = false;
-    ultimaRef.current = Date.now(); // los 10 min cuentan desde que se cierra
+    ultimaRef.current = Date.now(); // el intervalo cuenta desde que se cierra
     setRecomendacion(null);
   }, []);
 
@@ -120,7 +121,16 @@ export function usePinolitoRecomendaciones({
 
   const revisar = useCallback(() => {
     if (visibleRef.current || ocupadoRef.current) return;
-    if (Date.now() - ultimaRef.current >= INTERVALO_MS) lanzar();
+    if (Date.now() - ultimaRef.current < INTERVALO_MS) return;
+
+    // Pasó el intervalo: solo recomienda si además te moviste el umbral.
+    // Así, si estás quieto (esperando el bus, por ejemplo), no repite lo mismo.
+    // Si no hay posición base o actual (GPS sin dato todavía), no bloquea.
+    const base = posUltimaRecRef.current;
+    const actual = posActualRef.current;
+    if (base && actual && distanciaKm(base, actual) < UMBRAL_KM) return;
+
+    lanzar();
   }, [lanzar]);
 
   // Entrada a la app (incluye apertura en frío) + revisión periódica.
@@ -131,6 +141,7 @@ export function usePinolitoRecomendaciones({
       visibleRef.current = false;
       ultimaRef.current = 0;
       posUltimaRecRef.current = null;
+      posActualRef.current = null;
       setRecomendacion(null);
       return undefined;
     }
@@ -157,12 +168,13 @@ export function usePinolitoRecomendaciones({
             timeInterval: 15000,
           },
           (pos) => {
-            if (visibleRef.current || ocupadoRef.current) return;
-            if (Date.now() - ultimaRef.current < MIN_ENTRE_MS) return;
             const actual = {
               lat: pos.coords.latitude,
               lon: pos.coords.longitude,
             };
+            posActualRef.current = actual; // siempre, aunque no se lance nada
+            if (visibleRef.current || ocupadoRef.current) return;
+            if (Date.now() - ultimaRef.current < MIN_ENTRE_MS) return;
             const base = posUltimaRecRef.current;
             if (base && distanciaKm(base, actual) >= UMBRAL_KM) lanzar();
           },
@@ -185,6 +197,8 @@ export function usePinolitoRecomendaciones({
     if (!habilitado) return undefined;
     const sub = AppState.addEventListener("change", (estado) => {
       if (estado === "active") revisar();
+      // En segundo plano el seguimiento se pausa: la posición queda vieja
+      else posActualRef.current = null;
     });
     return () => sub.remove();
   }, [habilitado, revisar]);

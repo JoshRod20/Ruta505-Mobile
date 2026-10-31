@@ -42,9 +42,12 @@ const PRECISION_MAXIMA_METROS = 50; // lecturas peores que esto se ignoran
 const LECTURAS_FUERA_PARA_REROUTE = 3; // lecturas seguidas fuera de ruta antes de recalcular
 const MARGEN_FUERA_MAXIMO_METROS = 150; // tope del margen si empiezas lejos de la vía
 const MOVIMIENTO_MINIMO_CAMARA_METROS = 4; // si no te has movido tanto, la cámara no se mueve
-const MOVIMIENTO_MINIMO_BEARING_METROS = 8; // para girar el mapa por movimiento real, no por ruido
+// Orientación del mapa: se toma de la forma de la ruta (no del GPS), así la
+// línea siempre queda hacia arriba y no gira por el ruido de heading/speed.
+const METROS_ADELANTE_BEARING = 40; // hasta dónde se mira hacia adelante en la ruta
+const GIRO_MINIMO_GRADOS = 12; // cambios menores a esto se ignoran (evita temblor)
+const SUAVIZADO_BEARING = 0.35; // 0 = no gira, 1 = salta directo al nuevo ángulo
 const UMBRAL_LLEGADA_METROS = 30;
-const VELOCIDAD_MINIMA_PARA_HEADING = 1.2; // m/s
 const SEGUNDOS_MINIMOS_PARA_ETA_REAL = 15;
 const METROS_MINIMOS_PARA_ETA_REAL = 30;
 
@@ -181,7 +184,7 @@ export default function NavegacionRuta({
     } = estadoRef.current;
     if (llegado || recalculandoRef.current || !pos?.coords) return;
 
-    const { latitude, longitude, speed, heading, accuracy } = pos.coords;
+    const { latitude, longitude, speed, accuracy } = pos.coords;
 
     // Una lectura imprecisa no sirve para decidir nada: se ignora.
     if (typeof accuracy === "number" && accuracy > PRECISION_MAXIMA_METROS) {
@@ -316,20 +319,25 @@ export default function NavegacionRuta({
       : Infinity;
     if (metrosDesdeUltimaCamara < MOVIMIENTO_MINIMO_CAMARA_METROS) return;
 
+    // El ángulo sale de la ruta que tienes por delante. Si estás lejos de la
+    // línea (fuera de ruta) no se gira nada: se mantiene el ángulo actual.
     let bearingParaCamara = bearingActualRef.current;
-    if (
-      typeof heading === "number" &&
-      heading >= 0 &&
-      (speed ?? 0) > VELOCIDAD_MINIMA_PARA_HEADING
-    ) {
-      bearingParaCamara = heading;
-    } else if (ultima && metrosDesdeUltimaCamara > MOVIMIENTO_MINIMO_BEARING_METROS) {
-      bearingParaCamara = calcularBearing(
-        ultima.lat,
-        ultima.lon,
-        latitude,
-        longitude,
+    if (proyeccion.distancia < 25) {
+      const objetivo = bearingAdelanteEnRuta(
+        proyeccion,
+        ruta.coordenadas,
+        METROS_ADELANTE_BEARING,
       );
+      if (objetivo != null) {
+        const diff = diferenciaAngular(bearingParaCamara, objetivo);
+        const primeraVez = ultima == null;
+        if (primeraVez) {
+          bearingParaCamara = objetivo;
+        } else if (Math.abs(diff) >= GIRO_MINIMO_GRADOS) {
+          bearingParaCamara =
+            (bearingParaCamara + diff * SUAVIZADO_BEARING + 360) % 360;
+        }
+      }
     }
     bearingActualRef.current = bearingParaCamara;
     ultimaCamaraRef.current = { lat: latitude, lon: longitude };
@@ -629,6 +637,41 @@ function encontrarPuntoMasCercanoEnRuta(lat, lon, coordenadas) {
     }
   }
   return mejor;
+}
+
+// Auxiliar: diferencia angular firmada (-180..180) para girar por el lado corto
+function diferenciaAngular(desde, hasta) {
+  return ((hasta - desde + 540) % 360) - 180;
+}
+
+// Auxiliar: ángulo de la ruta unos metros por delante del punto proyectado
+function bearingAdelanteEnRuta(proyeccion, coordenadas, metrosAdelante) {
+  if (!proyeccion || !coordenadas || coordenadas.length < 2) return null;
+  let restante = metrosAdelante;
+  let lat = proyeccion.lat;
+  let lon = proyeccion.lon;
+  for (let i = proyeccion.indiceSegmento + 1; i < coordenadas.length; i++) {
+    const [sigLat, sigLon] = coordenadas[i];
+    const tramo = distanciaAproximadaMetros(lat, lon, sigLat, sigLon);
+    if (tramo >= restante && tramo > 0) {
+      const f = restante / tramo;
+      lat += (sigLat - lat) * f;
+      lon += (sigLon - lon) * f;
+      restante = 0;
+      break;
+    }
+    restante -= tramo;
+    lat = sigLat;
+    lon = sigLon;
+  }
+  const dist = distanciaAproximadaMetros(
+    proyeccion.lat,
+    proyeccion.lon,
+    lat,
+    lon,
+  );
+  if (dist < 1) return null; // ya estás en el final: no hay hacia dónde mirar
+  return calcularBearing(proyeccion.lat, proyeccion.lon, lat, lon);
 }
 
 // Auxiliar: Calcula el ángulo de dirección (bearing) entre dos coordenadas
