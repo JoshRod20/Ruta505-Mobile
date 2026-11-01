@@ -29,6 +29,7 @@ import {
 import Geolocation from "@react-native-community/geolocation";
 import { Ionicons } from "@expo/vector-icons";
 
+import MarcadorNegocio from "./MarcadorNegocio.js";
 import { mapaNicaraguaStyle } from "../styles/mapanicaragua/mapaNicaraguaStyle.js";
 import { topDebajoDeBarra } from "../styles/mapanicaragua/BarraBusquedaStyle";
 import { obtenerRuta, obtenerRutaConParadas } from "../services/osrmservice.js";
@@ -174,6 +175,20 @@ export default function MapaNicaragua() {
     );
   }, []);
   useEffect(() => () => clearTimeout(temporizadorIconos.current), []);
+
+  // Igual que con los íconos: cuando la foto de un negocio termina de cargar
+  // por primera vez se re-crean los marcadores una sola vez para que el pin
+  // salga con la foto (y no se repite en bucle al re-crearse).
+  const fotosConPinListo = useRef(new Set());
+  const alCargarFotoMarcador = useCallback((clave) => {
+    if (fotosConPinListo.current.has(clave)) return;
+    fotosConPinListo.current.add(clave);
+    clearTimeout(temporizadorIconos.current);
+    temporizadorIconos.current = setTimeout(
+      () => setEpocaMarcadores((e) => e + 1),
+      150
+    );
+  }, []);
 
   // Ruta creativa que se está mostrando en el mapa (viene del paso 6 de crear ruta)
   const [rutaCreativaPendiente, setRutaCreativaPendiente] = useState(null);
@@ -1036,21 +1051,19 @@ export default function MapaNicaragua() {
               .filter((punto) => !idsParadasRuta.has(punto.id))
               .map((punto) => (
               <ViewAnnotation
-                key={`${punto.id}-${epocaMarcadores}`}
+                key={`${punto.id}-${epocaMarcadores}-${
+                  puntoSeleccionado?.id === punto.id ? "sel" : "no"
+                }`}
                 id={punto.id}
                 lngLat={[punto.lng, punto.lat]}
                 onSelect={() => manejarToqueMarcador(punto)}
               >
-                <View style={mapaNicaraguaStyle.marcadorContenedor}>
-                  <View style={mapaNicaraguaStyle.marcadorPunto}>
-                    <IconoCategoria
-                      categoria={punto.categoria}
-                      size={18}
-                      color={colorDeCategoria(punto.categoria)}
-                      onLoad={() => alCargarIconoMarcador(punto.categoria)}
-                    />
-                  </View>
-                </View>
+                <MarcadorNegocio
+                  punto={punto}
+                  seleccionado={puntoSeleccionado?.id === punto.id}
+                  onIconoListo={alCargarIconoMarcador}
+                  onFotoLista={alCargarFotoMarcador}
+                />
               </ViewAnnotation>
             ))}
 
@@ -1108,7 +1121,9 @@ export default function MapaNicaragua() {
               id="etiquetasSource"
               data={{
                 type: "FeatureCollection",
-                features: puntos.map((punto) => ({
+                features: puntos
+                  .filter((punto) => punto.id !== puntoSeleccionado?.id)
+                  .map((punto) => ({
                   type: "Feature",
                   id: punto.id,
                   geometry: {
