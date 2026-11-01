@@ -32,7 +32,7 @@ import { obtenerMultimedia } from "../services/Negociosservice.js";
 // así que cada archivo se comprime y tiene un tope de peso. Cantidad de archivos: sin límite.
 const ANCHO_REDIMENSIONADO = 800; // px
 const MAX_FOTO_KB = 250;
-const MAX_VIDEO_SEGUNDOS = 10;
+const MAX_VIDEO_SEGUNDOS = 30; // límite de los Términos y Condiciones (sección 6)
 const MAX_VIDEO_KB = 650; // en Base64 ocupa ~33% más y debe caber en 1 MB
 
 let contadorMedia = 0;
@@ -152,7 +152,6 @@ export default function FormularioExperiencia({
       allowsMultipleSelection: true,
       selectionLimit: 0, // 0 = sin límite
       quality: 1,
-      videoMaxDuration: MAX_VIDEO_SEGUNDOS,
       videoExportPreset: ImagePicker.VideoExportPreset?.LowQuality, // solo iOS
     });
     if (resultado.canceled) return;
@@ -160,13 +159,14 @@ export default function FormularioExperiencia({
     setProcesandoMedia(true);
     const nuevos = [];
     const rechazados = [];
+    let videosLargos = 0;
     try {
       for (const asset of resultado.assets) {
         try {
           if (asset.type === "video") {
             // duration viene en milisegundos
             if (asset.duration && asset.duration > MAX_VIDEO_SEGUNDOS * 1000) {
-              rechazados.push(`un video dura más de ${MAX_VIDEO_SEGUNDOS} s`);
+              videosLargos += 1;
               continue;
             }
             const dataUri = await archivoADataUri(asset.uri);
@@ -189,10 +189,21 @@ export default function FormularioExperiencia({
         }
       }
       if (nuevos.length > 0) setMedia((prev) => [...prev, ...nuevos]);
-      if (rechazados.length > 0) {
+      if (videosLargos > 0 || rechazados.length > 0) {
+        const mensajes = [];
+        if (videosLargos > 0) {
+          mensajes.push(
+            `${videosLargos === 1 ? "Un video excede" : `${videosLargos} videos exceden`} el tiempo requerido. La duración máxima es de ${MAX_VIDEO_SEGUNDOS} segundos por publicación.`,
+          );
+        }
+        if (rechazados.length > 0) {
+          mensajes.push(`Se omitió ${rechazados.join("; ")}.`);
+        }
         Alert.alert(
-          "Algunos archivos no se agregaron",
-          `Se omitió ${rechazados.join("; ")}.`,
+          rechazados.length === 0
+            ? "Video demasiado largo"
+            : "Algunos archivos no se agregaron",
+          mensajes.join("\n\n"),
         );
       }
     } finally {
