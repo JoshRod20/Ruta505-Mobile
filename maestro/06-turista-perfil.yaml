@@ -24,12 +24,7 @@ appId: com.kennrod20.Ruta505
 - tapOn:
     text: "Iniciar Sesión"
     index: 1
-#- tapOn:
-#    text: "Mientras la app está en uso"
- #   optional: true
-#- tapOn:
- #   text: "Al usar la app"
- #   optional: true
+
 - extendedWaitUntil:
     visible:
       id: "tab-Perfil"
