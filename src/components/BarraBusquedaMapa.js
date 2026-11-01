@@ -22,7 +22,10 @@ import {
   colorDeCategoria,
 } from "../services/Categoriasexperiencias";
 import { buscarLugares } from "../services/geocodingservice";
-import { barraBusquedaStyle as s } from "../styles/mapanicaragua/BarraBusquedaStyle";
+import {
+  barraBusquedaStyle as s,
+  BARRA_TOP,
+} from "../styles/mapanicaragua/BarraBusquedaStyle";
 import IconoCategoria from "./common/IconoCategoria";
 
 const VERDE = "#0E5A34";
@@ -129,7 +132,7 @@ export default function BarraBusquedaMapa({
         </TouchableWithoutFeedback>
       )}
 
-      <View style={[s.contenedor, { top: insets.top + 54 }]}>
+      <View style={[s.contenedor, { top: insets.top + BARRA_TOP }]}>
         <View style={s.barra}>
           <Image source={require("../assets/icons/busqueda.png")} style={s.iconoLupa} />
           <TextInput

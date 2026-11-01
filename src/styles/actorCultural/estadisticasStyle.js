@@ -12,10 +12,27 @@ export const NARANJA = "#F29100";
 export const estadisticasStyle = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FAFAFA",
+    backgroundColor: "#FFFFFF",
+  },
+  scroll: {
+    flex: 1,
+    backgroundColor: "#F2F2F2",
   },
   contenido: {
+    paddingHorizontal: 0,
+  },
+  // Banda blanca de ancho completo (título de pantalla y de cada sección).
+  bandaBlanca: {
+    backgroundColor: "#FFFFFF",
     paddingHorizontal: 20,
+    paddingVertical: 14,
+  },
+  // Zona gris donde se apoyan las tarjetas blancas.
+  zonaGris: {
+    backgroundColor: "#F2F2F2",
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 2,
   },
 
   // ---- Encabezado ----
@@ -25,6 +42,7 @@ export const estadisticasStyle = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 24,
     paddingBottom: 12,
+    backgroundColor: "#FFFFFF",
   },
   botonAtras: {
     width: 32,
@@ -41,30 +59,28 @@ export const estadisticasStyle = StyleSheet.create({
   },
   titulo: {
     fontFamily: "Poppins-SemiBold",
-    fontSize: 22,
+    fontSize: 16,
     color: "#1A1A1A",
-    marginTop: 8,
   },
   subtitulo: {
     fontFamily: "Inter-Regular",
-    fontSize: 13,
-    lineHeight: 19,
+    fontSize: 12,
+    lineHeight: 18,
     color: "#555555",
     marginTop: 4,
-    marginBottom: 16,
   },
 
   // ---- Tarjetas ----
   tarjeta: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    padding: 18,
-    marginBottom: 16,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 14,
     shadowColor: "#000000",
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 3,
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 1,
   },
   tarjetaFila: {
     flexDirection: "row",
@@ -72,10 +88,9 @@ export const estadisticasStyle = StyleSheet.create({
     justifyContent: "space-between",
   },
   etiquetaTarjeta: {
-    fontFamily: "Inter-Regular",
-    fontSize: 14,
-    color: "#1A1A1A",
-    textTransform: "uppercase",
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 15,
+    color: VERDE,
   },
   insignia: {
     backgroundColor: VERDE,
@@ -201,13 +216,9 @@ export const estadisticasStyle = StyleSheet.create({
 
   // ---- Reacciones e interacción ----
   seccionTitulo: {
-    fontFamily: "Inter-Regular",
-    fontSize: 14,
-    color: "#1A1A1A",
-    textTransform: "uppercase",
-    marginTop: 4,
-    marginBottom: 10,
-    marginLeft: 2,
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 15,
+    color: VERDE,
   },
   metricasFila: {
     flexDirection: "row",
@@ -216,13 +227,13 @@ export const estadisticasStyle = StyleSheet.create({
   metricaTarjeta: {
     flex: 1,
     backgroundColor: "#FFFFFF",
-    borderRadius: 20,
+    borderRadius: 12,
     padding: 16,
     shadowColor: "#000000",
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 3,
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 1,
   },
   metricaIzquierda: {
     marginRight: 14,
@@ -230,7 +241,7 @@ export const estadisticasStyle = StyleSheet.create({
   metricaIcono: {
     width: 46,
     height: 46,
-    borderRadius: 12,
+    borderRadius: 10,
     backgroundColor: "#F1F1F1",
     alignItems: "center",
     justifyContent: "center",
@@ -265,8 +276,18 @@ export const estadisticasStyle = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
+  ultimaCalifFila: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  ultimaCalifNumero: {
+    fontFamily: "Inter-Regular",
+    fontSize: 14,
+    color: "#555555",
+    marginRight: 8,
+  },
   ultimaCita: {
-    backgroundColor: "#EBEBEB",
+    backgroundColor: "#F0F0F0",
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,

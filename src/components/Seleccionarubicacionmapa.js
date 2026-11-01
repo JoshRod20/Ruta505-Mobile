@@ -3,7 +3,7 @@
  */
 
 import React, { useRef, useState } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Image } from "react-native";
 import { Map, Camera } from "@maplibre/maplibre-react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -62,7 +62,11 @@ export default function SeleccionarUbicacionMapa({
 
       {/* Pin fijo en el centro de la pantalla */}
       <View style={s.pinFijo} pointerEvents="none">
-        <Ionicons name="location-sharp" size={44} color="#123B63" />
+        <Image
+          source={require("../assets/icons/Icono-Verde.png")}
+          style={{ width: 44, height: 44 }}
+          resizeMode="contain"
+        />
         <View style={s.pinSombra} />
       </View>
 

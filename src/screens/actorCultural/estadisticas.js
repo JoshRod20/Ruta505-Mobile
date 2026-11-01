@@ -152,18 +152,22 @@ export default function Estadisticas() {
         />
       ) : (
         <ScrollView
+          style={s.scroll}
           contentContainerStyle={[
             s.contenido,
             { paddingBottom: insets.bottom + 32 },
           ]}
           showsVerticalScrollIndicator={false}
         >
-          <Text style={s.titulo}>Estadísticas de tu Espacio Cultural</Text>
-          <Text style={s.subtitulo}>
-            Monitorea la satisfacción de los visitantes y el impacto de tus
-            actividades.
-          </Text>
+          <View style={s.bandaBlanca}>
+            <Text style={s.titulo}>Estadísticas de tu Espacio Cultural</Text>
+            <Text style={s.subtitulo}>
+              Monitorea la satisfacción de los visitantes y el impacto de tus
+              actividades.
+            </Text>
+          </View>
 
+          <View style={s.zonaGris}>
           {error && (
             <Text style={[s.sinDatos, { marginBottom: 12 }]}>
               No se pudieron cargar todos los datos. Intenta de nuevo más tarde.
@@ -271,8 +275,13 @@ export default function Estadisticas() {
             </View>
           </View>
 
+          </View>
+
           {/* Reacciones e interacción */}
-          <Text style={s.seccionTitulo}>Reacciones e interacción</Text>
+          <View style={s.bandaBlanca}>
+            <Text style={s.seccionTitulo}>Reacciones e Interacción</Text>
+          </View>
+          <View style={s.zonaGris}>
           <View style={s.metricasFila}>
             <View style={[s.metricaTarjeta, s.metricaIzquierda]}>
             <View style={[s.metricaIcono, { backgroundColor: VERDE }]}>
@@ -301,13 +310,23 @@ export default function Estadisticas() {
             </View>
           </View>
 
+          </View>
+
           {/* Última reseña agregada */}
-          <Text style={s.seccionTitulo}>Última reseña agregada</Text>
+          <View style={s.bandaBlanca}>
+            <Text style={s.seccionTitulo}>Última reseña agregada</Text>
+          </View>
+          <View style={s.zonaGris}>
           <View style={s.tarjeta}>
             {ultima ? (
               <>
                 <View style={s.ultimaCabecera}>
-                  <EstrellasEnteras valor={Number(ultima.calificacion) || 0} />
+                  <View style={s.ultimaCalifFila}>
+                    <Text style={s.ultimaCalifNumero}>
+                      {(Number(ultima.calificacion) || 0).toFixed(1)}
+                    </Text>
+                    <EstrellasEnteras valor={Number(ultima.calificacion) || 0} />
+                  </View>
                   <View
                     style={[
                       s.insignia,
@@ -342,6 +361,7 @@ export default function Estadisticas() {
             >
               <Text style={s.botonVerTodasTexto}>Ver todas las reseñas</Text>
             </TouchableOpacity>
+          </View>
           </View>
         </ScrollView>
       )}

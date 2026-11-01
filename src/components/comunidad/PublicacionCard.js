@@ -162,6 +162,11 @@ export default function PublicacionCard({ experiencia }) {
   };
   // El autor ve el contador, pero no puede darse "me gusta" a sí mismo.
   const esAutor = !!user?.uid && experiencia.creadoPor === user.uid;
+  // Foto de quien publicó: si es mi publicación uso mi foto actual; si no, la
+  // que se guardó al publicar (las publicaciones antiguas no la tienen).
+  const fotoPublicador = esAutor
+    ? profile?.fotoPerfil || experiencia.autorFoto
+    : experiencia.autorFoto;
   const titulo =
     experiencia.titulo ||
     (experiencia.actorType && experiencia.actorType !== "guia"
@@ -406,7 +411,15 @@ export default function PublicacionCard({ experiencia }) {
           }
         >
           <View style={styles.avatarPlaceholder}>
-            <Ionicons name="person-outline" size={20} color="#8C7B66" />
+            {fotoPublicador ? (
+              <Image
+                source={{ uri: fotoPublicador }}
+                style={styles.avatarFoto}
+                resizeMode="cover"
+              />
+            ) : (
+              <Ionicons name="person-outline" size={20} color="#8C7B66" />
+            )}
           </View>
           <View style={styles.headerTextos}>
             <View style={styles.filaTitulo}>

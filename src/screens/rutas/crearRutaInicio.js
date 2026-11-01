@@ -113,10 +113,11 @@ export default function CrearRutaInicio() {
           </View>
         </View>
 
-        <View style={s.contenido}>
-          {negocio ? (
-            <View style={s.tarjeta}>
-              <View style={s.tarjetaMiniatura}>
+        {/* Franja gris de fondo con la tarjeta blanca del negocio */}
+        {negocio && (
+          <View style={s.servicioFondo}>
+            <View style={s.servicioTarjeta}>
+              <View style={s.servicioMiniatura}>
                 {imagen ? (
                   <Image
                     source={{ uri: imagen }}
@@ -126,12 +127,13 @@ export default function CrearRutaInicio() {
                   <IconoCategoria
                     categoria={negocio.categoria}
                     size={32}
-                    color={VERDE}
+                    color={LIMA}
+                    tintColor={LIMA}
                   />
                 )}
               </View>
               <View style={s.tarjetaCuerpo}>
-                <Text style={s.tarjetaTitulo} numberOfLines={2}>
+                <Text style={s.servicioTitulo} numberOfLines={2}>
                   {negocio.titulo}
                 </Text>
                 <Text style={s.tarjetaDetalle}>
@@ -139,7 +141,7 @@ export default function CrearRutaInicio() {
                 </Text>
                 {!!negocio.lugar && (
                   <View style={s.tarjetaLugarFila}>
-                    <Ionicons name="location" size={13} color="#1E9BD7" />
+                    <Ionicons name="location" size={14} color={VERDE} />
                     <Text style={[s.tarjetaDetalle, { marginLeft: 4 }]}>
                       {negocio.lugar}
                     </Text>
@@ -154,11 +156,15 @@ export default function CrearRutaInicio() {
                   </View>
                 )}
               </View>
-              <View style={[s.insignia, { backgroundColor: LIMA }]}>
+              <View style={s.servicioInsignia}>
                 <Text style={[s.insigniaTexto, { color: "#1A1A1A" }]}>Tú</Text>
               </View>
             </View>
-          ) : (
+          </View>
+        )}
+
+        <View style={s.contenido}>
+          {!negocio && (
             <View style={{ marginTop: 8 }}>
               <Text style={s.aviso}>
                 Aún no registraste tu negocio. Agrégalo desde el mapa para

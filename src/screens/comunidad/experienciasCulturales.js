@@ -219,6 +219,8 @@ export default function ExperienciasCulturales() {
         role: profile?.role ?? null,
         actorType: tipoActor,
         creadoPor: user?.uid ?? null,
+        // Foto de perfil del autor (data URI) para el encabezado de la publicación.
+        autorFoto: profile?.fotoPerfil ?? "",
       });
 
       setForm(initialForm);
@@ -342,10 +344,18 @@ export default function ExperienciasCulturales() {
           activeOpacity={0.75}
         >
           <View style={s.tarjetaUbicacionIcono}>
-            <Ionicons
-              name={ubicacion ? "location-sharp" : "locate-outline"}
-              size={22}
-              color={VERDE}
+            <Image
+              source={
+                ubicacion
+                  ? require("../../assets/icons/Icono-Verde.png")
+                  : require("../../assets/icons/Mapa.png")
+              }
+              style={[
+                { width: 22, height: 22 },
+                // Mapa.png es blanco: se tiñe de verde para verse sobre fondo blanco
+                !ubicacion && { tintColor: VERDE },
+              ]}
+              resizeMode="contain"
             />
           </View>
           <View style={s.tarjetaUbicacionTexto}>

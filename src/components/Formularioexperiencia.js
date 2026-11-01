@@ -294,10 +294,18 @@ export default function FormularioExperiencia({
               disabled={!onElegirEnMapa}
             >
               <View style={s.tarjetaUbicacionIcono}>
-                <Ionicons
-                  name={ubicacionActual ? "location-sharp" : "locate-outline"}
-                  size={20}
-                  color={VERDE}
+                <Image
+                  source={
+                    ubicacionActual
+                      ? require("../assets/icons/Icono-Verde.png")
+                      : require("../assets/icons/Mapa.png")
+                  }
+                  style={[
+                    { width: 22, height: 22 },
+                    // Mapa.png es blanco: se tiñe de verde para verse sobre fondo blanco
+                    !ubicacionActual && { tintColor: VERDE },
+                  ]}
+                  resizeMode="contain"
                 />
               </View>
 

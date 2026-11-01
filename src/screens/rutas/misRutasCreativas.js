@@ -24,13 +24,13 @@ import {
   aliadosAceptados,
   calcularDias,
   calcularTotal,
-  cancelarRuta,
   escucharMisRutas,
   escucharParadasDeCreador,
   formatearPrecio,
   ordenarParadas,
   abrirChatWhatsApp,
 } from "../../services/rutasService";
+import { escucharNegocios } from "../../services/Negociosservice";
 import { iconoDeCategoria } from "../../services/Categoriasexperiencias";
 import { misRutasStyle as s } from "../../styles/rutas/misRutasCreativasStyle";
 import { VERDE } from "../../styles/rutas/crearRutaStyle";
@@ -42,7 +42,7 @@ const ETIQUETA_ESTADO = {
   [ESTADO_RUTA.BORRADOR]: { texto: "Borrador", estilo: "estadoBorrador" },
 };
 
-// Rutas creativas del actor: siguen activas hasta que las cancela.
+// Rutas creativas del actor.
 /**
  * MisRutasCreativas.
  */
@@ -53,7 +53,10 @@ export default function MisRutasCreativas() {
 
   const [rutas, setRutas] = useState(null); // null = cargando
   const [paradas, setParadas] = useState([]);
-  const [cancelando, setCancelando] = useState(null);
+  const [negocios, setNegocios] = useState([]);
+
+  // Fotos de los negocios: respaldo cuando la parada no trae fotos propias.
+  useEffect(() => escucharNegocios(setNegocios), []);
 
   useEffect(() => {
     if (!user?.uid) return undefined;
@@ -110,42 +113,6 @@ export default function MisRutasCreativas() {
       clave: Date.now(),
     });
 
-  const confirmarCancelacion = (ruta, paradasRuta) => {
-    const publicada = ruta.estado === ESTADO_RUTA.PUBLICADA;
-    Alert.alert(
-      "Cancelar ruta",
-      publicada
-        ? `"${ruta.nombre}" dejará de estar publicada y los aliados ya no la verán. Esta acción no se puede deshacer.`
-        : `Se cancelará "${ruta.nombre}" y se retirarán las invitaciones enviadas. Esta acción no se puede deshacer.`,
-      [
-        { text: "Volver", style: "cancel" },
-        {
-          text: "Cancelar ruta",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              setCancelando(ruta.id);
-              await cancelarRuta({ rutaId: ruta.id, paradas: paradasRuta });
-            } catch (error) {
-              console.warn("Error al cancelar la ruta:", error);
-              const codigo = error?.code ?? error?.message ?? "desconocido";
-              Alert.alert(
-                error?.paso === "paradas"
-                  ? "Ruta cancelada con un aviso"
-                  : "No se pudo cancelar",
-                error?.paso === "paradas"
-                  ? `La ruta se canceló, pero no se pudieron retirar sus paradas (${codigo}).`
-                  : `No se pudo cancelar la ruta (${codigo}). Si es un error de permisos, revisa que las reglas de Firestore más recientes estén publicadas.`
-              );
-            } finally {
-              setCancelando(null);
-            }
-          },
-        },
-      ]
-    );
-  };
-
   const abrirWhatsApp = (telefono) =>
     abrirChatWhatsApp(telefono).catch(() =>
       Alert.alert("WhatsApp", "No se pudo abrir WhatsApp.")
@@ -158,7 +125,12 @@ export default function MisRutasCreativas() {
   };
 
   const renderParada = (p, mostrarDia) => {
-    const imagen = p.imagenes?.[0] ?? p.imagenUrls?.[0];
+    const negocioParada = negocios.find((n) => n.id === p.ubicacionId);
+    const imagen =
+      p.imagenes?.[0] ??
+      p.imagenUrls?.[0] ??
+      negocioParada?.imagenes?.[0] ??
+      negocioParada?.imagenUrls?.[0];
     const pendiente = p.estado === ESTADO_PARADA.INVITADO;
     const rechazada = p.estado === ESTADO_PARADA.RECHAZADA;
     return (
@@ -190,7 +162,7 @@ export default function MisRutasCreativas() {
           </Text>
           {!!p.horario && (
             <View style={s.paradaFilaHorario}>
-              <Ionicons name="time-outline" size={13} color="#4A4A4A" />
+              <Ionicons name="time" size={12} color={VERDE} />
               <Text style={s.paradaHorario} numberOfLines={1}>
                 {mostrarDia && p.dia ? `Día ${p.dia} · ` : ""}
                 {p.horario}
@@ -231,7 +203,6 @@ export default function MisRutasCreativas() {
     );
     const dias = calcularDias(visibles); // 3 si la última parada es del Día 3
     const etiqueta = ETIQUETA_ESTADO[ruta.estado] ?? ETIQUETA_ESTADO.borrador;
-    const enCancelacion = cancelando === ruta.id;
 
     return (
       <View key={ruta.id} style={s.tarjeta}>
@@ -318,19 +289,6 @@ export default function MisRutasCreativas() {
             </View>
           </>
         )}
-
-        <TouchableOpacity
-          style={s.botonCancelar}
-          onPress={() => confirmarCancelacion(ruta, paradasRuta)}
-          disabled={enCancelacion}
-          activeOpacity={0.7}
-        >
-          {enCancelacion ? (
-            <ActivityIndicator color="#C0392B" />
-          ) : (
-            <Text style={s.botonCancelarTexto}>Cancelar ruta</Text>
-          )}
-        </TouchableOpacity>
       </View>
     );
   };
@@ -356,6 +314,7 @@ export default function MisRutasCreativas() {
       </Text>
 
       <ScrollView
+        style={s.scroll}
         contentContainerStyle={[s.lista, { paddingBottom: insets.bottom + 24 }]}
         showsVerticalScrollIndicator={false}
       >

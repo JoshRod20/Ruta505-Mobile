@@ -16,7 +16,11 @@ const AZUL_AVATAR = "#8AD8E8";
 export const resenasStyle = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FAFAFA",
+    backgroundColor: "#FFFFFF",
+  },
+  listaFondo: {
+    flex: 1,
+    backgroundColor: "#F2F2F2",
   },
 
   // ---- Encabezado ----
@@ -26,6 +30,7 @@ export const resenasStyle = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 24,
     paddingBottom: 12,
+    backgroundColor: "#FFFFFF",
   },
   botonAtras: {
     width: 32,
@@ -43,33 +48,35 @@ export const resenasStyle = StyleSheet.create({
 
   // ---- Resumen y filtros ----
   resumenContenedor: {
+    backgroundColor: "#FFFFFF",
     paddingHorizontal: 24,
-    paddingTop: 4,
+    paddingTop: 8,
+    paddingBottom: 16,
+    marginBottom: 14,
   },
   nombreEspacio: {
     fontFamily: "Poppins-SemiBold",
-    fontSize: 22,
+    fontSize: 16,
     color: "#1A1A1A",
   },
   totalOpiniones: {
     fontFamily: "Inter-Regular",
-    fontSize: 13,
+    fontSize: 12,
     color: "#555555",
     marginTop: 2,
   },
   filtrosFila: {
     flexDirection: "row",
-    marginTop: 16,
-    marginBottom: 8,
+    marginTop: 14,
   },
   chip: {
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
     borderColor: VERDE,
-    borderRadius: 999,
+    borderRadius: 12,
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 9,
     marginRight: 8,
     backgroundColor: "#FFFFFF",
   },
@@ -88,8 +95,8 @@ export const resenasStyle = StyleSheet.create({
 
   // ---- Lista ----
   lista: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
+    paddingHorizontal: 0,
+    paddingTop: 0,
   },
   estadoContenedor: {
     alignItems: "center",
@@ -107,16 +114,17 @@ export const resenasStyle = StyleSheet.create({
   // ---- Tarjeta de reseña ----
   tarjeta: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    paddingHorizontal: 18,
+    borderRadius: 12,
+    marginHorizontal: 16,
+    paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 12,
-    marginBottom: 16,
+    marginBottom: 14,
     shadowColor: "#000000",
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 3,
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 1,
   },
   tarjetaCabecera: {
     flexDirection: "row",
@@ -173,14 +181,21 @@ export const resenasStyle = StyleSheet.create({
   },
   estrellasFila: {
     flexDirection: "row",
-    marginTop: 10,
+    alignItems: "center",
+    marginTop: 12,
+  },
+  calificacionNumero: {
+    fontFamily: "Inter-Regular",
+    fontSize: 14,
+    color: "#555555",
+    marginRight: 8,
   },
   comentario: {
     fontFamily: "Inter-Regular",
-    fontSize: 14,
-    lineHeight: 21,
+    fontSize: 13,
+    lineHeight: 19,
     color: "#1A1A1A",
-    marginTop: 10,
+    marginTop: 12,
   },
   fotosFila: {
     marginTop: 12,
@@ -188,14 +203,14 @@ export const resenasStyle = StyleSheet.create({
   foto: {
     width: 260,
     height: 170,
-    borderRadius: 18,
+    borderRadius: 12,
     marginRight: 8,
     backgroundColor: "#E6E6E6",
   },
   fotoUnica: {
     width: "100%",
     height: 190,
-    borderRadius: 18,
+    borderRadius: 12,
     backgroundColor: "#E6E6E6",
   },
 
@@ -246,7 +261,7 @@ export const resenasStyle = StyleSheet.create({
     bottom: 0,
     paddingHorizontal: 24,
     paddingTop: 12,
-    backgroundColor: "rgba(250,250,250,0.96)",
+    backgroundColor: "rgba(242,242,242,0.96)",
   },
   botonEscribir: {
     ...boton.primario,

@@ -62,6 +62,11 @@ export const publicacionCardStyle = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginRight: 10,
+    overflow: "hidden",
+  },
+  avatarFoto: {
+    width: "100%",
+    height: "100%",
   },
   headerTextos: {
     flex: 1,

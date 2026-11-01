@@ -30,6 +30,7 @@ import Geolocation from "@react-native-community/geolocation";
 import { Ionicons } from "@expo/vector-icons";
 
 import { mapaNicaraguaStyle } from "../styles/mapanicaragua/mapaNicaraguaStyle.js";
+import { topDebajoDeBarra } from "../styles/mapanicaragua/BarraBusquedaStyle";
 import { obtenerRuta, obtenerRutaConParadas } from "../services/osrmservice.js";
 import {
   crearNegocio,
@@ -1141,7 +1142,7 @@ export default function MapaNicaragua() {
 
           {rutaCreativaMapa && (
             <View
-              style={[mapaNicaraguaStyle.bannerRuta, { top: insets.top + 100 }]}
+              style={[mapaNicaraguaStyle.bannerRuta, { top: topDebajoDeBarra(insets.top) }]}
             >
               <View style={mapaNicaraguaStyle.bannerRutaTextos}>
                 <Text style={mapaNicaraguaStyle.bannerRutaTitulo} numberOfLines={1}>
@@ -1198,7 +1199,7 @@ export default function MapaNicaragua() {
 
           {eligiendoOrigen && (
             <View
-              style={[mapaNicaraguaStyle.bannerRuta, { top: insets.top + 100 }]}
+              style={[mapaNicaraguaStyle.bannerRuta, { top: topDebajoDeBarra(insets.top) }]}
             >
               <View style={mapaNicaraguaStyle.bannerRutaTextos}>
                 <Text style={mapaNicaraguaStyle.bannerRutaTitulo} numberOfLines={1}>

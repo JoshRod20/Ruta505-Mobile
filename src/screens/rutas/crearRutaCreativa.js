@@ -100,16 +100,31 @@ function insigniaDe(parada) {
 }
 
 // Tarjeta de una parada (pasos 4, 5 y 6).
-function TarjetaParada({ parada, calificacion, mostrarPrecio = false }) {
+// tarjetaBlanca: tarjeta blanca sobre franja gris (pasos 4 y 5).
+function TarjetaParada({
+  parada,
+  calificacion,
+  imagen,
+  mostrarPrecio = false,
+  tarjetaBlanca = false,
+}) {
   const insignia = insigniaDe(parada);
   return (
-    <View style={s.tarjeta}>
-      <View style={s.tarjetaMiniatura}>
-        <IconoCategoria
-          categoria={parada.categoria}
-          size={32}
-          color={VERDE}
-        />
+    <View style={tarjetaBlanca ? s.servicioTarjetaLista : s.tarjeta}>
+      <View style={tarjetaBlanca ? s.servicioMiniatura : s.tarjetaMiniatura}>
+        {tarjetaBlanca && imagen ? (
+          // Foto del negocio, igual que en "Mis servicios".
+          <Image source={{ uri: imagen }} style={s.tarjetaMiniaturaImagen} />
+        ) : (
+          <IconoCategoria
+            categoria={parada.categoria}
+            size={32}
+            color={tarjetaBlanca ? LIMA : VERDE}
+            // Los PNG de categoría conservan sus colores (verdes): sobre el
+            // fondo verde hay que pintarlos de lima para que se vean.
+            tintColor={tarjetaBlanca ? LIMA : undefined}
+          />
+        )}
       </View>
       <View style={s.tarjetaCuerpo}>
         <Text style={s.tarjetaTitulo} numberOfLines={2}>
@@ -118,7 +133,11 @@ function TarjetaParada({ parada, calificacion, mostrarPrecio = false }) {
         <Text style={s.tarjetaDetalle}>{nombreDeCategoria(parada.categoria)}</Text>
         {!!parada.lugar && (
           <View style={s.tarjetaLugarFila}>
-            <Ionicons name="location" size={13} color="#1E9BD7" />
+            <Ionicons
+              name="location"
+              size={13}
+              color={tarjetaBlanca ? VERDE : "#1E9BD7"}
+            />
             <Text style={[s.tarjetaDetalle, { marginLeft: 4 }]}>
               {parada.lugar}
             </Text>
@@ -135,7 +154,12 @@ function TarjetaParada({ parada, calificacion, mostrarPrecio = false }) {
         )}
       </View>
       {(!mostrarPrecio || parada.estado === ESTADO_PARADA.CREADOR) && (
-        <View style={[s.insignia, { backgroundColor: insignia.fondo }]}>
+        <View
+          style={[
+            tarjetaBlanca ? s.servicioInsignia : s.insignia,
+            { backgroundColor: insignia.fondo },
+          ]}
+        >
           <Text style={[s.insigniaTexto, { color: insignia.color }]}>
             {insignia.texto}
           </Text>
@@ -238,6 +262,12 @@ function AsistenteRutaCreativa() {
 
   const calificacionDe = (parada) =>
     negocios.find((n) => n.id === parada.ubicacionId)?.calificacion;
+
+  // Primera foto del negocio de la parada (la misma que se ve en "Mis servicios").
+  const imagenDe = (parada) => {
+    const n = negocios.find((x) => x.id === parada.ubicacionId);
+    return n?.imagenes?.[0] ?? n?.imagenUrls?.[0];
+  };
 
   const numInvitados = aliadosInvitados(paradas).length;
   const numAceptados = aliadosAceptados(paradas).length;
@@ -367,7 +397,7 @@ function AsistenteRutaCreativa() {
       setInvitando(candidato.id);
       await invitarActor({
         ruta: { id: rutaId, nombre: ruta?.nombre ?? form.nombre.trim() },
-        creador: { uid, nombre: nombreCreador },
+        creador: { uid, nombre: nombreCreador, foto: profile?.fotoPerfil },
         destino: {
           actorId: candidato.id,
           ubicacionId: candidato.id,
@@ -698,35 +728,38 @@ function AsistenteRutaCreativa() {
 
   const renderPaso4o5 = () => (
     <>
-      {paradas.map((p) => (
-        <TarjetaParada key={p.id} parada={p} calificacion={calificacionDe(p)} />
-      ))}
+      <View style={s.zonaGrisParadas}>
+        {paradas.map((p) => (
+          <TarjetaParada
+            key={p.id}
+            parada={p}
+            calificacion={calificacionDe(p)}
+            imagen={imagenDe(p)}
+            tarjetaBlanca
+          />
+        ))}
+      </View>
 
       {paso === 4 ? (
         <>
-          <Text style={s.contadorInvitados}>
-            Han aceptado {numAceptados} de {MINIMO_ALIADOS} aliados necesarios.
-          </Text>
-          {numAceptados >= MINIMO_ALIADOS ? (
-            <TouchableOpacity
-              style={s.botonVerde}
-              onPress={() => setPaso(5)}
-              activeOpacity={0.85}
-            >
-              <Text style={s.botonVerdeTexto}>Continuar</Text>
-            </TouchableOpacity>
-          ) : (
-            <View style={[s.botonContorno, s.botonDeshabilitado]}>
-              <Text style={s.botonContornoTexto}>
-                Publicar (espera aceptación)
-              </Text>
-            </View>
-          )}
-          <TouchableOpacity onPress={() => setPaso(3)}>
-            <Text style={[s.enlace, s.enlaceSubrayado]}>
-              Invitar a más actores
-            </Text>
-          </TouchableOpacity>
+          {/* Solo el botón, pegado al fondo de la pantalla */}
+          <View style={{ marginTop: "auto" }}>
+            {numAceptados >= MINIMO_ALIADOS ? (
+              <TouchableOpacity
+                style={s.botonVerde}
+                onPress={() => setPaso(5)}
+                activeOpacity={0.85}
+              >
+                <Text style={s.botonVerdeTexto}>Continuar</Text>
+              </TouchableOpacity>
+            ) : (
+              <View style={[s.botonContorno, s.botonDeshabilitado]}>
+                <Text style={s.botonContornoTexto}>
+                  Publicar (espera aceptación)
+                </Text>
+              </View>
+            )}
+          </View>
         </>
       ) : (
         <TouchableOpacity
@@ -752,25 +785,32 @@ function AsistenteRutaCreativa() {
   const renderPaso6 = () => (
     <>
       <Text style={s.nombreRutaPublicada}>{ruta?.nombre ?? form.nombre}</Text>
-      {paradas.map((p) => (
-        <TarjetaParada
-          key={p.id}
-          parada={p}
-          calificacion={calificacionDe(p)}
-          mostrarPrecio
-        />
-      ))}
+      <View style={s.zonaGrisParadas}>
+        {paradas.map((p) => (
+          <TarjetaParada
+            key={p.id}
+            parada={p}
+            calificacion={calificacionDe(p)}
+            imagen={imagenDe(p)}
+            mostrarPrecio
+            tarjetaBlanca
+          />
+        ))}
+      </View>
       <View style={s.totalFila}>
         <Text style={s.totalEtiqueta}>Total de la ruta creativa:</Text>
         <Text style={s.totalValor}>{formatearPrecio(calcularTotal(paradas))}</Text>
       </View>
-      <TouchableOpacity
-        style={s.botonNaranja}
-        onPress={verRutaEnElMapa}
-        activeOpacity={0.85}
-      >
-        <Text style={s.botonNaranjaTexto}>Ver ruta en el mapa</Text>
-      </TouchableOpacity>
+      {/* Botón pegado al fondo de la pantalla */}
+      <View style={{ marginTop: "auto" }}>
+        <TouchableOpacity
+          style={s.botonNaranja}
+          onPress={verRutaEnElMapa}
+          activeOpacity={0.85}
+        >
+          <Text style={s.botonNaranjaTexto}>Ver ruta en el mapa</Text>
+        </TouchableOpacity>
+      </View>
     </>
   );
 
@@ -804,6 +844,7 @@ function AsistenteRutaCreativa() {
           contentContainerStyle={[
             s.contenido,
             { paddingBottom: insets.bottom + 32 },
+            (paso === 4 || paso === 5 || paso === 6) && { flexGrow: 1 },
           ]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}

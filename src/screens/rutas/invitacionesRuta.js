@@ -298,9 +298,16 @@ export default function InvitacionesRuta() {
       const pendiente = inv.estado === ESTADO_PARADA.INVITADO;
       return (
         <View key={inv.id} style={i.notificacion}>
-          {/* TODO: foto del creador cuando exista en la invitación. */}
           <View style={i.notificacionAvatar}>
-            <Ionicons name="map-outline" size={30} color={VERDE} />
+            {inv.creadorFoto ? (
+              <Image
+                source={{ uri: inv.creadorFoto }}
+                style={i.notificacionAvatarImagen}
+                resizeMode="cover"
+              />
+            ) : (
+              <Ionicons name="map-outline" size={30} color={VERDE} />
+            )}
           </View>
           <View style={i.notificacionCuerpo}>
             <Text style={i.notificacionTitulo}>Nueva invitación</Text>
@@ -529,7 +536,7 @@ export default function InvitacionesRuta() {
         </Text>
       </View>
       <TouchableOpacity
-        style={s.botonVerde}
+        style={[s.botonVerde, i.botonVolverListo]}
         onPress={volverALista}
         activeOpacity={0.85}
       >

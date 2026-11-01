@@ -14,6 +14,9 @@ export const ANCHO_IMAGEN_LISTO = 230;
 export const ALTO_IMAGEN_LISTO = 200;
 
 export const invitacionesRutaStyle = StyleSheet.create({
+  botonVolverListo: {
+    transform: [{ translateY: -160 }],
+  },
   // ---- Notificaciones: tarjeta verde de invitación ----
   notificacion: {
     flexDirection: "row",
@@ -184,7 +187,7 @@ export const invitacionesRutaStyle = StyleSheet.create({
   },
   listoTitulo: {
     fontFamily: "Poppins-Bold",
-    fontSize: 16,
+    fontSize: 32,
     color: "#0E5A34",
     textAlign: "center",
     marginBottom: 8,

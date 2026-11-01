@@ -29,7 +29,7 @@ import { db } from "./firebase";
 //   Una ruta sigue activa hasta que su creador la cancela.
 //
 // paradas_ruta/{rutaId}_{actorId}   (una por actor que participa en la ruta)
-//   rutaId, rutaNombre, creadorId, creadorNombre,
+//   rutaId, rutaNombre, creadorId, creadorNombre, creadorFoto (opcional),
 //   actorId, ubicacionId, titulo, categoria, lugar   -> el negocio del actor
 //   estado: "creador" | "invitado" | "aceptada" | "rechazada"
 //   servicio, precio, direccion, dia, horario, imagenes   -> lo llena cada actor
@@ -438,6 +438,8 @@ export async function invitarActor({ ruta, creador, destino }) {
     rutaNombre: ruta.nombre,
     creadorId: creador.uid,
     creadorNombre: creador.nombre,
+    // Foto de perfil del creador (data URI), para mostrarla en la invitación.
+    ...(creador.foto ? { creadorFoto: creador.foto } : {}),
     actorId: destino.actorId,
     ubicacionId: destino.ubicacionId,
     titulo: destino.titulo ?? "",

@@ -151,6 +151,63 @@ export const crearRutaStyle = StyleSheet.create({
     fontSize: 11.5,
   },
 
+  // ---- Mis servicios: franja gris con tarjeta blanca (solo crearRutaInicio) ----
+  // Estilos propios para no alterar s.tarjeta, que usan otras pantallas.
+  servicioFondo: {
+    backgroundColor: GRIS_TARJETA,
+    paddingVertical: 22,
+    paddingHorizontal: 20,
+    marginTop: 6,
+    marginBottom: 20,
+  },
+  servicioTarjeta: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 18,
+    padding: 12,
+  },
+  servicioMiniatura: {
+    width: 62,
+    height: 62,
+    borderRadius: 12,
+    backgroundColor: VERDE,
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+    marginRight: 12,
+  },
+  // Lista de paradas (pasos 4 y 5): franja gris de borde a borde con tarjetas blancas.
+  zonaGrisParadas: {
+    backgroundColor: GRIS_TARJETA,
+    // Se sale del margen de 20 px de la pantalla para llegar de borde a borde.
+    marginHorizontal: -20,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    marginBottom: 16,
+  },
+  servicioTarjetaLista: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 12,
+  },
+  servicioTitulo: {
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 15,
+    color: "#1A1A1A",
+  },
+  servicioInsignia: {
+    alignSelf: "flex-end",
+    backgroundColor: LIMA,
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    marginLeft: 8,
+  },
+
   // ---- Botones ----
   botonLima: {
     ...boton.primario,

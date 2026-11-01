@@ -276,7 +276,7 @@ export default function Resenas() {
                 <Ionicons
                   name={chip.icono}
                   size={17}
-                  color={activo ? "#FFFFFF" : "#1A1A1A"}
+                  color={activo ? "#FFFFFF" : VERDE}
                 />
               )}
               <Text style={[s.chipTexto, activo && s.chipTextoActivo]}>
@@ -338,7 +338,10 @@ export default function Resenas() {
         </View>
 
         <View style={s.estrellasFila}>
-          <Estrellas valor={Number(item.calificacion) || 0} size={26} />
+          <Text style={s.calificacionNumero}>
+            {(Number(item.calificacion) || 0).toFixed(1)}
+          </Text>
+          <Estrellas valor={Number(item.calificacion) || 0} size={22} />
         </View>
 
         {!!item.texto && <Text style={s.comentario}>“{item.texto}”</Text>}
@@ -403,6 +406,7 @@ export default function Resenas() {
       </View>
 
       <FlatList
+        style={s.listaFondo}
         data={cargando || error ? [] : visibles}
         keyExtractor={(item) => `${item.experienciaId}-${item.id}`}
         renderItem={renderItem}

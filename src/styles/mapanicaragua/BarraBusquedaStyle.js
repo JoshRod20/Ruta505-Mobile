@@ -7,6 +7,17 @@ import { StyleSheet } from "react-native";
 const VERDE = "#0E5A34";
 const VERDE_CLARO = "#8CC219";
 
+// Medidas de la barra de búsqueda. Se exportan para que lo que va debajo
+// (p. ej. la tarjeta de la ruta en el mapa) se acomode con estas mismas cifras
+// y nunca quede encima de la barra, sin importar el tamaño de pantalla.
+export const BARRA_TOP = 54; // distancia bajo el área segura superior
+export const BARRA_ALTO = 48;
+export const BARRA_SEPARACION = 12; // aire entre la barra y la tarjeta de abajo
+
+/** Posición `top` de una tarjeta que va justo debajo de la barra de búsqueda. */
+export const topDebajoDeBarra = (insetSuperior) =>
+  insetSuperior + BARRA_TOP + BARRA_ALTO + BARRA_SEPARACION;
+
 export const barraBusquedaStyle = StyleSheet.create({
   // Ocupa toda la pantalla pero deja pasar los toques al mapa (box-none)
   raiz: {
@@ -33,7 +44,7 @@ export const barraBusquedaStyle = StyleSheet.create({
   barra: {
     flexDirection: "row",
     alignItems: "center",
-    height: 48,
+    height: BARRA_ALTO,
     borderRadius: 12,
     backgroundColor: "#FFFFFF",
     paddingHorizontal: 14,
