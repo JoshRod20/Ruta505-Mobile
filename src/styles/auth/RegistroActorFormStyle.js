@@ -207,6 +207,32 @@ const RegistroActorFormStyle = StyleSheet.create({
   },
 
   // ==================================================
+  // TÉRMINOS Y CONDICIONES
+  // ==================================================
+
+  terminosFila: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+    paddingHorizontal: 4,
+  },
+
+  terminosTexto: {
+    flex: 1,
+    marginLeft: 10,
+    color: COLOR_TINTA,
+    fontSize: 13,
+    lineHeight: 19,
+    fontFamily: "Inter-Regular",
+  },
+
+  terminosLink: {
+    color: COLOR_HEADER,
+    fontFamily: "Inter-SemiBold",
+    textDecorationLine: "underline",
+  },
+
+  // ==================================================
   // ERROR GENERAL
   // ==================================================
 

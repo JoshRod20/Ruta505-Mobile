@@ -33,6 +33,8 @@ import {
   TELEFONO_REGEX,
 } from "../../utils/validators";
 import SelectorModal from "../../components/common/SelectorModal";
+import TerminosModal from "../../components/common/TerminosModal";
+import { TERMINOS_VERSION } from "../../constants/terminosCondiciones";
 import S from "../../styles/auth/RegistroActorFormStyle";
 
 // ==================================================
@@ -57,7 +59,7 @@ const curvaPath = (w) => `
 
 const vacio = (v) => !String(v ?? "").trim();
 
-const calcularErrores = (f) => {
+const calcularErrores = (f, aceptoTerminos) => {
   // El municipio solo es válido si pertenece al departamento elegido
   const municipioValido = getMunicipios(f.departamento).includes(f.municipio);
 
@@ -107,6 +109,9 @@ const calcularErrores = (f) => {
     tipoTurismo: !f.tipoTurismo ? "Selecciona un tipo de turismo." : "",
     idiomaPreferido: !f.idiomaPreferido
       ? "Selecciona tu idioma preferido."
+      : "",
+    terminos: !aceptoTerminos
+      ? "Debes aceptar los Términos y Condiciones para registrarte."
       : "",
   };
 };
@@ -195,11 +200,14 @@ const RegistroActorScreen = ({ navigation, route }) => {
   const marcarTocado = (campo) =>
     setTocado((prev) => ({ ...prev, [campo]: true }));
 
-  const erroresTodos = calcularErrores(form);
+  // Aceptación de Términos y Condiciones
+  const [aceptoTerminos, setAceptoTerminos] = useState(false);
+
+  const erroresTodos = calcularErrores(form, aceptoTerminos);
   const err = (campo) => (tocado[campo] ? erroresTodos[campo] : "");
 
   // Modales: solo uno abierto a la vez
-  // null | "turismo" | "idioma" | "departamento" | "municipio"
+  // null | "turismo" | "idioma" | "departamento" | "municipio" | "terminos"
   const [modalActivo, setModalActivo] = useState(null);
   const cerrarModal = () => setModalActivo(null);
 
@@ -323,6 +331,17 @@ const RegistroActorScreen = ({ navigation, route }) => {
 
   const handleVolver = () => navigation.goBack();
 
+  const alternarTerminos = () => {
+    setAceptoTerminos((v) => !v);
+    marcarTocado("terminos");
+  };
+
+  const aceptarDesdeModal = () => {
+    setAceptoTerminos(true);
+    marcarTocado("terminos");
+    cerrarModal();
+  };
+
   const handleSubmit = () => {
     Keyboard.dismiss();
 
@@ -367,6 +386,9 @@ const RegistroActorScreen = ({ navigation, route }) => {
         telefono: form.telefono,
         tipoTurismo: form.tipoTurismo,
         idiomaPreferido: form.idiomaPreferido,
+        aceptoTerminos: true,
+        terminosVersion: TERMINOS_VERSION,
+        terminosAceptadosEn: new Date().toISOString(),
       },
     });
   };
@@ -664,6 +686,34 @@ const RegistroActorScreen = ({ navigation, route }) => {
           </TouchableOpacity>
           <MensajeError texto={err("idiomaPreferido")} centrado />
 
+          {/* TÉRMINOS Y CONDICIONES */}
+          <View style={S.terminosFila}>
+            <TouchableOpacity
+              onPress={alternarTerminos}
+              activeOpacity={0.7}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: aceptoTerminos }}
+            >
+              <Ionicons
+                name={aceptoTerminos ? "checkbox" : "square-outline"}
+                size={24}
+                color={err("terminos") ? "#d32f2f" : "#086338"}
+              />
+            </TouchableOpacity>
+            <Text style={S.terminosTexto}>
+              He leído y acepto los{" "}
+              <Text
+                style={S.terminosLink}
+                onPress={() => abrirModal("terminos")}
+              >
+                Términos y Condiciones
+              </Text>{" "}
+              de Ruta 505.
+            </Text>
+          </View>
+          <MensajeError texto={err("terminos")} />
+
           {/* ERROR GENERAL */}
           {error ? <Text style={S.error}>{error}</Text> : null}
 
@@ -678,6 +728,12 @@ const RegistroActorScreen = ({ navigation, route }) => {
       </View>
 
       {/* MODALES */}
+      <TerminosModal
+        visible={modalActivo === "terminos"}
+        onAccept={aceptarDesdeModal}
+        onClose={cerrarModal}
+      />
+
       <SelectorModal
         visible={modalActivo === "departamento"}
         titulo="Selecciona el departamento"
