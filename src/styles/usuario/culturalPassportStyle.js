@@ -120,7 +120,6 @@ export const culturalPassportStyle = StyleSheet.create({
     backgroundColor: "#D9D9D9",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 18,
   },
   stampImage: {
     ...StyleSheet.absoluteFillObject,
@@ -128,6 +127,14 @@ export const culturalPassportStyle = StyleSheet.create({
     borderRadius: 3,
     width: undefined,
     height: undefined,
+  },
+  // Capa del candado: ocupa todo el sello y lo centra (el borde dentado queda en la imagen).
+  stampCandadoZona: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    alignItems: "center",
+    justifyContent: "center",
   },
   stampCaption: { position: "absolute", left: 8, right: 8, bottom: 8 },
   stampTitle: {

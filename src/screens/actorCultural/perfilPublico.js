@@ -252,7 +252,9 @@ export default function PerfilPublico() {
   };
 
   return (
-    <View style={s.container}>
+    <View
+      style={[s.container, pestana === "resenas" && s.containerResenas]}
+    >
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
@@ -318,6 +320,18 @@ export default function PerfilPublico() {
                 </TouchableOpacity>
               );
             })}
+
+            {/* Botón "+" a la par de las pestañas (solo en Reseñas). */}
+            {pestana === "resenas" && puedeEscribir && (
+              <TouchableOpacity
+                style={s.botonMas}
+                onPress={empezarResena}
+                activeOpacity={0.85}
+                accessibilityLabel="Escribir una reseña"
+              >
+                <Ionicons name="add" size={22} color="#000000" />
+              </TouchableOpacity>
+            )}
           </View>
 
           {pestana === "info" ? (
@@ -402,19 +416,6 @@ export default function PerfilPublico() {
             </>
           ) : (
             <>
-              {puedeEscribir && (
-                <View style={s.filaAgregar}>
-                  <TouchableOpacity
-                    style={s.botonMas}
-                    onPress={empezarResena}
-                    activeOpacity={0.85}
-                    accessibilityLabel="Escribir una reseña"
-                  >
-                    <Ionicons name="add" size={22} color="#000000" />
-                  </TouchableOpacity>
-                </View>
-              )}
-
               <View
                 style={[r.filtrosFila, { marginTop: 12, marginBottom: 12 }]}
               >
@@ -450,15 +451,18 @@ export default function PerfilPublico() {
                 })}
               </View>
 
-              {visibles.length === 0 ? (
-                <Text style={s.vacioTexto}>
-                  {resenas.length === 0
-                    ? "Aún no hay reseñas."
-                    : "No hay reseñas en esta categoría."}
-                </Text>
-              ) : (
-                visibles.map(renderResena)
-              )}
+              {/* Fondo gris de lado a lado con las tarjetas blancas encima. */}
+              <View style={s.fondoResenas}>
+                {visibles.length === 0 ? (
+                  <Text style={[s.vacioTexto, s.vacioResenas]}>
+                    {resenas.length === 0
+                      ? "Aún no hay reseñas."
+                      : "No hay reseñas en esta categoría."}
+                  </Text>
+                ) : (
+                  visibles.map(renderResena)
+                )}
+              </View>
             </>
           )}
         </View>

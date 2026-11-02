@@ -8,9 +8,12 @@ import { campo } from "../common/campoStyle";
 import { boton } from "../common/botonStyle";
 
 const AZUL = "#0B9BE3";
+const GRIS_FONDO = "#F2F2F2";
 
 export const perfilPublicoStyle = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FAFAFA" },
+  // Pestaña Reseñas: el gris llega hasta el final de la pantalla.
+  containerResenas: { backgroundColor: GRIS_FONDO },
   portada: { width: "100%", height: 230, backgroundColor: "#DDE7DD" },
   botonAtras: {
     position: "absolute",
@@ -72,6 +75,15 @@ export const perfilPublicoStyle = StyleSheet.create({
     color: NARANJA,
     marginTop: 4,
   },
+  // Banda gris de lado a lado (la hoja tiene 22 de margen: se compensa).
+  fondoResenas: {
+    backgroundColor: GRIS_FONDO,
+    marginHorizontal: -22,
+    paddingTop: 16,
+    paddingBottom: 2,
+    minHeight: 120,
+  },
+  vacioResenas: { paddingHorizontal: 22, paddingBottom: 14 },
   vacioTexto: { fontFamily: "Inter-Regular", fontSize: 13, color: "#777777" },
   fotoPublicacion: {
     width: 120,
@@ -234,6 +246,7 @@ export const perfilPublicoStyle = StyleSheet.create({
     justifyContent: "flex-end",
     marginTop: 14,
   },
+  // A la par de las pestañas: pegado a la derecha y centrado en la fila.
   botonMas: {
     width: 34,
     height: 34,
@@ -241,6 +254,9 @@ export const perfilPublicoStyle = StyleSheet.create({
     backgroundColor: AZUL,
     alignItems: "center",
     justifyContent: "center",
+    marginLeft: "auto",
+    alignSelf: "center",
+    marginBottom: 4,
   },
   puntajeResena: {
     fontFamily: "Inter-SemiBold",

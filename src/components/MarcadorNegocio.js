@@ -6,7 +6,7 @@
  */
 
 import React, { useState } from "react";
-import { Image, Text, View } from "react-native";
+import { Image, View } from "react-native";
 
 import { mapaNicaraguaStyle } from "../styles/mapanicaragua/mapaNicaraguaStyle.js";
 import IconoCategoria from "./common/IconoCategoria";
@@ -16,12 +16,6 @@ import { colorDeCategoria } from "../services/Categoriasexperiencias.js";
 // ~150 KB). Hay muchos pines a la vez, así que las fotos pesadas se omiten.
 const MAX_CARACTERES_FOTO = 200000;
 const TAMANO_FOTO = 36;
-
-// Burbuja con el nombre (solo en el pin seleccionado).
-const COLOR_BURBUJA = "#8DB600";
-const ALTO_BURBUJA = 30;
-const ALTO_FLECHA = 8;
-const ALTO_ETIQUETA = ALTO_BURBUJA + ALTO_FLECHA;
 
 /** Devuelve la portada del negocio si es apta para el pin; si no, null. */
 export function portadaParaPin(punto) {
@@ -43,43 +37,6 @@ export default function MarcadorNegocio({
 
   return (
     <View style={mapaNicaraguaStyle.marcadorContenedor}>
-      {seleccionado && !!punto.titulo && (
-        <View style={{ alignItems: "center" }}>
-          <View
-            style={{
-              height: ALTO_BURBUJA,
-              maxWidth: 240,
-              justifyContent: "center",
-              backgroundColor: COLOR_BURBUJA,
-              borderRadius: 6,
-              paddingHorizontal: 12,
-            }}
-          >
-            <Text
-              numberOfLines={1}
-              style={{
-                fontFamily: "Poppins-SemiBold",
-                fontSize: 13,
-                color: "#1A1A1A",
-              }}
-            >
-              {punto.titulo}
-            </Text>
-          </View>
-          <View
-            style={{
-              width: 0,
-              height: 0,
-              borderLeftWidth: 7,
-              borderRightWidth: 7,
-              borderTopWidth: ALTO_FLECHA,
-              borderLeftColor: "transparent",
-              borderRightColor: "transparent",
-              borderTopColor: COLOR_BURBUJA,
-            }}
-          />
-        </View>
-      )}
       <View
         style={[
           mapaNicaraguaStyle.marcadorPunto,
@@ -114,9 +71,6 @@ export default function MarcadorNegocio({
           />
         )}
       </View>
-      {/* Espaciador del alto de la etiqueta: el centro del pin queda sobre
-          la coordenada aunque la burbuja esté visible. */}
-      {seleccionado && !!punto.titulo && <View style={{ height: ALTO_ETIQUETA }} />}
     </View>
   );
 }

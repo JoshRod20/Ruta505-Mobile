@@ -8,7 +8,12 @@ import { VERDE } from "../rutas/crearRutaStyle";
 export const culturalRoutesStyle = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F9F9F9",
+    backgroundColor: "#FFFFFF",
+  },
+  // La lista (desde "Rutas sugeridas") va sobre fondo gris con tarjetas blancas.
+  scroll: {
+    flex: 1,
+    backgroundColor: "#F2F2F2",
   },
   titulo: {
     textAlign: "center",
@@ -21,13 +26,16 @@ export const culturalRoutesStyle = StyleSheet.create({
     width: 20,
     height: 20,
   },
+  // Banda gris de lado a lado que rodea al buscador.
+  bandaBuscador: {
+    backgroundColor: "#F2F2F2",
+    paddingVertical: 14,
+  },
   buscador: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#E3E3E3",
-    borderRadius: 12,
+    borderRadius: 14,
     height: 46,
     paddingHorizontal: 14,
     marginHorizontal: 16,
@@ -40,14 +48,24 @@ export const culturalRoutesStyle = StyleSheet.create({
     color: "#1A1A1A",
   },
   lista: {
+    paddingHorizontal: 0,
+  },
+  // Banda blanca de "Rutas sugeridas" entre el buscador y las tarjetas.
+  bandaSeccion: {
+    backgroundColor: "#FFFFFF",
     paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 12,
+  },
+  listaGris: {
+    backgroundColor: "#F2F2F2",
+    paddingHorizontal: 16,
+    paddingTop: 10,
   },
   seccion: {
     fontFamily: "Poppins-SemiBold",
     fontSize: 14,
     color: VERDE,
-    marginTop: 16,
-    marginBottom: 4,
   },
   vacio: {
     fontFamily: "Inter-Regular",

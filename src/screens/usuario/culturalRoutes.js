@@ -245,19 +245,23 @@ export default function CulturalRoutes() {
     <View style={[c.container, { paddingTop: insets.top + 8 }]}>
       <Text style={c.titulo}>Rutas Creativas</Text>
 
-      <View style={c.buscador}>
-        <Image source={require("../../assets/icons/busqueda.png")} style={c.iconoLupa} />
-        <TextInput
-          style={c.buscadorInput}
-          placeholder="Buscar"
-          placeholderTextColor="#9A9A9A"
-          value={busqueda}
-          onChangeText={setBusqueda}
-          returnKeyType="search"
-        />
+      {/* Banda gris con el buscador (blanco) encima. */}
+      <View style={c.bandaBuscador}>
+        <View style={c.buscador}>
+          <Image source={require("../../assets/icons/busqueda.png")} style={c.iconoLupa} />
+          <TextInput
+            style={c.buscadorInput}
+            placeholder="Buscar"
+            placeholderTextColor="#9A9A9A"
+            value={busqueda}
+            onChangeText={setBusqueda}
+            returnKeyType="search"
+          />
+        </View>
       </View>
 
       <ScrollView
+        style={c.scroll}
         contentContainerStyle={[
           c.lista,
           { paddingBottom: tabBarHeight + 24 },
@@ -265,18 +269,25 @@ export default function CulturalRoutes() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <Text style={c.seccion}>Rutas sugeridas</Text>
-        {rutas === null ? (
-          <ActivityIndicator style={{ marginTop: 30 }} color={VERDE} />
-        ) : lista.length === 0 ? (
-          <Text style={c.vacio}>
-            {busqueda
-              ? "No encontramos rutas con esa búsqueda."
-              : "Aún no hay rutas creativas publicadas."}
-          </Text>
-        ) : (
-          lista.map(renderRuta)
-        )}
+        {/* Banda blanca con el título de la sección. */}
+        <View style={c.bandaSeccion}>
+          <Text style={c.seccion}>Rutas sugeridas</Text>
+        </View>
+
+        {/* Desde aquí, fondo gris con las tarjetas blancas. */}
+        <View style={c.listaGris}>
+          {rutas === null ? (
+            <ActivityIndicator style={{ marginTop: 30 }} color={VERDE} />
+          ) : lista.length === 0 ? (
+            <Text style={c.vacio}>
+              {busqueda
+                ? "No encontramos rutas con esa búsqueda."
+                : "Aún no hay rutas creativas publicadas."}
+            </Text>
+          ) : (
+            lista.map(renderRuta)
+          )}
+        </View>
       </ScrollView>
     </View>
   );

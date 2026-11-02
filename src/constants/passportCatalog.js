@@ -10,42 +10,54 @@ export const INSIGNIAS = [
     title: "Alma Colonial",
     location: "Granada",
     color: "#1E9BE8",
-    image: require("../assets/insignias/Granada.png"),
+    image: require("../assets/insignias/Perfiles e Insignias-07.png"),
+    // El arte ya trae el nombre y el lugar escritos dentro del sello.
+    leyendaIncluida: true,
   },
   {
     id: "ometepe",
     title: "Hijo del Volcán",
     location: "Ometepe",
     color: "#0B5D2E",
-    image: require("../assets/insignias/Granada.png"),
+    image: require("../assets/insignias/Perfiles e Insignias-08.png"),
+    // El arte ya trae el nombre y el lugar escritos dentro del sello.
+    leyendaIncluida: true,
   },
   {
     id: "matagalpa",
     title: "Corazón del Café",
     location: "Matagalpa",
     color: "#8DC63F",
-    image: require("../assets/insignias/Granada.png"),
+    image: require("../assets/insignias/Perfiles e Insignias-09.png"),
+    // El arte ya trae el nombre y el lugar escritos dentro del sello.
+    leyendaIncluida: true,
   },
   {
     id: "bluefields",
     title: "Raíces del Caribe",
     location: "Bluefields",
     color: "#F7931E",
-    image: require("../assets/insignias/Granada.png"),
+    image: require("../assets/insignias/Perfiles e Insignias-10.png"),
+    // El arte ya trae el nombre y el lugar escritos dentro del sello.
+    leyendaIncluida: true,
   },
   {
     id: "leon",
     title: "Espíritu Revolucionario",
     location: "León",
     color: "#1E9BE8",
-    image: require("../assets/insignias/Granada.png"),
+    image: require("../assets/insignias/Perfiles e Insignias-11.png"),
+    // El arte ya trae el nombre y el lugar escritos dentro del sello.
+    leyendaIncluida: true,
   },
   {
     id: "masaya",
     title: "Guardián del Folclore",
     location: "Masaya",
     color: "#0B5D2E",
-    image: require("../assets/insignias/Granada.png"),
+    image: require("../assets/insignias/Perfiles e Insignias-12.png"),
+    // El arte ya trae el nombre y el lugar escritos dentro del sello.
+    leyendaIncluida: true,
   },
   {
     id: "managua",

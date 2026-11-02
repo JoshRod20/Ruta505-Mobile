@@ -6,7 +6,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  Image,
   Modal,
   Pressable,
   Text,
@@ -17,6 +16,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { culturalPassportStyle as s } from "../../styles/usuario/culturalPassportStyle";
+import StampCard from "./StampCard";
 
 export default function QrScannerModal({ visible, onClose, onClaim }) {
   const insets = useSafeAreaInsets();
@@ -110,13 +110,9 @@ export default function QrScannerModal({ visible, onClose, onClaim }) {
             <View style={s.resultCard}>
               <Text style={s.resultTitle}>{result.message}</Text>
               {reward?.image ? (
-                <Image
-                  source={reward.image}
-                  style={s.resultImage}
-                  resizeMode="cover"
-                />
+                <StampCard item={{ ...reward, unlocked: true }} size={150} />
               ) : null}
-              {reward?.title ? (
+              {reward?.title && !reward?.leyendaIncluida ? (
                 <Text style={s.resultSubtitle}>{reward.title}</Text>
               ) : null}
               <Pressable style={s.primaryButton} onPress={onClose}>
