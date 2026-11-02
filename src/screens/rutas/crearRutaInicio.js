@@ -21,6 +21,10 @@ import { usePermisos } from "../../hooks/usePermisos";
 import { PERMISOS } from "../../constants/permissions";
 import { escucharNegocio } from "../../services/Negociosservice";
 import {
+  escucharActividadDeActor,
+  resumirResenas,
+} from "../../services/Experienciasservice";
+import {
   escucharMisRutas,
   ESTADO_RUTA,
 } from "../../services/rutasService";
@@ -51,6 +55,7 @@ export default function CrearRutaInicio() {
 
   const [negocio, setNegocio] = useState(null);
   const [rutas, setRutas] = useState([]);
+  const [promedio, setPromedio] = useState(null); // promedio de sus reseñas
 
   // Cada actor tiene un solo negocio (negocios/{uid}): su ubicación en el mapa.
   useEffect(() => {
@@ -61,6 +66,14 @@ export default function CrearRutaInicio() {
   useEffect(() => {
     if (!user?.uid) return undefined;
     return escucharMisRutas(user.uid, setRutas);
+  }, [user?.uid]);
+
+  // La calificación sale de las reseñas (comentarios) de sus publicaciones.
+  useEffect(() => {
+    if (!user?.uid) return undefined;
+    return escucharActividadDeActor(user.uid, ({ comentarios }) =>
+      setPromedio(resumirResenas(comentarios).promedio)
+    );
   }, [user?.uid]);
 
   const padding = {
@@ -147,11 +160,11 @@ export default function CrearRutaInicio() {
                     </Text>
                   </View>
                 )}
-                {typeof negocio.calificacion === "number" && (
+                {promedio != null && (
                   <View style={s.estrellaFila}>
                     <Ionicons name="star" size={13} color="#F5A623" />
                     <Text style={s.estrellaTexto}>
-                      {negocio.calificacion.toFixed(1)}
+                      {promedio.toFixed(1)}
                     </Text>
                   </View>
                 )}

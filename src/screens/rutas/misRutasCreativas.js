@@ -149,11 +149,7 @@ export default function MisRutasCreativas() {
               resizeMode="cover"
             />
           ) : (
-            <IconoCategoria
-              categoria={p.categoria}
-              size={30}
-              color={VERDE}
-            />
+            <IconoCategoria categoria={p.categoria} size={30} color={VERDE} />
           )}
         </View>
         <View style={s.paradaCuerpo}>
@@ -162,9 +158,12 @@ export default function MisRutasCreativas() {
           </Text>
           {!!p.horario && (
             <View style={s.paradaFilaHorario}>
-              <Ionicons name="time" size={12} color={VERDE} />
+              <Image
+                source={require("../../assets/icons/reloj-tres.png")}
+                style={{ width: 16, height: 16 }}
+                resizeMode="contain"
+              />
               <Text style={s.paradaHorario} numberOfLines={1}>
-                {mostrarDia && p.dia ? `Día ${p.dia} · ` : ""}
                 {p.horario}
               </Text>
             </View>
@@ -181,8 +180,12 @@ export default function MisRutasCreativas() {
               <Text style={s.botonWhatsAppTexto}>WhatsApp</Text>
             </TouchableOpacity>
           )}
-          {pendiente && <Text style={s.paradaPendiente}>Invitación en espera</Text>}
-          {rechazada && <Text style={s.paradaPendiente}>Rechazó la invitación</Text>}
+          {pendiente && (
+            <Text style={s.paradaPendiente}>Invitación en espera</Text>
+          )}
+          {rechazada && (
+            <Text style={s.paradaPendiente}>Rechazó la invitación</Text>
+          )}
         </View>
       </TouchableOpacity>
     );
@@ -244,7 +247,11 @@ export default function MisRutasCreativas() {
                   onPress={() => verEnElMapa(ruta, paradasRuta)}
                   activeOpacity={0.7}
                 >
-                  <Ionicons name="location" size={18} color={VERDE} />
+                  <Image
+                    source={require("../../assets/icons/Icono-Verde.png")}
+                    style={{ width: 18, height: 18 }}
+                    resizeMode="contain"
+                  />
                   <Text style={s.enlaceMapaTexto}>Ver paradas en el mapa</Text>
                 </TouchableOpacity>
               ) : (

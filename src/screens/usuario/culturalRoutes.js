@@ -29,7 +29,7 @@ import {
   ordenarParadas,
   abrirChatWhatsApp,
 } from "../../services/rutasService";
-import { iconoDeCategoria } from "../../services/Categoriasexperiencias";
+import { escucharNegocios } from "../../services/Negociosservice";
 import { misRutasStyle as s } from "../../styles/rutas/misRutasCreativasStyle";
 import { culturalRoutesStyle as c } from "../../styles/usuario/culturalRoutesStyle";
 import { VERDE } from "../../styles/rutas/crearRutaStyle";
@@ -51,7 +51,11 @@ export default function CulturalRoutes() {
 
   const [rutas, setRutas] = useState(null); // null = cargando
   const [paradas, setParadas] = useState([]);
+  const [negocios, setNegocios] = useState([]);
   const [busqueda, setBusqueda] = useState("");
+
+  // Fotos de los negocios: respaldo cuando la parada no trae fotos propias.
+  useEffect(() => escucharNegocios(setNegocios), []);
 
   useEffect(() => {
     const quitarRutas = escucharRutasPublicadas(setRutas, () => setRutas([]));
@@ -115,8 +119,13 @@ export default function CulturalRoutes() {
     if (actorId) navigation.navigate("PerfilPublicoDrawer", { actorId });
   };
 
-  const renderParada = (p, mostrarDia) => {
-    const imagen = p.imagenes?.[0] ?? p.imagenUrls?.[0];
+  const renderParada = (p) => {
+    const negocioParada = negocios.find((n) => n.id === p.ubicacionId);
+    const imagen =
+      p.imagenes?.[0] ??
+      p.imagenUrls?.[0] ??
+      negocioParada?.imagenes?.[0] ??
+      negocioParada?.imagenUrls?.[0];
     return (
       <TouchableOpacity
         key={p.id}
@@ -133,11 +142,7 @@ export default function CulturalRoutes() {
               resizeMode="cover"
             />
           ) : (
-            <IconoCategoria
-              categoria={p.categoria}
-              size={30}
-              color={VERDE}
-            />
+            <IconoCategoria categoria={p.categoria} size={30} color={VERDE} />
           )}
         </View>
         <View style={s.paradaCuerpo}>
@@ -146,9 +151,12 @@ export default function CulturalRoutes() {
           </Text>
           {!!p.horario && (
             <View style={s.paradaFilaHorario}>
-              <Ionicons name="time-outline" size={13} color="#4A4A4A" />
+              <Image
+                source={require("../../assets/icons/reloj-tres.png")}
+                style={{ width: 16, height: 16 }}
+                resizeMode="contain"
+              />
               <Text style={s.paradaHorario} numberOfLines={1}>
-                {mostrarDia && p.dia ? `Día ${p.dia} · ` : ""}
                 {p.horario}
               </Text>
             </View>
@@ -175,14 +183,16 @@ export default function CulturalRoutes() {
     const dias = calcularDias(paradasRuta);
     return (
       <View key={ruta.id} style={s.tarjeta}>
-        <View style={s.pastillaLugares}>
-          <Text style={s.pastillaLugaresTexto}>
-            {paradasRuta.length}{" "}
-            {paradasRuta.length === 1 ? "lugar incluido" : "lugares incluidos"}
-          </Text>
+        <View style={s.filaSuperior}>
+          <View style={s.pastillaLugares}>
+            <Text style={s.pastillaLugaresTexto}>
+              {paradasRuta.length}{" "}
+              {paradasRuta.length === 1 ? "lugar incluido" : "lugares incluidos"}
+            </Text>
+          </View>
         </View>
 
-        <Text style={[s.nombre, c.nombreRuta]}>{ruta.nombre}</Text>
+        <Text style={s.nombre}>{ruta.nombre}</Text>
         <Text style={s.etiquetaItinerario}>Lugares por conocer</Text>
 
         <ScrollView
@@ -192,7 +202,7 @@ export default function CulturalRoutes() {
           contentContainerStyle={s.carruselContenido}
           nestedScrollEnabled
         >
-          {paradasRuta.map((p) => renderParada(p, dias > 1))}
+          {paradasRuta.map((p) => renderParada(p))}
         </ScrollView>
 
         <View style={s.filaMapaDias}>
@@ -202,7 +212,11 @@ export default function CulturalRoutes() {
               onPress={() => verEnElMapa(item)}
               activeOpacity={0.7}
             >
-              <Ionicons name="location" size={18} color={VERDE} />
+              <Image
+                source={require("../../assets/icons/Icono-Verde.png")}
+                style={{ width: 18, height: 18 }}
+                resizeMode="contain"
+              />
               <Text style={s.enlaceMapaTexto}>Ver paradas en el mapa</Text>
             </TouchableOpacity>
           ) : (
@@ -219,7 +233,9 @@ export default function CulturalRoutes() {
 
         <View style={s.cajaTotal}>
           <Text style={s.totalEtiqueta}>Total por persona</Text>
-          <Text style={s.totalValor}>{formatearPrecio(calcularTotal(paradasRuta))}</Text>
+          <Text style={s.totalValor}>
+            {formatearPrecio(calcularTotal(paradasRuta))}
+          </Text>
         </View>
       </View>
     );

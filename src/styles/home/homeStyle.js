@@ -178,7 +178,7 @@ export const homeStyle = StyleSheet.create({
   tituloComunidades: {
     fontFamily: "Poppins-SemiBold",
     fontSize: 17,
-    color: "#000000",
+    color: VERDE,
     paddingHorizontal: 24,
     marginTop: 12,
     marginBottom: 12,

@@ -49,11 +49,6 @@ export const culturalRoutesStyle = StyleSheet.create({
     marginTop: 16,
     marginBottom: 4,
   },
-  nombreRuta: {
-    fontSize: 17,
-    lineHeight: 23,
-    color: VERDE,
-  },
   vacio: {
     fontFamily: "Inter-Regular",
     fontSize: 14,

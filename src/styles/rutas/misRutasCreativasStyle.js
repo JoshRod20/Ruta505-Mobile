@@ -95,7 +95,7 @@ export const misRutasStyle = StyleSheet.create({
   pastillaLugaresTexto: {
     fontFamily: "Poppins-SemiBold",
     fontSize: 10,
-    color: "#FFFFFF",
+    color: "#000000",
   },
   pastillaEstado: {
     borderRadius: 6,
@@ -112,7 +112,7 @@ export const misRutasStyle = StyleSheet.create({
   pastillaDiasTexto: {
     fontFamily: "Poppins-SemiBold",
     fontSize: 11,
-    color: "#FFFFFF",
+    color: "#000000",
   },
   estadoPublicada: { backgroundColor: "#E9F9D9" },
   estadoEnEspera: { backgroundColor: "#FFF2D8" },
@@ -166,7 +166,7 @@ export const misRutasStyle = StyleSheet.create({
   paradaNombre: {
     fontFamily: "Poppins-SemiBold",
     fontSize: 12.5,
-    color: "#162C21",
+     color: VERDE,
   },
   paradaFilaHorario: {
     flexDirection: "row",

@@ -25,6 +25,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import { Map, Camera } from "@maplibre/maplibre-react-native";
 
 import { useAuth } from "../../context/AuthContext";
 import { escucharNegocio } from "../../services/Negociosservice";
@@ -41,6 +42,9 @@ import { resenasStyle as r } from "../../styles/comunidad/resenasStyle";
 import { perfilPublicoStyle as s } from "../../styles/actorCultural/perfilPublicoStyle";
 
 const VERDE = "#0E5A34";
+
+// Mismo estilo de mapa que el mapa principal (OpenFreeMap, sin API key).
+const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
 const NARANJA = "#F29100";
 const MAX_FOTOS = 2;
 const MAX_TEXTO = 500;
@@ -285,7 +289,11 @@ export default function PerfilPublico() {
 
           {!!negocio?.lugar && (
             <View style={s.filaLugar}>
-              <Ionicons name="location-sharp" size={15} color={VERDE} />
+              <Image
+                source={require("../../assets/icons/Icono-Verde.png")}
+                style={{ width: 15, height: 15 }}
+                resizeMode="contain"
+              />
               <Text style={s.lugarTexto} numberOfLines={1}>
                 {negocio.lugar}
               </Text>
@@ -302,7 +310,9 @@ export default function PerfilPublico() {
                   onPress={() => setPestana(p.id)}
                   activeOpacity={0.7}
                 >
-                  <Text style={[s.pestanaTexto, activa && s.pestanaTextoActivo]}>
+                  <Text
+                    style={[s.pestanaTexto, activa && s.pestanaTextoActivo]}
+                  >
                     {p.texto}
                   </Text>
                 </TouchableOpacity>
@@ -314,11 +324,16 @@ export default function PerfilPublico() {
             <>
               {descripcion ? (
                 <>
-                  <Text style={s.descripcion} numberOfLines={infoCompleta ? undefined : 4}>
+                  <Text
+                    style={s.descripcion}
+                    numberOfLines={infoCompleta ? undefined : 4}
+                  >
                     {descripcion}
                   </Text>
                   {descripcionLarga && (
-                    <TouchableOpacity onPress={() => setInfoCompleta((v) => !v)}>
+                    <TouchableOpacity
+                      onPress={() => setInfoCompleta((v) => !v)}
+                    >
                       <Text style={s.mostrarMas}>
                         {infoCompleta ? "Resumir" : "Mostrar más"}
                       </Text>
@@ -326,7 +341,9 @@ export default function PerfilPublico() {
                   )}
                 </>
               ) : (
-                <Text style={s.vacioTexto}>Este espacio aún no tiene descripción.</Text>
+                <Text style={s.vacioTexto}>
+                  Este espacio aún no tiene descripción.
+                </Text>
               )}
 
               <Text style={s.seccion}>Publicaciones</Text>
@@ -343,25 +360,45 @@ export default function PerfilPublico() {
               {typeof negocio?.lat === "number" && (
                 <>
                   <Text style={s.seccion}>Ubicación en el mapa</Text>
-                  <View style={s.cajaMapa}>
-                    <Ionicons name="location" size={26} color={VERDE} />
-                    <View style={s.cajaMapaTextos}>
-                      <Text style={s.cajaMapaTitulo} numberOfLines={1}>
-                        {negocio.lugar || negocio.titulo}
+                  {/* Vista previa del mapa: no se mueve; al tocarla abre el mapa principal. */}
+                  <View style={s.mapaVista}>
+                    <Map
+                      style={s.mapaVistaMapa}
+                      mapStyle={MAP_STYLE_URL}
+                      logo={false}
+                    >
+                      <Camera zoom={14} center={[negocio.lng, negocio.lat]} />
+                    </Map>
+
+                    {/* Pin fijo en el centro: la punta queda sobre la coordenada. */}
+                    <View style={s.mapaPinZona} pointerEvents="none">
+                      <View style={s.mapaPinCirculo}>
+                        <Image
+                          source={require("../../assets/icons/Icono-Verde.png")}
+                          style={s.mapaPinIcono}
+                          resizeMode="contain"
+                        />
+                      </View>
+                      <View style={s.mapaPinPunta} />
+                      <Text style={s.mapaPinNombre} numberOfLines={2}>
+                        {negocio.titulo || negocio.lugar}
                       </Text>
-                      {!!negocio.ubicacionExacta && (
-                        <Text style={s.cajaMapaDetalle} numberOfLines={2}>
-                          {negocio.ubicacionExacta}
-                        </Text>
-                      )}
                     </View>
-                    <TouchableOpacity style={s.botonMapa} onPress={verEnElMapa} activeOpacity={0.85}>
-                      <Text style={s.botonMapaTexto}>Ver en el mapa</Text>
-                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={s.mapaVistaToque}
+                      onPress={verEnElMapa}
+                      activeOpacity={0.9}
+                      accessibilityLabel="Ver en el mapa"
+                    />
                   </View>
+                  {!!negocio.ubicacionExacta && (
+                    <Text style={s.mapaDetalle} numberOfLines={2}>
+                      {negocio.ubicacionExacta}
+                    </Text>
+                  )}
                 </>
               )}
-
             </>
           ) : (
             <>
@@ -373,14 +410,21 @@ export default function PerfilPublico() {
                     activeOpacity={0.85}
                     accessibilityLabel="Escribir una reseña"
                   >
-                    <Ionicons name="add" size={22} color="#FFFFFF" />
+                    <Ionicons name="add" size={22} color="#000000" />
                   </TouchableOpacity>
                 </View>
               )}
 
-              <View style={[r.filtrosFila, { marginTop: 12, marginBottom: 12 }]}>
+              <View
+                style={[r.filtrosFila, { marginTop: 12, marginBottom: 12 }]}
+              >
                 {chips.map((chip) => {
                   const activo = filtro === chip.id;
+                  // Identificamos si es el chip de "mala" (cambia 'mala' por el id real que uses)
+                  const esMala =
+                    chip.id === "mala" ||
+                    chip.texto?.toLowerCase().includes("mala");
+
                   return (
                     <TouchableOpacity
                       key={chip.id}
@@ -389,10 +433,13 @@ export default function PerfilPublico() {
                       activeOpacity={0.8}
                     >
                       {!!chip.icono && (
-                        <Ionicons
-                          name={chip.icono}
-                          size={17}
-                          color={activo ? "#FFFFFF" : "#1A1A1A"}
+                        <Image
+                          source={require("../../assets/icons/red-social.png")}
+                          style={[
+                            { width: 18, height: 18 },
+                            esMala && { transform: [{ rotate: "180deg" }] }, // Gira 180° si es mala
+                          ]}
+                          resizeMode="contain"
                         />
                       )}
                       <Text style={[r.chipTexto, activo && r.chipTextoActivo]}>
@@ -412,14 +459,20 @@ export default function PerfilPublico() {
               ) : (
                 visibles.map(renderResena)
               )}
-
             </>
           )}
         </View>
       </ScrollView>
 
       {/* ¿Qué tipo de reseña quiere publicar? */}
-      <Modal statusBarTranslucent navigationBarTranslucent visible={paso === "tipo"} transparent animationType="fade" onRequestClose={cerrarFlujo}>
+      <Modal
+        statusBarTranslucent
+        navigationBarTranslucent
+        visible={paso === "tipo"}
+        transparent
+        animationType="fade"
+        onRequestClose={cerrarFlujo}
+      >
         <View style={s.centroFondo}>
           <View style={s.cajaCentro}>
             <TouchableOpacity
@@ -430,14 +483,23 @@ export default function PerfilPublico() {
             >
               <Ionicons name="arrow-back" size={20} color="#111111" />
             </TouchableOpacity>
-            <Text style={s.cajaTitulo}>¿Qué tipo de reseña quieres publicar?</Text>
+            <Text style={s.cajaTitulo}>
+              ¿Qué tipo de reseña quieres publicar?
+            </Text>
             <View style={s.tipoFila}>
               <TouchableOpacity
-                style={[s.botonTipo, { backgroundColor: VERDE, marginRight: 8 }]}
+                style={[
+                  s.botonTipo,
+                  { backgroundColor: VERDE, marginRight: 8 },
+                ]}
                 onPress={() => setPaso("buena")}
                 activeOpacity={0.85}
               >
-                <Ionicons name="thumbs-up" size={18} color="#FFFFFF" />
+                <Image
+                  source={require("../../assets/icons/pulgares-hacia-arriba.png")}
+                  style={{ width: 18, height: 18 }}
+                  resizeMode="contain"
+                />
                 <Text style={s.botonTipoTexto}>Buena</Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -445,7 +507,15 @@ export default function PerfilPublico() {
                 onPress={() => setPaso("mala")}
                 activeOpacity={0.85}
               >
-                <Ionicons name="thumbs-down" size={18} color="#FFFFFF" />
+                <Image
+                  source={require("../../assets/icons/pulgares-hacia-arriba.png")}
+                  style={{
+                    width: 18,
+                    height: 18,
+                    transform: [{ rotate: "180deg" }], // Esto invierte la imagen verticalmente
+                  }}
+                  resizeMode="contain"
+                />
                 <Text style={s.botonTipoTexto}>Mala</Text>
               </TouchableOpacity>
             </View>
@@ -454,7 +524,9 @@ export default function PerfilPublico() {
       </Modal>
 
       {/* Nueva reseña */}
-      <Modal statusBarTranslucent navigationBarTranslucent
+      <Modal
+        statusBarTranslucent
+        navigationBarTranslucent
         visible={paso === "buena" || paso === "mala"}
         transparent
         animationType="fade"
@@ -508,7 +580,9 @@ export default function PerfilPublico() {
                       <Image source={{ uri }} style={r.miniatura} />
                       <TouchableOpacity
                         style={r.miniaturaQuitar}
-                        onPress={() => setFotos((prev) => prev.filter((_, j) => j !== i))}
+                        onPress={() =>
+                          setFotos((prev) => prev.filter((_, j) => j !== i))
+                        }
                         accessibilityLabel="Quitar foto"
                       >
                         <Ionicons name="close" size={12} color="#FFFFFF" />
@@ -516,7 +590,10 @@ export default function PerfilPublico() {
                     </View>
                   ))}
                   {fotos.length < MAX_FOTOS && (
-                    <TouchableOpacity style={s.agregarMasTile} onPress={agregarFotos}>
+                    <TouchableOpacity
+                      style={s.agregarMasTile}
+                      onPress={agregarFotos}
+                    >
                       <Ionicons name="add" size={22} color="#065F33" />
                     </TouchableOpacity>
                   )}

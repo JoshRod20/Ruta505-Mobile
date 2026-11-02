@@ -38,6 +38,7 @@ import {
   HORAS,
   separarHorario,
 } from "../../services/rutasService";
+import { escucharNegocios } from "../../services/Negociosservice";
 import {
   buscarCategoria,
   iconoDeCategoria,
@@ -95,6 +96,9 @@ export default function InvitacionesRuta() {
   const [error, setError] = useState("");
   const [paradas, setParadas] = useState([]); // participantes de la ruta abierta
   const [paradasError, setParadasError] = useState(false);
+  const [negocios, setNegocios] = useState([]); // traen la calificación (reseñas)
+
+  useEffect(() => escucharNegocios(setNegocios), []);
   const [form, setForm] = useState({
     servicio: "",
     precio: "",
@@ -439,7 +443,9 @@ export default function InvitacionesRuta() {
     const tipo = buscarCategoria(p.categoria)?.label;
     const propietario =
       p.estado === ESTADO_PARADA.CREADOR ? p.creadorNombre : p.propietarioNombre;
-    const calificacion = Number(p.calificacion);
+    const calificacion = Number(
+      p.calificacion ?? negocios.find((n) => n.id === p.ubicacionId)?.calificacion
+    );
     return (
       <View key={p.id} style={i.participante}>
         <View style={i.participanteIcono}>

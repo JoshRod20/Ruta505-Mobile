@@ -57,7 +57,11 @@ function TarjetaLugar({ punto, origen, onPress }) {
 
       {!!punto.lugar && (
         <View style={s.filaLugar}>
-          <Ionicons name="location-sharp" size={10} color="#0E5A34" />
+          <Image
+            source={require("../assets/icons/Icono-Verde.png")}
+            style={{ width: 11, height: 11 }}
+            resizeMode="contain"
+          />
           <Text style={s.lugarTexto} numberOfLines={1}>
             {punto.lugar}
           </Text>

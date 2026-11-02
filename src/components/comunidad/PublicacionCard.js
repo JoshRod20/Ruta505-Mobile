@@ -435,7 +435,11 @@ export default function PublicacionCard({ experiencia }) {
             </View>
             {!!ubicacion && (
               <View style={styles.filaUbicacion}>
-                <Ionicons name="location-sharp" size={13} color={VERDE} />
+                <Image
+                  source={require("../../assets/icons/Icono-Verde.png")}
+                  style={{ width: 13, height: 13 }}
+                  resizeMode="contain"
+                />
                 <Text style={styles.ubicacionTexto} numberOfLines={1}>
                   {ubicacion}
                 </Text>
@@ -449,7 +453,9 @@ export default function PublicacionCard({ experiencia }) {
             style={styles.menuBoton} y onPress={() => setMenuVisible(true)}. */}
       </View>
 
-      <Modal statusBarTranslucent navigationBarTranslucent
+      <Modal
+        statusBarTranslucent
+        navigationBarTranslucent
         visible={menuVisible}
         transparent
         animationType="fade"
@@ -504,7 +510,9 @@ export default function PublicacionCard({ experiencia }) {
         </TouchableOpacity>
       </Modal>
 
-      <Modal statusBarTranslucent navigationBarTranslucent
+      <Modal
+        statusBarTranslucent
+        navigationBarTranslucent
         visible={editando}
         transparent
         animationType="fade"
@@ -573,7 +581,10 @@ export default function PublicacionCard({ experiencia }) {
             keyExtractor={(uri, index) => `${experiencia.id}-${index}`}
             onMomentumScrollEnd={handleScrollFin}
             renderItem={({ item }) => (
-              <Image source={{ uri: item }} style={[styles.imagen, medidasImagen]} />
+              <Image
+                source={{ uri: item }}
+                style={[styles.imagen, medidasImagen]}
+              />
             )}
           />
 
@@ -674,7 +685,9 @@ export default function PublicacionCard({ experiencia }) {
       </Text>
 
       {/* Comentarios */}
-      <Modal statusBarTranslucent navigationBarTranslucent
+      <Modal
+        statusBarTranslucent
+        navigationBarTranslucent
         visible={comentariosVisible}
         transparent
         animationType="slide"

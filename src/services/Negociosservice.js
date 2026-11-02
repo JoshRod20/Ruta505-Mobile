@@ -16,6 +16,11 @@ import {
   onSnapshot,
   serverTimestamp,
 } from "firebase/firestore";
+import {
+  escucharExperiencias,
+  escucharComentarios,
+  resumirResenas,
+} from "./Experienciasservice";
 
 /**
  * Servicio de negocios de actores culturales.
@@ -170,16 +175,86 @@ export async function actualizarNegocio(uid, datos) {
  * @returns {function} Función de desuscripción.
  */
 export function escucharNegocios(callback, onError) {
-  return onSnapshot(
+  // Las reseñas son los comentarios de las publicaciones del actor
+  // (experiencias.creadoPor === id del negocio). El negocio no guarda la
+  // calificación, así que aquí se calcula el promedio y se agrega a cada
+  // negocio como `calificacion` (y `totalResenas`).
+  let negocios = [];
+  let publicaciones = [];
+  const comentariosPorPub = new Map(); // idPublicacion -> comentarios
+  const oyentes = new Map(); // idPublicacion -> desuscripción
+
+  const emitir = () => {
+    const porActor = new Map(); // actorId -> comentarios
+    publicaciones.forEach((pub) => {
+      const lista = comentariosPorPub.get(pub.id);
+      if (!lista?.length || !pub.creadoPor) return;
+      const acumulado = porActor.get(pub.creadoPor) ?? [];
+      porActor.set(pub.creadoPor, acumulado.concat(lista));
+    });
+
+    callback(
+      negocios.map((n) => {
+        const { promedio, total } = resumirResenas(porActor.get(n.id) ?? []);
+        return promedio == null
+          ? n
+          : { ...n, calificacion: promedio, totalResenas: total };
+      })
+    );
+  };
+
+  const dejarNegocios = onSnapshot(
     collection(db, COLECCION),
     (snapshot) => {
-      callback(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
+      negocios = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+      emitir();
     },
     (error) => {
       console.warn("Error escuchando negocios:", error);
       if (onError) onError(error);
     }
   );
+
+  const dejarExperiencias = escucharExperiencias((lista) => {
+    publicaciones = lista;
+    const ids = new Set(lista.map((pub) => pub.id));
+
+    // Publicaciones eliminadas: se deja de escuchar sus comentarios.
+    for (const [id, dejar] of oyentes) {
+      if (!ids.has(id)) {
+        dejar();
+        oyentes.delete(id);
+        comentariosPorPub.delete(id);
+      }
+    }
+
+    // Publicaciones nuevas: se escuchan sus comentarios.
+    lista.forEach((pub) => {
+      if (oyentes.has(pub.id)) return;
+      oyentes.set(
+        pub.id,
+        escucharComentarios(
+          pub.id,
+          (comentarios) => {
+            comentariosPorPub.set(pub.id, comentarios);
+            emitir();
+          },
+          // Un fallo en las reseñas no debe romper la carga de negocios.
+          (error) => console.warn("No se pudieron leer reseñas:", error)
+        )
+      );
+    });
+
+    emitir();
+  }, (error) => console.warn("No se pudieron leer publicaciones:", error));
+
+  return () => {
+    dejarNegocios();
+    dejarExperiencias();
+    oyentes.forEach((dejar) => dejar());
+    oyentes.clear();
+    comentariosPorPub.clear();
+  };
 }
 
 /**

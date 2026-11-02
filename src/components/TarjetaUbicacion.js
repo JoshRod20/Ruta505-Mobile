@@ -157,7 +157,11 @@ export default function TarjetaUbicacion({
         {!!punto.ubicacionExacta && (
           <View style={s.cajaReferencia}>
             <View style={s.referenciaIcono}>
-              <Ionicons name="location-sharp" size={20} color={VERDE} />
+              <Image
+                source={require("../assets/icons/Icono-Verde.png")}
+                style={{ width: 18, height: 18 }}
+                resizeMode="contain"
+              />
             </View>
             <View style={s.referenciaTextos}>
               <Text style={s.referenciaEtiqueta}>Referencia registrada</Text>
@@ -222,7 +226,9 @@ export default function TarjetaUbicacion({
               activeOpacity={0.85}
             >
               <Text style={s.botonPrimarioTexto}>
-                {origenRuta ? "Iniciar desde mi ubicación" : "Iniciar navegación"}
+                {origenRuta
+                  ? "Iniciar desde mi ubicación"
+                  : "Iniciar navegación"}
               </Text>
             </TouchableOpacity>
           ) : (
