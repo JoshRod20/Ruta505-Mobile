@@ -27,6 +27,7 @@ import {
   buscarCategoria,
 } from "../services/Categoriasexperiencias.js";
 import { obtenerMultimedia } from "../services/Negociosservice.js";
+import ScrollFormulario from "./common/ScrollFormulario";
 
 // Prototipo: todo se guarda en Base64 dentro de Firestore (máx. 1 MB por documento),
 // así que cada archivo se comprime y tiene un tope de peso. Cantidad de archivos: sin límite.
@@ -253,10 +254,7 @@ export default function FormularioExperiencia({
         ]}
       >
         <View style={s.hoja}>
-          <ScrollView
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-          >
+          <ScrollFormulario>
             <Text style={s.titulo}>
               {modoEdicion
                 ? "Editar ubicación de mi negocio"
@@ -472,7 +470,7 @@ export default function FormularioExperiencia({
                 )}
               </TouchableOpacity>
             </View>
-          </ScrollView>
+          </ScrollFormulario>
         </View>
       </View>
     </Modal>

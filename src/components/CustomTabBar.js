@@ -9,6 +9,7 @@ import {
   Animated,
   useWindowDimensions,
   Image,
+  Keyboard,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Svg, { Path } from "react-native-svg";
@@ -170,6 +171,9 @@ export default function CustomTabBar({ state, descriptors, navigation }) {
         const { options } = descriptors[route.key];
 
         const onPress = () => {
+          // Cierra el teclado antes de cambiar de pestaña (evita que la ventana
+          // quede encogida con un fondo negro abajo).
+          Keyboard.dismiss();
           const event = navigation.emit({
             type: "tabPress",
             target: route.key,

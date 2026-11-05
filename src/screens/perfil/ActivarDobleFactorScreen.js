@@ -7,9 +7,6 @@ import { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -37,6 +34,7 @@ import { enviarCorreoVerificacion } from "../../services/emailVerification";
 import { mapFirebaseError } from "../../utils/firebaseErrors";
 
 import ActivarDobleFactorStyle from "../../styles/perfilusuario/ActivarDobleFactorStyle";
+import ScrollFormulario from "../../components/common/ScrollFormulario";
 
 const ActivarDobleFactorScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
@@ -231,17 +229,12 @@ const ActivarDobleFactorScreen = ({ navigation }) => {
         <View style={ActivarDobleFactorStyle.botonAtras} />
       </View>
 
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
-        <ScrollView
+      <View style={{ flex: 1 }}>
+        <ScrollFormulario
           contentContainerStyle={[
             ActivarDobleFactorStyle.contenedor,
             { paddingBottom: insets.bottom + 32 },
           ]}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
         >
           <View style={ActivarDobleFactorStyle.iconoCirculo}>
             <Ionicons
@@ -494,8 +487,8 @@ const ActivarDobleFactorScreen = ({ navigation }) => {
               </>
             )}
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </ScrollFormulario>
+      </View>
     </View>
   );
 };

@@ -8,9 +8,7 @@ import {
   Alert,
   FlatList,
   Image,
-  KeyboardAvoidingView,
   Modal,
-  Platform,
   Text,
   TextInput,
   TouchableOpacity,
@@ -20,6 +18,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useWindowDimensions } from "react-native";
 import { MAX_ANCHO_FEED } from "../../utils/layout";
 import { useNavigation } from "@react-navigation/native";
+import useAlturaTeclado from "../../hooks/useAlturaTeclado";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import { Ionicons } from "@expo/vector-icons";
@@ -103,7 +102,7 @@ const ETIQUETAS_ACTOR = {
 export default function PublicacionCard({ experiencia }) {
   // La imagen ocupa el ancho de la tarjeta; en tablet el feed se limita a
   // MAX_ANCHO_FEED y se centra, así que el ancho sale de la ventana actual.
-  const { width: anchoVentana } = useWindowDimensions();
+  const { width: anchoVentana, height: altoVentana } = useWindowDimensions();
   const ANCHO_IMAGEN = Math.min(anchoVentana, MAX_ANCHO_FEED) - MARGEN_CARD * 2 - 2;
   const ALTO_IMAGEN = Math.round(ANCHO_IMAGEN * 0.78);
   const medidasImagen = { width: ANCHO_IMAGEN, height: ALTO_IMAGEN };
@@ -114,6 +113,9 @@ export default function PublicacionCard({ experiencia }) {
   // Comentarios de la publicación (se actualizan en vivo).
   const [comentarios, setComentarios] = useState([]);
   const [comentariosVisible, setComentariosVisible] = useState(false);
+  // Altura del teclado: el modal de comentarios se levanta a mano (ver hook).
+  const tecladoAlto = useAlturaTeclado(comentariosVisible);
+  const tecladoVisible = tecladoAlto > 0;
   const [textoComentario, setTextoComentario] = useState("");
   const [calificacion, setCalificacion] = useState(0);
   const [fotosComentario, setFotosComentario] = useState([]); // [data URI]
@@ -693,11 +695,20 @@ export default function PublicacionCard({ experiencia }) {
         animationType="slide"
         onRequestClose={() => setComentariosVisible(false)}
       >
-        <KeyboardAvoidingView
-          style={styles.comentariosFondo}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-        >
-          <View style={styles.comentariosHoja}>
+        {/* paddingBottom = alto del teclado: empuja la hoja por encima de él */}
+        <View style={[styles.comentariosFondo, { paddingBottom: tecladoAlto }]}>
+          <View
+            style={[
+              styles.comentariosHoja,
+              // Con teclado la hoja no puede ser más alta que el espacio libre
+              tecladoVisible && {
+                height: Math.min(
+                  altoVentana * 0.75,
+                  altoVentana - tecladoAlto - insets.top - 16,
+                ),
+              },
+            ]}
+          >
             <View style={styles.comentariosCabecera}>
               <Text style={styles.comentariosTitulo}>
                 Comentarios ({comentarios.length})
@@ -813,7 +824,8 @@ export default function PublicacionCard({ experiencia }) {
               <View
                 style={[
                   styles.comentarioComposer,
-                  { paddingBottom: insets.bottom + 10 },
+                  // El teclado ya cubre la zona segura inferior
+                  { paddingBottom: tecladoVisible ? 10 : insets.bottom + 10 },
                 ]}
               >
                 {!!comentarioEditandoId && (
@@ -936,7 +948,7 @@ export default function PublicacionCard({ experiencia }) {
               </Text>
             )}
           </View>
-        </KeyboardAvoidingView>
+        </View>
       </Modal>
     </View>
   );

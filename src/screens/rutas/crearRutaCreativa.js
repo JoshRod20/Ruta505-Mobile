@@ -8,9 +8,6 @@ import {
   Alert,
   FlatList,
   Image,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -55,6 +52,7 @@ import {
   AZUL,
 } from "../../styles/rutas/crearRutaStyle";
 import IconoCategoria from "../../components/common/IconoCategoria";
+import ScrollFormulario from "../../components/common/ScrollFormulario";
 
 const MAX_FOTOS = 2;
 
@@ -836,25 +834,20 @@ function AsistenteRutaCreativa() {
         </View>
       </View>
 
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
-        <ScrollView
+      <View style={{ flex: 1 }}>
+        <ScrollFormulario
           contentContainerStyle={[
             s.contenido,
             { paddingBottom: insets.bottom + 32 },
             (paso === 4 || paso === 5 || paso === 6) && { flexGrow: 1 },
           ]}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
         >
           {paso === 2 && renderPaso2()}
           {paso === 3 && renderPaso3()}
           {(paso === 4 || paso === 5) && renderPaso4o5()}
           {paso === 6 && renderPaso6()}
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </ScrollFormulario>
+      </View>
     </View>
   );
 }

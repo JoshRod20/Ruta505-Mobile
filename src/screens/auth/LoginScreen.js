@@ -9,9 +9,6 @@ import { useState } from "react";
 import {
   ActivityIndicator,
   ImageBackground,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -37,6 +34,7 @@ import { mapFirebaseError } from "../../utils/firebaseErrors";
 import { EMAIL_REGEX } from "../../utils/validators";
 
 import LoginScreenStyle from "../../styles/auth/LoginScreenStyle";
+import ScrollFormulario from "../../components/common/ScrollFormulario";
 
 // ==================================================
 // DIMENSIONES
@@ -326,7 +324,7 @@ const LoginScreen = ({ navigation }) => {
           KEYBOARD AVOIDING VIEW
           ================================================== */}
 
-      <KeyboardAvoidingView
+      <View
         style={[
           LoginScreenStyle.scroll,
 
@@ -334,11 +332,8 @@ const LoginScreen = ({ navigation }) => {
             flex: 1,
           },
         ]}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={0}
-        enabled
       >
-        <ScrollView
+        <ScrollFormulario
           style={{
             flex: 1,
           }}
@@ -347,11 +342,6 @@ const LoginScreen = ({ navigation }) => {
             { paddingBottom: 34 + insets.bottom },
             padLateralTablet(SCREEN_WIDTH),
           ]}
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode={
-            Platform.OS === "ios" ? "interactive" : "on-drag"
-          }
-          showsVerticalScrollIndicator={false}
           nestedScrollEnabled
         >
           {/* ==================================================
@@ -503,8 +493,8 @@ const LoginScreen = ({ navigation }) => {
               <Text style={LoginScreenStyle.registrarseEnlace}>Regístrate</Text>
             </Text>
           </TouchableOpacity>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </ScrollFormulario>
+      </View>
     </View>
   );
 };

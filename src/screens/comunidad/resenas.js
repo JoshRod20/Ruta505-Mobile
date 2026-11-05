@@ -8,9 +8,7 @@ import {
   Alert,
   FlatList,
   Image,
-  KeyboardAvoidingView,
   Modal,
-  Platform,
   ScrollView,
   Text,
   TextInput,
@@ -20,6 +18,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import useAlturaTeclado from "../../hooks/useAlturaTeclado";
 
 import {
   escucharActividadDeActor,
@@ -85,6 +84,7 @@ export function Estrellas({ valor, size = 26, onChange }) {
 // ==================================================
 function ModalRespuesta({ resena, guardando, onCancelar, onEnviar }) {
   const insets = useSafeAreaInsets();
+  const tecladoAlto = useAlturaTeclado(!!resena);
   const [texto, setTexto] = useState("");
   const [error, setError] = useState("");
 
@@ -111,11 +111,13 @@ function ModalRespuesta({ resena, guardando, onCancelar, onEnviar }) {
       animationType="slide"
       onRequestClose={guardando ? undefined : onCancelar}
     >
-      <KeyboardAvoidingView
-        style={s.modalFondo}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
-        <View style={[s.modalHoja, { paddingBottom: insets.bottom + 20 }]}>
+      <View style={[s.modalFondo, { paddingBottom: tecladoAlto }]}>
+        <View
+          style={[
+            s.modalHoja,
+            { paddingBottom: tecladoAlto > 0 ? 20 : insets.bottom + 20 },
+          ]}
+        >
           <Text style={s.modalTitulo}>Responder reseña</Text>
           <Text style={s.modalSubtitulo}>
             Tu respuesta será visible para todos los visitantes.
@@ -158,7 +160,7 @@ function ModalRespuesta({ resena, guardando, onCancelar, onEnviar }) {
             </TouchableOpacity>
           </View>
         </View>
-      </KeyboardAvoidingView>
+      </View>
     </Modal>
   );
 }

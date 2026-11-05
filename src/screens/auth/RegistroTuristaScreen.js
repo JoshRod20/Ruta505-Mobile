@@ -43,6 +43,7 @@ import { PAISES } from "../../constants/paises";
 
 import RegistroTuristaScreenStyle
   from "../../styles/auth/RegistroFormStyle";
+import ScrollFormulario from "../../components/common/ScrollFormulario";
 
 // ==================================================
 // DIMENSIONES
@@ -554,7 +555,7 @@ const RegistroTuristaScreen = ({
           Solo el formulario se adapta al teclado.
           ================================================== */}
 
-      <KeyboardAvoidingView
+      <View
         style={[
           RegistroTuristaScreenStyle
             .scroll,
@@ -563,19 +564,10 @@ const RegistroTuristaScreen = ({
             flex: 1,
           },
         ]}
-        behavior={
-          Platform.OS === "ios"
-            ? "padding"
-            : "height"
-        }
-        keyboardVerticalOffset={0}
-        enabled
       >
-        {/* ==================================================
-            SCROLL DEL FORMULARIO
-            ================================================== */}
-
-        <ScrollView
+        {/* Scroll del formulario: sube solo el campo enfocado sobre el teclado */}
+        <ScrollFormulario
+          activo={!modalIdiomaVisible && !modalPaisVisible}
           style={{
             flex: 1,
           }}
@@ -585,15 +577,6 @@ const RegistroTuristaScreen = ({
             { paddingBottom: 34 + insets.bottom },
             padLateralTablet(SCREEN_WIDTH),
           ]}
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode={
-            Platform.OS === "ios"
-              ? "interactive"
-              : "on-drag"
-          }
-          showsVerticalScrollIndicator={
-            false
-          }
           nestedScrollEnabled
         >
           {/* ==================================================
@@ -1087,8 +1070,8 @@ const RegistroTuristaScreen = ({
               Registrarse
             </Text>
           </TouchableOpacity>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </ScrollFormulario>
+      </View>
 
       {/* ==================================================
           MODAL IDIOMA

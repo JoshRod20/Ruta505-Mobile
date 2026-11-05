@@ -2,12 +2,10 @@
  * RegistroActorScreen: componente/pantalla de la aplicación Ruta505.
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ImageBackground,
   Keyboard,
-  Platform,
-  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -34,6 +32,7 @@ import {
 } from "../../utils/validators";
 import SelectorModal from "../../components/common/SelectorModal";
 import TerminosModal from "../../components/common/TerminosModal";
+import ScrollFormulario from "../../components/common/ScrollFormulario";
 import { TERMINOS_VERSION } from "../../constants/terminosCondiciones";
 import S from "../../styles/auth/RegistroActorFormStyle";
 
@@ -211,66 +210,8 @@ const RegistroActorScreen = ({ navigation, route }) => {
   const [modalActivo, setModalActivo] = useState(null);
   const cerrarModal = () => setModalActivo(null);
 
-  // ==================================================
-  // TECLADO: el campo enfocado nunca debe quedar tapado
-  // ==================================================
-  // No usamos KeyboardAvoidingView: en Android con edge-to-edge no mueve nada
-  // y en iOS no desplaza el ScrollView hasta el campo enfocado.
-  const scrollRef = useRef(null);
-  const scrollYRef = useRef(0);
-  const tecladoTopRef = useRef(null); // Y (pantalla) donde empieza el teclado
-  const modalActivoRef = useRef(null);
-  modalActivoRef.current = modalActivo;
-  const [tecladoAlto, setTecladoAlto] = useState(0);
-
-  const asegurarCampoVisible = () => {
-    const input = TextInput.State.currentlyFocusedInput?.();
-    const tecladoTop = tecladoTopRef.current;
-    if (!input || tecladoTop == null) return;
-
-    input.measureInWindow((_x, y, _w, h) => {
-      const margen = 24;
-      const exceso = y + h + margen - tecladoTop;
-      if (exceso > 0) {
-        scrollRef.current?.scrollTo({
-          y: scrollYRef.current + exceso,
-          animated: true,
-        });
-      }
-    });
-  };
-
-  // Al pasar de un campo a otro con el teclado ya abierto no hay evento de
-  // teclado, así que también reaccionamos al foco.
-  const alEnfocar = () => {
-    if (tecladoTopRef.current != null) setTimeout(asegurarCampoVisible, 100);
-  };
-
-  useEffect(() => {
-    const esIOS = Platform.OS === "ios";
-
-    const subShow = Keyboard.addListener(
-      esIOS ? "keyboardWillShow" : "keyboardDidShow",
-      (e) => {
-        if (modalActivoRef.current) return; // el teclado es del buscador del modal
-        tecladoTopRef.current = e.endCoordinates.screenY;
-        setTecladoAlto(e.endCoordinates.height);
-        setTimeout(asegurarCampoVisible, 60); // deja que se pinte el espacio extra
-      }
-    );
-    const subHide = Keyboard.addListener(
-      esIOS ? "keyboardWillHide" : "keyboardDidHide",
-      () => {
-        tecladoTopRef.current = null;
-        setTecladoAlto(0);
-      }
-    );
-
-    return () => {
-      subShow.remove();
-      subHide.remove();
-    };
-  }, []);
+  // El desplazamiento al abrir el teclado lo maneja <ScrollFormulario>.
+  // Se desactiva mientras hay un modal abierto (el teclado es del buscador).
 
   // Cierra el teclado (y quita el foco del TextInput) ANTES de abrir el modal.
   // Esperamos a "keyboardDidHide" para no superponer la animación del teclado
@@ -463,21 +404,14 @@ const RegistroActorScreen = ({ navigation, route }) => {
       <Text style={S.titulo}>{tituloEncabezado}</Text>
 
       <View style={[S.scroll, { flex: 1 }]}>
-        <ScrollView
-          ref={scrollRef}
-          onScroll={(e) => {
-            scrollYRef.current = e.nativeEvent.contentOffset.y;
-          }}
-          scrollEventThrottle={16}
+        <ScrollFormulario
+          activo={!modalActivo}
           style={{ flex: 1 }}
           contentContainerStyle={[
             S.card,
             { paddingBottom: 34 + insets.bottom },
             padLateralTablet(SCREEN_WIDTH),
           ]}
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
-          showsVerticalScrollIndicator={false}
           nestedScrollEnabled
         >
           {/* NOMBRE */}
@@ -487,7 +421,6 @@ const RegistroActorScreen = ({ navigation, route }) => {
             placeholderTextColor="#a8a8a8"
             value={form.nombreCompleto}
             onChangeText={(t) => handleChange("nombreCompleto", t)}
-            onFocus={alEnfocar}
             onBlur={() => marcarTocado("nombreCompleto")}
           />
           <MensajeError texto={err("nombreCompleto")} />
@@ -506,7 +439,6 @@ const RegistroActorScreen = ({ navigation, route }) => {
             maxLength={500}
             value={form.descripcion}
             onChangeText={(t) => handleChange("descripcion", t)}
-            onFocus={alEnfocar}
             onBlur={() => marcarTocado("descripcion")}
           />
           <MensajeError texto={err("descripcion")} />
@@ -518,7 +450,6 @@ const RegistroActorScreen = ({ navigation, route }) => {
             placeholderTextColor="#a8a8a8"
             value={form.direccion}
             onChangeText={(t) => handleChange("direccion", t)}
-            onFocus={alEnfocar}
             onBlur={() => marcarTocado("direccion")}
           />
           <MensajeError texto={err("direccion")} />
@@ -551,7 +482,6 @@ const RegistroActorScreen = ({ navigation, route }) => {
             keyboardType="email-address"
             value={form.email}
             onChangeText={(t) => handleChange("email", t)}
-            onFocus={alEnfocar}
             onBlur={() => marcarTocado("email")}
           />
           <MensajeError texto={err("email")} />
@@ -566,7 +496,6 @@ const RegistroActorScreen = ({ navigation, route }) => {
             maxLength={16}
             value={form.cedula}
             onChangeText={(t) => handleChange("cedula", t)}
-            onFocus={alEnfocar}
             onBlur={() => marcarTocado("cedula")}
           />
           <MensajeError texto={err("cedula")} />
@@ -581,7 +510,6 @@ const RegistroActorScreen = ({ navigation, route }) => {
             maxLength={30}
             value={form.matricula}
             onChangeText={(t) => handleChange("matricula", t)}
-            onFocus={alEnfocar}
           />
 
           {/* TELÉFONO */}
@@ -592,7 +520,6 @@ const RegistroActorScreen = ({ navigation, route }) => {
             keyboardType="phone-pad"
             value={form.telefono}
             onChangeText={(t) => handleChange("telefono", t)}
-            onFocus={alEnfocar}
             onBlur={() => marcarTocado("telefono")}
           />
           <MensajeError texto={err("telefono")} />
@@ -610,8 +537,7 @@ const RegistroActorScreen = ({ navigation, route }) => {
               secureTextEntry={!mostrarPassword}
               value={form.password}
               onChangeText={(t) => handleChange("password", t)}
-              onFocus={alEnfocar}
-            onBlur={() => marcarTocado("password")}
+              onBlur={() => marcarTocado("password")}
             />
             <TouchableOpacity
               style={S.iconoOjo}
@@ -644,8 +570,7 @@ const RegistroActorScreen = ({ navigation, route }) => {
               secureTextEntry={!mostrarConfirmPassword}
               value={form.confirmPassword}
               onChangeText={(t) => handleChange("confirmPassword", t)}
-              onFocus={alEnfocar}
-            onBlur={() => marcarTocado("confirmPassword")}
+              onBlur={() => marcarTocado("confirmPassword")}
             />
             <TouchableOpacity
               style={S.iconoOjo}
@@ -721,10 +646,7 @@ const RegistroActorScreen = ({ navigation, route }) => {
           <TouchableOpacity style={S.boton} onPress={handleSubmit}>
             <Text style={S.botonTexto}>Registrarse</Text>
           </TouchableOpacity>
-
-          {/* Espacio para poder desplazar los últimos campos sobre el teclado */}
-          <View style={{ height: tecladoAlto }} />
-        </ScrollView>
+        </ScrollFormulario>
       </View>
 
       {/* MODALES */}

@@ -6,8 +6,6 @@ import { useState } from "react";
 
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
   Text,
   TextInput,
   TouchableOpacity,
@@ -19,6 +17,7 @@ import { construirAssertionParaLogin } from "../../services/mfa";
 import { mapFirebaseError } from "../../utils/firebaseErrors";
 
 import VerificarCodigoScreenStyle from "../../styles/auth/VerificarCodigoScreenStyle";
+import ScrollFormulario from "../../components/common/ScrollFormulario";
 
 const VerificarCodigoScreen = ({ route, navigation }) => {
   // Resolver proveniente de getMultiFactorResolver en LoginScreen.
@@ -59,13 +58,15 @@ const VerificarCodigoScreen = ({ route, navigation }) => {
   };
 
   return (
-    <KeyboardAvoidingView
+    <View
       style={[
         VerificarCodigoScreenStyle.contenedor,
         { paddingTop: insets.top, paddingBottom: insets.bottom },
       ]}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
+      <ScrollFormulario
+        contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+      >
       <View style={VerificarCodigoScreenStyle.card}>
         <Text style={VerificarCodigoScreenStyle.titulo}>
           Verificación en dos pasos
@@ -116,7 +117,8 @@ const VerificarCodigoScreen = ({ route, navigation }) => {
           <Text style={VerificarCodigoScreenStyle.enlace}>Cancelar</Text>
         </TouchableOpacity>
       </View>
-    </KeyboardAvoidingView>
+      </ScrollFormulario>
+    </View>
   );
 };
 

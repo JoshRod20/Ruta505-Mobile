@@ -6,13 +6,10 @@
  * de inicio de sesión y no se cambia desde aquí.
  */
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Keyboard,
-  Platform,
-  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -36,6 +33,7 @@ import { TELEFONO_REGEX } from "../../utils/validators";
 import { mapFirebaseError } from "../../utils/firebaseErrors";
 import S from "../../styles/auth/RegistroActorFormStyle";
 import { editUserProfileStyle as s } from "../../styles/usuario/editUserProfileStyle";
+import ScrollFormulario from "../../components/common/ScrollFormulario";
 
 const VERDE = "#086338";
 
@@ -82,44 +80,7 @@ export default function EditUserProfile() {
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
 
-  // ---- Teclado: el campo enfocado no debe quedar tapado ----
-  const scrollRef = useRef(null);
-  const scrollYRef = useRef(0);
-  const modalActivoRef = useRef(null);
-  modalActivoRef.current = modalActivo;
-  const [tecladoAlto, setTecladoAlto] = useState(0);
-
-  useEffect(() => {
-    const esIOS = Platform.OS === "ios";
-    const mostrar = Keyboard.addListener(
-      esIOS ? "keyboardWillShow" : "keyboardDidShow",
-      (e) => {
-        if (modalActivoRef.current) return; // el teclado es del buscador del modal
-        setTecladoAlto(e.endCoordinates.height);
-        const tecladoTop = e.endCoordinates.screenY;
-        setTimeout(() => {
-          const input = TextInput.State.currentlyFocusedInput?.();
-          input?.measureInWindow((_x, y, _w, h) => {
-            const exceso = y + h + 16 - tecladoTop;
-            if (exceso > 0) {
-              scrollRef.current?.scrollTo({
-                y: scrollYRef.current + exceso,
-                animated: true,
-              });
-            }
-          });
-        }, 60);
-      }
-    );
-    const ocultar = Keyboard.addListener(
-      esIOS ? "keyboardWillHide" : "keyboardDidHide",
-      () => setTecladoAlto(0)
-    );
-    return () => {
-      mostrar.remove();
-      ocultar.remove();
-    };
-  }, []);
+  // Teclado: lo maneja <ScrollFormulario> (se desactiva con un modal abierto).
 
   const handleChange = (campo, valor) =>
     setForm((prev) => ({ ...prev, [campo]: valor }));
@@ -226,15 +187,9 @@ export default function EditUserProfile() {
         <View style={s.botonAtras} />
       </View>
 
-      <ScrollView
-        ref={scrollRef}
+      <ScrollFormulario
+        activo={!modalActivo}
         contentContainerStyle={[s.contenido, { paddingBottom: insets.bottom + 32 }]}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-        scrollEventThrottle={16}
-        onScroll={(e) => {
-          scrollYRef.current = e.nativeEvent.contentOffset.y;
-        }}
       >
         <Text style={s.etiqueta}>Nombre completo</Text>
         <TextInput
@@ -347,10 +302,7 @@ export default function EditUserProfile() {
             <Text style={S.botonTexto}>Guardar cambios</Text>
           )}
         </TouchableOpacity>
-
-        {/* Espacio para poder desplazar los últimos campos sobre el teclado */}
-        <View style={{ height: tecladoAlto }} />
-      </ScrollView>
+      </ScrollFormulario>
 
       <SelectorModal
         visible={modalActivo === "pais"}

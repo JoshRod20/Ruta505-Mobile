@@ -13,18 +13,18 @@ import {
   ActivityIndicator,
   Alert,
   Image,
-  KeyboardAvoidingView,
   Modal,
-  Platform,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import useAlturaTeclado from "../../hooks/useAlturaTeclado";
 import { Map, Camera } from "@maplibre/maplibre-react-native";
 
 import { useAuth } from "../../context/AuthContext";
@@ -60,6 +60,7 @@ const ESTRELLAS_POR_TIPO = { buena: 5, mala: 1 };
  */
 export default function PerfilPublico() {
   const insets = useSafeAreaInsets();
+  const { height: altoVentana } = useWindowDimensions();
   const navigation = useNavigation();
   const { params } = useRoute();
   const actorId = params?.actorId ?? null;
@@ -75,6 +76,7 @@ export default function PerfilPublico() {
 
   // Flujo "escribir reseña": null | "tipo" | "buena" | "mala"
   const [paso, setPaso] = useState(null);
+  const tecladoAlto = useAlturaTeclado(paso === "buena" || paso === "mala");
   const [texto, setTexto] = useState("");
   const [fotos, setFotos] = useState([]);
   const [errorForm, setErrorForm] = useState("");
@@ -536,11 +538,16 @@ export default function PerfilPublico() {
         animationType="fade"
         onRequestClose={cerrarFlujo}
       >
-        <KeyboardAvoidingView
-          style={s.centroFondo}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-        >
-          <View style={s.cajaCentro}>
+        {/* paddingBottom = alto del teclado: la caja centrada sube sobre él */}
+        <View style={[s.centroFondo, { paddingBottom: tecladoAlto }]}>
+          <View
+            style={[
+              s.cajaCentro,
+              tecladoAlto > 0 && {
+                maxHeight: altoVentana - tecladoAlto - insets.top - 16,
+              },
+            ]}
+          >
             <TouchableOpacity
               style={s.modalAtras}
               onPress={cerrarFlujo}
@@ -630,7 +637,7 @@ export default function PerfilPublico() {
               </TouchableOpacity>
             </View>
           </View>
-        </KeyboardAvoidingView>
+        </View>
       </Modal>
     </View>
   );

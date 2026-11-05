@@ -7,9 +7,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
-  KeyboardAvoidingView,
   Modal,
-  Platform,
   ScrollView,
   Text,
   TextInput,
@@ -39,6 +37,7 @@ import {
   experienciasCulturalesStyle as s,
   VERDE,
 } from "../../styles/experienciascultarales/experienciasCulturalesStyle";
+import ScrollFormulario from "../../components/common/ScrollFormulario";
 
 // Las fotos se guardan como Base64 dentro del documento (sin Firebase Storage),
 // así que se comprimen y se limitan para no pasar 1 MB por documento.
@@ -254,10 +253,7 @@ export default function ExperienciasCulturales() {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={[s.container, { paddingTop: topOffset }]}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
+    <View style={[s.container, { paddingTop: topOffset }]}>
       {/* Encabezado */}
       <View style={s.header}>
         <TouchableOpacity
@@ -273,13 +269,12 @@ export default function ExperienciasCulturales() {
       </View>
       {!!etiquetaRol && <Text style={s.rol}>{etiquetaRol}</Text>}
 
-      <ScrollView
+      <ScrollFormulario
+        activo={!selectorVisible}
         contentContainerStyle={[
           s.scrollContent,
           { paddingBottom: insets.bottom + 32 },
         ]}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
       >
         <Text style={[s.etiqueta, { marginTop: 4 }]}>Título</Text>
         <TextInput
@@ -435,7 +430,7 @@ export default function ExperienciasCulturales() {
             <Text style={s.botonPublicarTexto}>Publicar</Text>
           )}
         </TouchableOpacity>
-      </ScrollView>
+      </ScrollFormulario>
 
       {/* Selector de ubicación en el mapa */}
       <Modal
@@ -454,6 +449,6 @@ export default function ExperienciasCulturales() {
           onCancelar={() => setSelectorVisible(false)}
         />
       </Modal>
-    </KeyboardAvoidingView>
+    </View>
   );
 }

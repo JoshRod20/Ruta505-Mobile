@@ -15,9 +15,6 @@ import {
   ActivityIndicator,
   Alert,
   Image,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -55,6 +52,7 @@ import {
   AZUL_ACEPTO,
 } from "../../styles/rutas/invitacionesRutaStyle";
 import IconoCategoria from "../../components/common/IconoCategoria";
+import ScrollFormulario from "../../components/common/ScrollFormulario";
 
 // Imagen de la pantalla "¡Listo!" (la mascota). Para ponerla, importa el
 // archivo aquí, por ejemplo:
@@ -575,22 +573,17 @@ export default function InvitacionesRuta() {
       {mostrarListo ? (
         renderListo()
       ) : (
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-        >
-          <ScrollView
+        <View style={{ flex: 1 }}>
+          <ScrollFormulario
             contentContainerStyle={[
               s.contenido,
               { paddingTop: 12, paddingBottom: insets.bottom + 32 },
             ]}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
           >
             {!seleccionada && renderNotificaciones()}
             {seleccionada && renderDetalle()}
-          </ScrollView>
-        </KeyboardAvoidingView>
+          </ScrollFormulario>
+        </View>
       )}
     </View>
   );
