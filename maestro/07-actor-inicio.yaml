@@ -1,5 +1,5 @@
-# E2E09: Actor cultural inicia sesión, ve su Inicio y su barra inferior
-# Uso: maestro test -e CORREO=actor@correo.com -e CLAVE=contraseña maestro/09-actor-inicio.yaml
+# E2E07: Actor cultural inicia sesión, ve su Inicio y su barra inferior
+# Uso: maestro test -e CORREO=actor@correo.com -e CLAVE=contraseña maestro/07-actor-inicio.yaml
 # Requiere una cuenta de actor cultural YA APROBADA (si está en revisión no ve "Nueva publicación").
 appId: com.kennrod20.Ruta505
 ---
@@ -33,7 +33,7 @@ appId: com.kennrod20.Ruta505
     id: "tab-Pasaporte"
 - assertNotVisible:
     id: "tab-Perfil"
-- takeScreenshot: e2e09-actor-inicio
+- takeScreenshot: e2e07-actor-inicio
 
 # Ir al Mapa y volver al Inicio
 - tapOn:

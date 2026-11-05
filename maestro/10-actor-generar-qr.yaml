@@ -1,5 +1,5 @@
-# E2E12: El actor cultural genera el código QR del Pasaporte Cultural
-# Uso: maestro test -e CORREO=actor@correo.com -e CLAVE=contraseña maestro/12-actor-generar-qr.yaml
+# E2E10: El actor cultural genera el código QR del Pasaporte Cultural
+# Uso: maestro test -e CORREO=actor@correo.com -e CLAVE=contraseña maestro/10-actor-generar-qr.yaml
 # Si el actor ya generó su QR antes, la pantalla abre directo en el código.
 appId: com.kennrod20.Ruta505
 ---
@@ -21,7 +21,7 @@ appId: com.kennrod20.Ruta505
       visible: "Generar código QR"
     commands:
       - assertVisible: "¡Bienvenido! Crea aquí el código QR de.*"
-      - takeScreenshot: e2e12-qr-bienvenida
+      - takeScreenshot: e2e10-qr-bienvenida
       - tapOn: "Generar código QR"
 
 # Tarjeta con el QR
@@ -31,4 +31,4 @@ appId: com.kennrod20.Ruta505
 - assertVisible: "Vinculado a:.*"
 - assertVisible: "Imprime este código.*"
 - assertVisible: "Descargar"
-- takeScreenshot: e2e12-qr-generado
+- takeScreenshot: e2e10-qr-generado

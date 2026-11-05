@@ -1,5 +1,5 @@
-# E2E14: Configuración del actor cultural y cierre de sesión
-# Uso: maestro test -e CORREO=actor@correo.com -e CLAVE=contraseña maestro/14-actor-configuracion-cerrar-sesion.yaml
+# E2E12: Configuración del actor cultural y cierre de sesión
+# Uso: maestro test -e CORREO=actor@correo.com -e CLAVE=contraseña maestro/12-actor-configuracion-cerrar-sesion.yaml
 appId: com.kennrod20.Ruta505
 ---
 - runFlow:
@@ -25,13 +25,13 @@ appId: com.kennrod20.Ruta505
 - assertVisible: "Métodos de pago y facturación"
 - assertVisible: "Suscripción actual"
 - assertVisible: "Preferencias"
-- takeScreenshot: e2e14-configuracion
+- takeScreenshot: e2e12-configuracion
 
 - scrollUntilVisible:
     element: "Soporte y Ayuda"
 - scrollUntilVisible:
     element: "Cerrar sesión"
-- takeScreenshot: e2e14-configuracion-final
+- takeScreenshot: e2e12-configuracion-final
 
 # Cerrar sesión: primero pide confirmación
 - tapOn: "Cerrar sesión"
@@ -45,4 +45,4 @@ appId: com.kennrod20.Ruta505
     visible: "Iniciar Sesión"
     timeout: 30000
 - assertVisible: "Registrar cuenta"
-- takeScreenshot: e2e14-sesion-cerrada
+- takeScreenshot: e2e12-sesion-cerrada

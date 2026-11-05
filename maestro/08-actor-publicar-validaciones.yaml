@@ -1,5 +1,5 @@
-# E2E10: Validaciones de "Publicar Experiencia" del actor cultural (no publica nada)
-# Uso: maestro test -e CORREO=actor@correo.com -e CLAVE=contraseña maestro/10-actor-publicar-validaciones.yaml
+# E2E08: Validaciones de "Publicar Experiencia" del actor cultural (no publica nada)
+# Uso: maestro test -e CORREO=actor@correo.com -e CLAVE=contraseña maestro/08-actor-publicar-validaciones.yaml
 # Requiere una cuenta de actor cultural YA APROBADA.
 appId: com.kennrod20.Ruta505
 ---
@@ -14,12 +14,11 @@ appId: com.kennrod20.Ruta505
     visible: "Publicar Experiencia"
     timeout: 15000
 # La pantalla pide la ubicación al abrirse
-- runFlow: subflows/permiso-ubicacion.yaml
 - assertVisible: "Como .*"
 - assertVisible: "Título"
 - assertVisible: "Descripción"
 - assertVisible: "Fotos / Vídeos cortos"
-- takeScreenshot: e2e10-publicar-formulario
+- takeScreenshot: e2e08-publicar-formulario
 
 # Publicar con el formulario vacío
 - scrollUntilVisible:
@@ -28,7 +27,7 @@ appId: com.kennrod20.Ruta505
 - scrollUntilVisible:
     element: "Completa el título y la descripción."
 - assertVisible: "Completa el título y la descripción."
-- takeScreenshot: e2e10-publicar-vacio
+- takeScreenshot: e2e08-publicar-vacio
 
 # Solo el título: sigue faltando la descripción
 - scrollUntilVisible:
@@ -56,7 +55,7 @@ appId: com.kennrod20.Ruta505
 - tapOn: "Publicar"
 - scrollUntilVisible:
     element: "Elige la ubicación de tu experiencia\\.|Agrega al menos una foto de la experiencia\\."
-- takeScreenshot: e2e10-publicar-sin-foto
+- takeScreenshot: e2e08-publicar-sin-foto
 
 # Volver al Inicio sin publicar
 - scrollUntilVisible:

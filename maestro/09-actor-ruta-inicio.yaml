@@ -1,5 +1,5 @@
-# E2E11: Pestaña "Publicar experiencias" (paso 1 de la Ruta Creativa) del actor cultural
-# Uso: maestro test -e CORREO=actor@correo.com -e CLAVE=contraseña maestro/11-actor-ruta-inicio.yaml
+# E2E09: Pestaña "Publicar experiencias" (paso 1 de la Ruta Creativa) del actor cultural
+# Uso: maestro test -e CORREO=actor@correo.com -e CLAVE=contraseña maestro/09-actor-ruta-inicio.yaml
 appId: com.kennrod20.Ruta505
 ---
 - runFlow:
@@ -17,7 +17,7 @@ appId: com.kennrod20.Ruta505
 - assertVisible: "1 / 5"
 - assertVisible: "\\+ Nueva ruta creativa"
 - assertVisible: "Ver mis rutas activas"
-- takeScreenshot: e2e11-ruta-inicio
+- takeScreenshot: e2e09-ruta-inicio
 
 # "Ver mis rutas activas": sin rutas avisa; con rutas abre "Mis Rutas Creativas"
 - tapOn: "Ver mis rutas activas"
@@ -34,6 +34,6 @@ appId: com.kennrod20.Ruta505
     when:
       visible: "Mis Rutas Creativas"
     commands:
-      - takeScreenshot: e2e11-mis-rutas
+      - takeScreenshot: e2e09-mis-rutas
       - back
 - assertVisible: "Creación de una ruta"

@@ -1,5 +1,5 @@
-# E2E13: Perfil cultural del actor cultural y sus acciones
-# Uso: maestro test -e CORREO=actor@correo.com -e CLAVE=contraseña maestro/13-actor-perfil-cultural.yaml
+# E2E11: Perfil cultural del actor cultural y sus acciones
+# Uso: maestro test -e CORREO=actor@correo.com -e CLAVE=contraseña maestro/11-actor-perfil-cultural.yaml
 appId: com.kennrod20.Ruta505
 ---
 - runFlow:
@@ -20,4 +20,4 @@ appId: com.kennrod20.Ruta505
 - scrollUntilVisible:
     element: "Configuración"
 - assertVisible: "Configuración"
-- takeScreenshot: e2e13-perfil-cultural
+- takeScreenshot: e2e11-perfil-cultural
